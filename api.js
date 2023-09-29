@@ -6,7 +6,7 @@ import router from './routes/routes.js';
 const app = express();
 
 // Middlewares
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 app.use(express.json());
 
 app.use(router);
