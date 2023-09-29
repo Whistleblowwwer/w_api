@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-node_modules
-=======
 .env 
 node_modules 
 
->>>>>>> 4848916 (Sequelize models updated)
