@@ -24,3 +24,5 @@ Business.belongsToMany(User, { as: 'Followers', through: 'businessFollowers', fo
 // 6. Un user puede hacer un review
 User.hasMany(Review, { foreignKey: '_id_user' });
 
+
+

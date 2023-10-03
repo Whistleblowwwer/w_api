@@ -32,7 +32,9 @@ export const createUser = async (req, res) => {
         //await sendEmail(email, "Welcome to Our Platform", "Thank you for registering!");
 
         // Return the created user and JWT token
-        res.status(200).send({ message: "User created successfully", user, token });
+        const createdUser = await User.findOne({ where: { _id_user: user._id_user }, attributes: { exclude: ['password_token'] } });// Excluding hashed pw
+        res.status(200).send({ message: "User created successfully", user: createdUser, token });
+
 
     } catch (error) {
         res.status(500).send({ error: error.message });
@@ -63,7 +65,10 @@ export const logIn = async (req,res) => {
 
         // Generate a JWT token
         const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
-        res.status(200).send({ message: "Login successful", user, token}); 
+
+        const loggedInUser = await User.findOne({ where: { _id_user: user._id_user }, attributes: { exclude: ['password_token'] } });// Excluding hashed pw
+        res.status(200).send({ message: "Login successful", user: loggedInUser, token });
+
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
@@ -121,8 +126,25 @@ export const updateUser = async (req, res) => {
     }
 };
 
-
 //Get User Details
+export const getUserDetails = async (req, res) => {
+    const _id_user = req.params._id_user;
+
+    try {
+        const user = await User.findOne({ where: { _id_user }, attributes: { exclude: ['password_token'] } }); // Excluding hashed pw
+
+        if (!user) {
+            return res.status(400).send({ message: "User not found" });
+        }
+
+        res.status(200).send({ message: "User details", user });
+
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+
 
 //Like Review
 
