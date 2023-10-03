@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { createUser, updateUser} from "../controllers/users.js";
+import { createUser, logIn, updateUser} from "../controllers/users.js";
 
 const router = Router();
 
@@ -9,11 +9,11 @@ const router = Router();
 //Create User
 router.post('/', createUser);
 
+// // Log In
+router.post('/login', logIn);
+
 // //Update User
 router.put('/:_id_user', validateToken, updateUser);
-
-// // Log In
-// router.post('/login', loginUser);
 
 // // Get User Details
 // router.get('/:_id_user', getUserDetails);

@@ -2,26 +2,34 @@ import { User } from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { isValidEmail, isValidPhoneNumber } from '../utils/validations.js';
+import { Op } from 'sequelize';
 
 export const createUser = async (req, res) => {
-    const { name, last_name, email, phone_number, birth_date, gender, password_token } = req.body;
+    const { name, last_name, email, phone_number, birth_date, gender, password } = req.body;
 
     if (!await isValidEmail(email)) {
         return res.status(400).send({ message: "Invalid email format or email already in use" });
     }
 
     if (!isValidPhoneNumber(phone_number)) {
-        return res.status(400).send({ message: "Invalid phone number format or phone already in use" });
+        return res.status(400).send({ message: "Invalid phone number format" });
+    }
+    
+    const passwordRegex = /^(?=.*[a-záéíóúñ])(?=.*[A-ZÁÉÍÓÚÑ])(?=.*\d)[a-zA-ZáéíóúñÁÉÍÓÚÑ\d]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).send({ message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number." });
     }
 
     try {
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password_token, salt);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = await User.create({ name, last_name, email, phone_number, birth_date, gender, password_token: hashedPassword });
 
         // Generate a JWT token
         const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+
+        //await sendEmail(email, "Welcome to Our Platform", "Thank you for registering!");
 
         // Return the created user and JWT token
         res.status(200).send({ message: "User created successfully", user, token });
@@ -31,10 +39,40 @@ export const createUser = async (req, res) => {
     }
 };
 
+
+//Log In
+export const logIn = async (req,res) => {
+    const { identifier, password } = req.body; //User can login with email or phone number (identifier)
+
+    try {
+        // Email / Phone Number
+        const user = await User.findOne({ 
+            where: { 
+                [Op.or]: [{ email: identifier }, { phone_number: identifier }] 
+            } 
+        });
+
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password_token);
+        if (!isPasswordValid) {
+            return res.status(401).send({ message: "Invalid password" });
+        }
+
+        // Generate a JWT token
+        const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+        res.status(200).send({ message: "Login successful", user, token}); 
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+}
+
 // Update User
 export const updateUser = async (req, res) => {
     const _id_user = req.params._id_user;
-    const { name, last_name, email, phone_number, birth_date, gender, password_token } = req.body;
+    const { name, last_name, email, phone_number, birth_date, gender, password } = req.body;
 
     try {
         // Find the user
@@ -51,11 +89,11 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "Invalid phone number" });
         }
 
-        // Hash new password
+        // Hash new pw
         let hashedPassword;
-        if (password_token) {
+        if (password) {
             const salt = await bcrypt.genSalt(10);
-            hashedPassword = await bcrypt.hash(password_token, salt);
+            hashedPassword = await bcrypt.hash(password, salt);
         }
 
         // Update user
@@ -83,7 +121,6 @@ export const updateUser = async (req, res) => {
     }
 };
 
-//Log In
 
 //Get User Details
 
