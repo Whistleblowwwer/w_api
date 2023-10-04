@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(router);
 
 // Synchronize Sequelize with the database
-sequelize.sync()
+sequelize.sync()//{ force: true }
     .then(() => {
         app.listen(4000, () => {
             console.log('Listening on port 4000');

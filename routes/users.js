@@ -1,24 +1,43 @@
 import { Router } from "express";
-import { validateToken } from "../helpers/jwt.js"; // Import the validateToken middleware
-import // getUser,
-// createUser,
-// loginUser,
-// access_code,
-// resetPassword,
-// deactivateUser,
-// gtokens,
-"../controllers/users.js";
+import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
+import { 
+    createUser, 
+    logIn, 
+    updateUser, 
+    getUserDetails, 
+    likeReview, 
+    followUser,
+    followBusiness,
+    deactivateUser
+} from "../controllers/users.js";
+
 
 const router = Router();
 
-// Routes
-// router.get("/:id", validateToken, getUser);
-// router.post("/login", loginUser);
-// router.get("/access_code/:code", access_code);
-// router.post("/", createUser);
-// router.put("/resetPass", validateToken, resetPassword);
-// router.put("/:id", validateToken, updateUser);
-// router.delete("/deactivate/:_id_user", validateToken, deactivateUser);
-// router.get("/gtokens", gtokens);
+//----------User Routes-------------
+
+//Create User
+router.post('/', createUser);
+
+//Log In
+router.post('/login', logIn);
+
+//Update User
+router.put('/', validateToken, updateUser);
+
+//Get User Details
+router.get('/',validateToken, getUserDetails);
+
+//Like Review
+router.post('/reviews/:_id_review/like', validateToken, likeReview);
+
+//Follow User
+router.post('/:_id_followed/follow', validateToken, followUser);
+
+//Follow Business
+router.post('/business/:_id_business/follow', validateToken, followBusiness);
+
+//Deactivate User
+router.put('/deactivate', deactivateUser);
 
 export default router;

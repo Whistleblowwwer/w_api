@@ -17,30 +17,39 @@ export const User = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
-        phone: {
-            type: DataTypes.STRING(20),
-            allowNull: true,
-            unique: true,
-        },
         email: {
             type: DataTypes.STRING(255),
             allowNull: false,
             unique: true,
         },
-        profile_picture: {
-            type: DataTypes.STRING(255),
+        phone_number: {  
+            type: DataTypes.STRING(20),
+            allowNull: true,
+            unique: true,
         },
-        password: {
+        birth_date: {  
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        gender: {  
+            type: DataTypes.ENUM('M', 'F', 'O'),
+            allowNull: true,
+        },
+        password_token: {  
             type: DataTypes.STRING(255),
             allowNull: false,
+        },
+        profile_picture: {
+            type: DataTypes.STRING(255),
         },
         role: {
             type: DataTypes.ENUM("consumer", "admin"),
             allowNull: false,
-        },
+            defaultValue: "consumer"
+        },        
         is_valid: {
             type: DataTypes.BOOLEAN,
-            defaultValue: true, // Set a default value of true for new users
+            defaultValue: true,
         },
     },
     {
