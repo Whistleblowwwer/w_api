@@ -1,9 +1,15 @@
 import { User } from "../models/users.js";
+import { Review } from "../models/reviews.js";
+import { ReviewLikes } from "../models/reviewLikes.js";
+import { UserFollowers } from "../models/userFollowers.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
+// import { CommentLikes } from "../models/commentLikes.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { isValidEmail, isValidPhoneNumber } from '../utils/validations.js';
 import { Op } from 'sequelize';
 
+//Create new user
 export const createUser = async (req, res) => {
     const { name, last_name, email, phone_number, birth_date, gender, password } = req.body;
 
@@ -27,7 +33,7 @@ export const createUser = async (req, res) => {
         const user = await User.create({ name, last_name, email, phone_number, birth_date, gender, password_token: hashedPassword });
 
         // Generate a JWT token
-        const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '3d' });
 
         //await sendEmail(email, "Welcome to Our Platform", "Thank you for registering!");
 
@@ -64,7 +70,7 @@ export const logIn = async (req,res) => {
         }
 
         // Generate a JWT token
-        const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ _id_user: user._id_user }, process.env.TOKEN_SECRET, { expiresIn: '3d' });
 
         const loggedInUser = await User.findOne({ where: { _id_user: user._id_user }, attributes: { exclude: ['password_token'] } });// Excluding hashed pw
         res.status(200).send({ message: "Login successful", user: loggedInUser, token });
@@ -76,7 +82,7 @@ export const logIn = async (req,res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.params._id_user;
+    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
     const { name, last_name, email, phone_number, birth_date, gender, password } = req.body;
 
     try {
@@ -128,7 +134,7 @@ export const updateUser = async (req, res) => {
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
-    const _id_user = req.params._id_user;
+    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
 
     try {
         const user = await User.findOne({ where: { _id_user }, attributes: { exclude: ['password_token'] } }); // Excluding hashed pw
@@ -144,15 +150,116 @@ export const getUserDetails = async (req, res) => {
     }
 };
 
+export const likeReview = async (req, res) => {
+    const _id_review = req.params._id_review;
+    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
 
+    try {
+        // Check if the review exists
+        const review = await Review.findOne({ where: { _id_review } });
+        if (!review) {
+            return res.status(404).send({ message: "Review not found" });
+        }
 
-//Like Review
+        // Check if the user has already liked the review
+        const existingLike = await ReviewLikes.findOne({ where: { _id_review, _id_user } });
+
+        if (existingLike) {
+            // If the like exists, remove it
+            await existingLike.destroy();
+            return res.status(200).send({ message: "Review unliked successfully", liked: false });
+        } else {
+            // If the like doesn't exist, add it
+            await ReviewLikes.create({ _id_review, _id_user });
+            return res.status(200).send({ message: "Review liked successfully", liked: true });
+        }
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
 
 //Follow User
+export const followUser = async (req, res) => {
+    const _id_followed = req.params._id_followed; 
+    const _id_follower = req.user._id_user;
+
+    try {
+        const alreadyFollows = await UserFollowers.findOne({ 
+            where: {
+                [Op.and]: [{ _id_follower }, { _id_followed }]
+            }
+        });
+
+        if (alreadyFollows) {
+            //Delete the following status
+            await alreadyFollows.destroy();
+            return res.status(200).send({ message: "User unfollowed successfully", followed: false });
+        } else {
+            // If follower doesn't follow user followed
+            await UserFollowers.create({ _id_follower, _id_followed });
+            return res.status(200).send({ message: "User followed successfully", followed: true });
+        }
+
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).send({ message: "Invalid token" });
+        }
+        res.status(500).send({ error: error.message });
+    }
+};
 
 //Follow Business
+export const followBusiness = async(req, res) => {
+    const _id_business = req.params._id_business;
+    const _id_user = req.user._id_user;
+
+    try {
+        const alreadyFollows = await BusinessFollowers.findOne({ 
+            where: {
+                [Op.and]: [{ _id_user  }, { _id_business }]
+            }
+        });
+
+        if (alreadyFollows) {
+            //Delete the following status
+            await alreadyFollows.destroy();
+            return res.status(200).send({ message: "Business unfollowed successfully", followed: false });
+        } else {
+            // If follower doesn't follow user followed
+            await BusinessFollowers.create({ _id_user, _id_business });
+            return res.status(200).send({ message: "Business followed successfully", followed: true });
+        }
+
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).send({ message: "Invalid token" });
+        }
+        res.status(500).send({ error: error.message });
+    }
+
+};
 
 //Deactivate User
+export const deactivateUser = async (req, res) => {
+    const _id_user = req.user._id_user; // Get user ID from JWT token
 
+    try {
+        // Find the user by ID
+        const user = await User.findOne({ where: { _id_user } });
 
+        // If user not found, return a 404 error
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        // Update the user's isActive status to false
+        user.isActive = false;
+        await user.save();
+
+        return res.status(200).send({ message: "User deactivated successfully" });
+
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
 

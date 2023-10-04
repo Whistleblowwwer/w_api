@@ -1,6 +1,16 @@
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { createUser, logIn, updateUser, getUserDetails} from "../controllers/users.js";
+import { 
+    createUser, 
+    logIn, 
+    updateUser, 
+    getUserDetails, 
+    likeReview, 
+    followUser,
+    followBusiness,
+    deactivateUser
+} from "../controllers/users.js";
+
 
 const router = Router();
 
@@ -13,21 +23,21 @@ router.post('/', createUser);
 router.post('/login', logIn);
 
 //Update User
-router.put('/:_id_user', validateToken, updateUser);
+router.put('/', validateToken, updateUser);
 
 //Get User Details
-router.get('/:_id_user',validateToken, getUserDetails);
+router.get('/',validateToken, getUserDetails);
 
 //Like Review
-// router.post('/reviews/:_id_review/like', likeReview);
+router.post('/reviews/:_id_review/like', validateToken, likeReview);
 
 //Follow User
-// router.post('/:_id_user/follow', followUser);
+router.post('/:_id_followed/follow', validateToken, followUser);
 
 //Follow Business
-// router.post('/business/:_id_business/follow', followBusiness);
+router.post('/business/:_id_business/follow', validateToken, followBusiness);
 
 //Deactivate User
-// router.put('/:_id_user/deactivate', deactivateUser);
+router.put('/deactivate', deactivateUser);
 
 export default router;
