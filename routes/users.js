@@ -8,7 +8,9 @@ import {
     likeReview, 
     followUser,
     followBusiness,
-    deactivateUser
+    deactivateUser,
+    VerifySMS,
+    sendSMS
 } from "../controllers/users.js";
 
 
@@ -39,5 +41,9 @@ router.post('/business/:_id_business/follow', validateToken, followBusiness);
 
 //Deactivate User
 router.put('/deactivate', deactivateUser);
+
+router.get('/sendsms', sendSMS);
+
+router.get('/verifysms', VerifySMS);
 
 export default router;
