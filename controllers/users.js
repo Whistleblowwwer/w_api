@@ -150,6 +150,7 @@ export const getUserDetails = async (req, res) => {
     }
 };
 
+//Like Review
 export const likeReview = async (req, res) => {
     const _id_review = req.params._id_review;
     const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
