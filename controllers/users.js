@@ -21,23 +21,17 @@ export const createUser = async (req, res) => {
         password,
     } = req.body;
 
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+        return res.status(404).send({ message: "User already in use" });
+    }
+
     if (!(await isValidEmail(email))) {
-        return res
-            .status(400)
-            .send({ message: "Invalid email format or email already in use" });
+        return res.status(400).send({ message: "Invalid email format" });
     }
 
     if (!isValidPhoneNumber(phone_number)) {
         return res.status(400).send({ message: "Invalid phone number format" });
-    }
-
-    const passwordRegex =
-        /^(?=.*[a-záéíóúñ])(?=.*[A-ZÁÉÍÓÚÑ])(?=.*\d)[a-zA-ZáéíóúñÁÉÍÓÚÑ\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
-        return res.status(400).send({
-            message:
-                "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
-        });
     }
 
     try {
@@ -61,16 +55,17 @@ export const createUser = async (req, res) => {
             { expiresIn: "3d" }
         );
 
-        //await sendEmail(email, "Welcome to Our Platform", "Thank you for registering!");
+        //TODO: Add email distribution
 
         // Return the created user and JWT token
         const createdUser = await User.findOne({
             where: { _id_user: user._id_user },
-            attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
+            attributes: { exclude: password_token },
+        });
+
         res.status(200).send({
             message: "User created successfully",
-            user: createdUser,
+            createdUser,
             token,
         });
     } catch (error) {
@@ -80,13 +75,12 @@ export const createUser = async (req, res) => {
 
 //Log In
 export const logIn = async (req, res) => {
-    const { identifier, password } = req.body; //User can login with email or phone number (identifier)
+    const { client_email, client_password } = req.body;
 
     try {
-        // Email / Phone Number
         const user = await User.findOne({
             where: {
-                [Op.or]: [{ email: identifier }, { phone_number: identifier }],
+                email: client_email,
             },
         });
 
@@ -95,7 +89,7 @@ export const logIn = async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(
-            password,
+            client_password,
             user.password_token
         );
         if (!isPasswordValid) {
@@ -109,13 +103,8 @@ export const logIn = async (req, res) => {
             { expiresIn: "3d" }
         );
 
-        const loggedInUser = await User.findOne({
-            where: { _id_user: user._id_user },
-            attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
         res.status(200).send({
             message: "Login successful",
-            user: loggedInUser,
             token,
         });
     } catch (error) {
@@ -126,15 +115,8 @@ export const logIn = async (req, res) => {
 // Update User
 export const updateUser = async (req, res) => {
     const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
-    const {
-        name,
-        last_name,
-        email,
-        phone_number,
-        birth_date,
-        gender,
-        password,
-    } = req.body;
+    const { name, last_name, email, phone_number, birth_date, gender } =
+        req.body;
 
     try {
         // Find the user
@@ -153,13 +135,6 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "Invalid phone number" });
         }
 
-        // Hash new pw
-        let hashedPassword;
-        if (password) {
-            const salt = await bcrypt.genSalt(10);
-            hashedPassword = await bcrypt.hash(password, salt);
-        }
-
         // Update user
         await User.update(
             {
@@ -169,7 +144,6 @@ export const updateUser = async (req, res) => {
                 phone_number,
                 birth_date,
                 gender,
-                password_token: hashedPassword || user.password_token,
             },
             { where: { _id_user } }
         );
@@ -201,7 +175,7 @@ export const getUserDetails = async (req, res) => {
             return res.status(400).send({ message: "User not found" });
         }
 
-        res.status(200).send({ message: "User details", user });
+        res.status(200).send({ message: "User found", user });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
@@ -313,19 +287,16 @@ export const followBusiness = async (req, res) => {
 
 //Deactivate User
 export const deactivateUser = async (req, res) => {
-    const _id_user = req.user._id_user; // Get user ID from JWT token
+    const _id_user = req.user._id_user;
 
     try {
-        // Find the user by ID
         const user = await User.findOne({ where: { _id_user } });
 
-        // If user not found, return a 404 error
         if (!user) {
             return res.status(404).send({ message: "User not found" });
         }
 
-        // Update the user's isActive status to false
-        user.isActive = false;
+        user.is_valid = false;
         await user.save();
 
         return res

@@ -29,11 +29,11 @@ export const User = sequelize.define(
         },
         birth_date: {
             type: DataTypes.DATE,
-            allowNull: true,
+            allowNull: false,
         },
         gender: {
             type: DataTypes.ENUM("M", "F", "O"),
-            allowNull: true,
+            allowNull: false,
         },
         password_token: {
             type: DataTypes.STRING(255),
@@ -41,6 +41,7 @@ export const User = sequelize.define(
         },
         profile_picture: {
             type: DataTypes.STRING(255),
+            allowNull: true,
         },
         role: {
             type: DataTypes.ENUM("consumer", "admin"),

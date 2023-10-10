@@ -37,6 +37,6 @@ router.post("/:_id_followed/follow", validateToken, followUser);
 router.post("/business/:_id_business/follow", validateToken, followBusiness);
 
 //Deactivate User
-router.put("/deactivate", deactivateUser);
+router.patch("/deactivate", deactivateUser);
 
 export default router;
