@@ -15,15 +15,15 @@ export const Business = sequelize.define(
         },
         address: {
             type: DataTypes.TEXT,
-            allowNull: false,
+            allowNull: true,
         },
         state: {
             type: DataTypes.STRING(255),
-            allowNull: false,
+            allowNull: true,
         },
         city: {
             type: DataTypes.STRING(255),
-            allowNull: false,
+            allowNull: true,
         },
         is_valid: {
             type: DataTypes.BOOLEAN,
@@ -32,7 +32,7 @@ export const Business = sequelize.define(
     },
     {
         tableName: "businesses",
-        timestamps: true, 
+        timestamps: true,
     }
 );
 

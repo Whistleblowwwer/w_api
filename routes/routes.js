@@ -7,7 +7,7 @@ const router = Router();
 
 // Main Routes
 router.use("/users", userRoute);
-router.use("/business", businessRoute)
-router.use("/reviews", reviewRoute)
+router.use("/business", businessRoute);
+router.use("/reviews", reviewRoute);
 
 export default router;

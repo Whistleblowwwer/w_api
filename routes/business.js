@@ -17,6 +17,6 @@ router.post('/', validateToken, createBusiness);
 router.put('/:_id_business', validateToken, updateBusiness);
 
 //Delete Business
-router.delete('/:_id_business', validateToken, deleteBusiness);
+router.patch('/:_id_business', validateToken, deleteBusiness);
 
 export default router;
