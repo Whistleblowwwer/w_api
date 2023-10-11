@@ -1,17 +1,21 @@
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
 import { Review } from "../models/reviews.js";
-// import { ReviewLikes } from "../models/reviewLikes.js";
-// import { Op } from 'sequelize';
 
-//Create Review
+// Create Review
 export const createReview = async (req, res) => {
   const _id_business = req.params._id_business;
   const _id_user = req.user._id_user;
   const { content } = req.body;
 
-  if (!_id_business || !_id_user || !content) {
-    return res.status(400).send({ message: "Missing required fields" });
+  if (!_id_business) {
+    return res.status(400).send({ message: "Missing business ID" });
+  }
+  if (!_id_user) {
+    return res.status(400).send({ message: "Missing user ID" });
+  }
+  if (!content) {
+    return res.status(400).send({ message: "Missing content for the review" });
   }
 
   try {
