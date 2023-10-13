@@ -19,26 +19,36 @@ export const createReview = async (req, res) => {
   }
 
   try {
-    const business = await Business.findByPk(_id_business);
-    if (!business) {
+    const businessReviewed = await Business.findByPk(_id_business);
+    if (!businessReviewed) {
       return res.status(404).send({ message: "Business not found" });
     }
 
-    const user = await User.findByPk(_id_user);
-    if (!user) {
+    const userCreatingReview = await User.findByPk(_id_user);
+    if (!userCreatingReview) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    const review = await Review.create({
+    const createdReview = await Review.create({
       content,
       _id_business,
       _id_user,
     });
 
-    return res
-      .status(201)
-      .send({ message: "Review created successfully", review });
+    return res.status(201).send({ 
+      message: "Review created successfully", 
+      review: createdReview 
+    });
   } catch (error) {
-    return res.status(500).send({ message: "Internal server error" });
+    if (error instanceof Sequelize.ValidationError) {
+      return res
+        .status(400)
+        .send({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+    } else {
+      return res.status(500).send({ message: "Internal server error" });
+    }
   }
 };
