@@ -21,9 +21,9 @@ export const createUser = async (req, res) => {
         password,
     } = req.body;
 
-    const user = await User.findOne({ where: { email } });
-    if (user) {
-        return res.status(404).send({ message: "User already in use" });
+    const userMail = await User.findOne({ where: { email } });
+    if (userMail) {
+        return res.status(404).send({ message: "Email already in use" });
     }
 
     if (!(await isValidEmail(email))) {
@@ -32,6 +32,11 @@ export const createUser = async (req, res) => {
 
     if (!isValidPhoneNumber(phone_number)) {
         return res.status(400).send({ message: "Invalid phone number format" });
+    }
+
+    const userPhone = await User.findOne({ where: { phone_number } });
+    if (userPhone) {
+        return res.status(404).send({ message: "Phone number already in use" });
     }
 
     try {
@@ -60,7 +65,7 @@ export const createUser = async (req, res) => {
         // Return the created user and JWT token
         const createdUser = await User.findOne({
             where: { _id_user: user._id_user },
-            attributes: { exclude: password_token },
+            attributes: { exclude: user.password_token },
         });
 
         res.status(200).send({
@@ -92,6 +97,7 @@ export const logIn = async (req, res) => {
             client_password,
             user.password_token
         );
+
         if (!isPasswordValid) {
             return res.status(401).send({ message: "Invalid password" });
         }
@@ -114,7 +120,7 @@ export const logIn = async (req, res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
+    const _id_user = req.user._id_user;
     const { name, last_name, email, phone_number, birth_date, gender } =
         req.body;
 
@@ -163,13 +169,13 @@ export const updateUser = async (req, res) => {
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
+    const _id_user = req.user._id_user;
 
     try {
         const user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
+        });
 
         if (!user) {
             return res.status(400).send({ message: "User not found" });
