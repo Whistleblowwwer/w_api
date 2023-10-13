@@ -115,8 +115,13 @@ export const logIn = async (req, res) => {
 // Update User
 export const updateUser = async (req, res) => {
     const _id_user = req.user._id_user; 
-    const { name, last_name, email, phone_number, birth_date, gender } =
-        req.body;
+    const { name, 
+            last_name, 
+            email, 
+            phone_number, 
+            birth_date, 
+            gender 
+        } = req.body;
 
     try {
         // Find the user
@@ -301,5 +306,67 @@ export const deactivateUser = async (req, res) => {
             .send({ message: "User deactivated successfully" });
     } catch (error) {
         res.status(500).send({ error: error.message });
+    }
+};
+
+//Search User
+export const searchUser = async (req, res) => {
+    const searchTerm = req.query.searchTerm;
+
+    let nameCriteria = {};
+    let lastNameCriteria = {};
+
+    if (searchTerm.includes(' ')) {
+        const [providedName, providedLastName] = searchTerm.split(' '); 
+        nameCriteria.name = { 
+            [Op.like]: `%${providedName}%` 
+        };
+        lastNameCriteria.last_name = { 
+            [Op.like]: `%${providedLastName}%` 
+        };
+    } else {
+        nameCriteria.name = {
+            [Op.like]: `%${searchTerm}%` 
+        };
+        lastNameCriteria.last_name = { 
+            [Op.like]: `%${searchTerm}%` 
+        };
+    }
+
+    try {
+        const similarUsersByName = await User.findAll({
+            where: nameCriteria,
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        const similarUsersByLastName = await User.findAll({
+            where: lastNameCriteria, 
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        //Combine both results and Remove duplicates 
+        const userMap = {};
+        [...similarUsersByName, ...similarUsersByLastName].forEach(user => {
+            userMap[user._id_user] = user;
+        });
+        const combinedUsers = Object.values(userMap);
+
+        if (combinedUsers.length === 0) {
+            return res.status(404).send({ message: "No users found matching the criteria" });
+        }
+
+        return res.status(200).send({
+            message: "Successfully found users",
+            users: combinedUsers
+        });
+    } catch (error) {
+        if (error instanceof Sequelize.ValidationError) {
+            return res.status(400).send({
+                message: "Validation error during user search",
+                errors: error.errors
+            });
+        } else {
+            return res.status(500).send({ message: "Internal Server Error during user search" });
+        }
     }
 };
