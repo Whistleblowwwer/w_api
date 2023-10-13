@@ -6,6 +6,7 @@ import { BusinessFollowers } from "./businessFollowers.js";
 import { UserFollowers } from "./userFollowers.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { CommentLikes } from "./commentLikes.js";
+import { ReviewImages } from "./reviewImages.js";
 
 // Associations
 
@@ -70,3 +71,9 @@ Comment.belongsToMany(User, {
     foreignKey: "_id_comment",
     otherKey: "_id_user",
 });
+
+// 9. Un review puede tener varias imágenes
+Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
+
+// 10. Una imagen de review pertenece a un review
+ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });

@@ -25,6 +25,10 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: true,
         },
+        profile_picture_url: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
