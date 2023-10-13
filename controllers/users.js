@@ -11,35 +11,57 @@ import { Op } from "sequelize";
 
 //Create new user
 export const createUser = async (req, res) => {
-    const {
-        name,
-        last_name,
-        email,
-        phone_number,
-        birth_date,
-        gender,
-        password,
-    } = req.body;
-
-    const userMail = await User.findOne({ where: { email } });
-    if (userMail) {
-        return res.status(404).send({ message: "Email already in use" });
-    }
-
-    if (!(await isValidEmail(email))) {
-        return res.status(400).send({ message: "Invalid email format" });
-    }
-
-    if (!isValidPhoneNumber(phone_number)) {
-        return res.status(400).send({ message: "Invalid phone number format" });
-    }
-
-    const userPhone = await User.findOne({ where: { phone_number } });
-    if (userPhone) {
-        return res.status(404).send({ message: "Phone number already in use" });
-    }
-
     try {
+        const {
+            name,
+            last_name,
+            email,
+            phone_number,
+            birth_date,
+            gender,
+            password,
+        } = req.body;
+
+        // Check for empty fields
+        const requiredFields = [
+            "name",
+            "last_name",
+            "email",
+            "phone_number",
+            "birth_date",
+            "gender",
+            "password",
+        ];
+        for (const field of requiredFields) {
+            if (!req.body[field]) {
+                return res
+                    .status(400)
+                    .send({ message: `Missing ${field} field` });
+            }
+        }
+
+        const userMail = await User.findOne({ where: { email } });
+        if (userMail) {
+            return res.status(403).send({ message: "Email already in use" });
+        }
+
+        if (!(await isValidEmail(email))) {
+            return res.status(400).send({ message: "Invalid email format" });
+        }
+
+        if (!isValidPhoneNumber(phone_number)) {
+            return res
+                .status(400)
+                .send({ message: "Invalid phone number format" });
+        }
+
+        const userPhone = await User.findOne({ where: { phone_number } });
+        if (userPhone) {
+            return res
+                .status(403)
+                .send({ message: "Phone number already in use" });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -70,11 +92,24 @@ export const createUser = async (req, res) => {
 
         res.status(200).send({
             message: "User created successfully",
-            createdUser,
+            user: createdUser,
             token,
         });
     } catch (error) {
-        res.status(500).send({ error: error.message });
+        if (error instanceof Sequelize.ValidationError) {
+            // Handle Sequelize validation errors
+            return res
+                .status(400)
+                .send({ message: "Validation error", errors: error.errors });
+        } else if (error instanceof Error) {
+            // Handle other types of errors
+            return res.status(500).send({ message: "Internal Server Error" });
+        } else {
+            // Catch any other unexpected errors
+            return res
+                .status(500)
+                .send({ message: "An unexpected error occurred" });
+        }
     }
 };
 
