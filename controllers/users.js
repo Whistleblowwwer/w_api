@@ -11,6 +11,7 @@ import { Op } from "sequelize";
 
 //Create new user
 export const createUser = async (req, res) => {
+
     const {
         name,
         last_name,
@@ -35,6 +36,56 @@ export const createUser = async (req, res) => {
     }
 
     try {
+        const {
+            name,
+            last_name,
+            email,
+            phone_number,
+            birth_date,
+            gender,
+            password,
+        } = req.body;
+
+        // Check for empty fields
+        const requiredFields = [
+            "name",
+            "last_name",
+            "email",
+            "phone_number",
+            "birth_date",
+            "gender",
+            "password",
+        ];
+        for (const field of requiredFields) {
+            if (!req.body[field]) {
+                return res
+                    .status(400)
+                    .send({ message: `Missing ${field} field` });
+            }
+        }
+
+        const userMail = await User.findOne({ where: { email } });
+        if (userMail) {
+            return res.status(403).send({ message: "Email already in use" });
+        }
+
+        if (!(await isValidEmail(email))) {
+            return res.status(400).send({ message: "Invalid email format" });
+        }
+
+        if (!isValidPhoneNumber(phone_number)) {
+            return res
+                .status(400)
+                .send({ message: "Invalid phone number format" });
+        }
+
+        const userPhone = await User.findOne({ where: { phone_number } });
+        if (userPhone) {
+            return res
+                .status(403)
+                .send({ message: "Phone number already in use" });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -60,16 +111,31 @@ export const createUser = async (req, res) => {
         // Return the created user and JWT token
         const createdUser = await User.findOne({
             where: { _id_user: user._id_user },
-            attributes: { exclude: ['password_token'] },
+
+            attributes: { exclude: user.password_token },
+
         });
 
         res.status(200).send({
             message: "User created successfully",
-            createdUser,
+            user: createdUser,
             token,
         });
     } catch (error) {
-        res.status(500).send({ error: error.message });
+        if (error instanceof Sequelize.ValidationError) {
+            // Handle Sequelize validation errors
+            return res
+                .status(400)
+                .send({ message: "Validation error", errors: error.errors });
+        } else if (error instanceof Error) {
+            // Handle other types of errors
+            return res.status(500).send({ message: "Internal Server Error" });
+        } else {
+            // Catch any other unexpected errors
+            return res
+                .status(500)
+                .send({ message: "An unexpected error occurred" });
+        }
     }
 };
 
@@ -92,6 +158,7 @@ export const logIn = async (req, res) => {
             client_password,
             user.password_token
         );
+
         if (!isPasswordValid) {
             return res.status(401).send({ message: "Invalid password" });
         }
@@ -123,6 +190,7 @@ export const updateUser = async (req, res) => {
             gender 
         } = req.body;
 
+
     try {
         // Find the user
         let user = await User.findOne({ where: { _id_user } });
@@ -151,6 +219,7 @@ export const updateUser = async (req, res) => {
             },
             { where: { _id_user } }
         );
+      
         user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
@@ -165,12 +234,13 @@ export const updateUser = async (req, res) => {
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
-    const _id_user = req.user._id_user; 
+    const _id_user = req.user._id_user;
+  
     try {
         const user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        }); 
+        });
 
         if (!user) {
             return res.status(400).send({ message: "User not found" });
@@ -309,6 +379,7 @@ export const deactivateUser = async (req, res) => {
     }
 };
 
+
 // Search User
 export const searchUser = async (req, res) => {
     const searchTerm = req.query.searchTerm;
@@ -370,3 +441,4 @@ export const searchUser = async (req, res) => {
         }
     }
 };
+
