@@ -309,47 +309,47 @@ export const deactivateUser = async (req, res) => {
     }
 };
 
-//Search User
+// Search User
 export const searchUser = async (req, res) => {
     const searchTerm = req.query.searchTerm;
 
-    let nameCriteria = {};
-    let lastNameCriteria = {};
+    let nameSearchCriteria = {};
+    let lastNameSearchCriteria = {};
 
     if (searchTerm.includes(' ')) {
         const [providedName, providedLastName] = searchTerm.split(' '); 
-        nameCriteria.name = { 
+        nameSearchCriteria.name = { 
             [Op.like]: `%${providedName}%` 
         };
-        lastNameCriteria.last_name = { 
+        lastNameSearchCriteria.last_name = { 
             [Op.like]: `%${providedLastName}%` 
         };
     } else {
-        nameCriteria.name = {
+        // If only one term is provided, search in both name and last name
+        nameSearchCriteria.name = {
             [Op.like]: `%${searchTerm}%` 
         };
-        lastNameCriteria.last_name = { 
+        lastNameSearchCriteria.last_name = { 
             [Op.like]: `%${searchTerm}%` 
         };
     }
 
     try {
         const similarUsersByName = await User.findAll({
-            where: nameCriteria,
+            where: nameSearchCriteria,
             attributes: { exclude: ["phone_number","password_token"] }
         });
 
         const similarUsersByLastName = await User.findAll({
-            where: lastNameCriteria, 
+            where: lastNameSearchCriteria, 
             attributes: { exclude: ["phone_number","password_token"] }
         });
 
-        //Combine both results and Remove duplicates 
-        const userMap = {};
+        const uniqueUsersMap = {};
         [...similarUsersByName, ...similarUsersByLastName].forEach(user => {
-            userMap[user._id_user] = user;
+            uniqueUsersMap[user._id_user] = user;
         });
-        const combinedUsers = Object.values(userMap);
+        const combinedUsers = Object.values(uniqueUsersMap);
 
         if (combinedUsers.length === 0) {
             return res.status(404).send({ message: "No users found matching the criteria" });
