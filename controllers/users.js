@@ -11,6 +11,30 @@ import { Op } from "sequelize";
 
 //Create new user
 export const createUser = async (req, res) => {
+
+    const {
+        name,
+        last_name,
+        email,
+        phone_number,
+        birth_date,
+        gender,
+        password,
+    } = req.body;
+
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+        return res.status(404).send({ message: "User already in use" });
+    }
+
+    if (!(await isValidEmail(email))) {
+        return res.status(400).send({ message: "Invalid email format" });
+    }
+
+    if (!isValidPhoneNumber(phone_number)) {
+        return res.status(400).send({ message: "Invalid phone number format" });
+    }
+
     try {
         const {
             name,
@@ -87,7 +111,9 @@ export const createUser = async (req, res) => {
         // Return the created user and JWT token
         const createdUser = await User.findOne({
             where: { _id_user: user._id_user },
+
             attributes: { exclude: user.password_token },
+
         });
 
         res.status(200).send({
@@ -155,9 +181,15 @@ export const logIn = async (req, res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.user._id_user;
-    const { name, last_name, email, phone_number, birth_date, gender } =
-        req.body;
+    const _id_user = req.user._id_user; 
+    const { name, 
+            last_name, 
+            email, 
+            phone_number, 
+            birth_date, 
+            gender 
+        } = req.body;
+
 
     try {
         // Find the user
@@ -176,7 +208,6 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "Invalid phone number" });
         }
 
-        // Update user
         await User.update(
             {
                 name,
@@ -188,12 +219,11 @@ export const updateUser = async (req, res) => {
             },
             { where: { _id_user } }
         );
-
-        // Get the updated user details
+      
         user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
+        }); 
 
         res.status(200).send({ message: "User updated successfully", user });
     } catch (error) {
@@ -205,7 +235,7 @@ export const updateUser = async (req, res) => {
 //Get User Details
 export const getUserDetails = async (req, res) => {
     const _id_user = req.user._id_user;
-
+  
     try {
         const user = await User.findOne({
             where: { _id_user },
@@ -222,9 +252,10 @@ export const getUserDetails = async (req, res) => {
     }
 };
 
+//Like Review
 export const likeReview = async (req, res) => {
     const _id_review = req.params._id_review;
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
+    const _id_user = req.user._id_user; 
 
     try {
         // Check if the review exists
@@ -347,3 +378,67 @@ export const deactivateUser = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
+
+// Search User
+export const searchUser = async (req, res) => {
+    const searchTerm = req.query.searchTerm;
+
+    let nameSearchCriteria = {};
+    let lastNameSearchCriteria = {};
+
+    if (searchTerm.includes(' ')) {
+        const [providedName, providedLastName] = searchTerm.split(' '); 
+        nameSearchCriteria.name = { 
+            [Op.like]: `%${providedName}%` 
+        };
+        lastNameSearchCriteria.last_name = { 
+            [Op.like]: `%${providedLastName}%` 
+        };
+    } else {
+        // If only one term is provided, search in both name and last name
+        nameSearchCriteria.name = {
+            [Op.like]: `%${searchTerm}%` 
+        };
+        lastNameSearchCriteria.last_name = { 
+            [Op.like]: `%${searchTerm}%` 
+        };
+    }
+
+    try {
+        const similarUsersByName = await User.findAll({
+            where: nameSearchCriteria,
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        const similarUsersByLastName = await User.findAll({
+            where: lastNameSearchCriteria, 
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        const uniqueUsersMap = {};
+        [...similarUsersByName, ...similarUsersByLastName].forEach(user => {
+            uniqueUsersMap[user._id_user] = user;
+        });
+        const combinedUsers = Object.values(uniqueUsersMap);
+
+        if (combinedUsers.length === 0) {
+            return res.status(404).send({ message: "No users found matching the criteria" });
+        }
+
+        return res.status(200).send({
+            message: "Successfully found users",
+            users: combinedUsers
+        });
+    } catch (error) {
+        if (error instanceof Sequelize.ValidationError) {
+            return res.status(400).send({
+                message: "Validation error during user search",
+                errors: error.errors
+            });
+        } else {
+            return res.status(500).send({ message: "Internal Server Error during user search" });
+        }
+    }
+};
+

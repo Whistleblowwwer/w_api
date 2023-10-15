@@ -15,3 +15,4 @@ export const ReviewLikes = sequelize.define(
         timestamps: true,
     }
 );
+

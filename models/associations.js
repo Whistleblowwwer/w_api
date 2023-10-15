@@ -8,6 +8,7 @@ import { ReviewLikes } from "./reviewLikes.js";
 import { CommentLikes } from "./commentLikes.js";
 import { ReviewImages } from "./reviewImages.js";
 
+
 // Associations
 
 // 1. Un user puede seguir a otro usuario

@@ -15,3 +15,4 @@ export const CommentLikes = sequelize.define(
         timestamps: true,
     }
 );
+
