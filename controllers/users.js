@@ -12,29 +12,6 @@ import { Op } from "sequelize";
 //Create new user
 export const createUser = async (req, res) => {
 
-    const {
-        name,
-        last_name,
-        email,
-        phone_number,
-        birth_date,
-        gender,
-        password,
-    } = req.body;
-
-    const user = await User.findOne({ where: { email } });
-    if (user) {
-        return res.status(404).send({ message: "User already in use" });
-    }
-
-    if (!(await isValidEmail(email))) {
-        return res.status(400).send({ message: "Invalid email format" });
-    }
-
-    if (!isValidPhoneNumber(phone_number)) {
-        return res.status(400).send({ message: "Invalid phone number format" });
-    }
-
     try {
         const {
             name,

@@ -3,7 +3,8 @@ import { validateToken } from "../middlewares/jwt.js"; // Import the validateTok
 import { 
     createBusiness,
     updateBusiness,
-    deleteBusiness
+    deleteBusiness,
+    searchBusiness
 } from "../controllers/business.js";
 
 const router = Router();
@@ -18,5 +19,8 @@ router.put('/:_id_business', validateToken, updateBusiness);
 
 //Delete Business
 router.patch('/:_id_business', validateToken, deleteBusiness);
+
+//Search Business
+router.get("/search", validateToken, searchBusiness);
 
 export default router;

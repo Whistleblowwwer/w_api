@@ -1,4 +1,7 @@
 import { Business } from "../models/business.js";
+import { Review } from "../models/reviews.js";
+import { Op } from "sequelize";
+import Sequelize from "sequelize";
 
 // Create Business
 export const createBusiness = async (req, res) => {
@@ -81,7 +84,7 @@ export const updateBusiness = async (req, res) => {
 
     return res.status(200).send({
       message: "Business updated successfully",
-      businessUpdated: businessToUpdate,
+      business: businessToUpdate,
     });
   } catch (error) {
     if (error instanceof Sequelize.ValidationError) {
@@ -128,3 +131,67 @@ export const deleteBusiness = async (req, res) => {
     }
   }
 };
+
+// Search Business
+export const searchBusiness = async (req, res) => {
+  const { 
+    name, 
+    address, 
+    state, 
+    city,
+    reviewCount 
+  } = req.query;
+
+  let searchCriteria = {};
+
+  if (name) {
+    searchCriteria.name = { 
+      [Op.like]: `%${name}%`
+    };
+  }
+  if (address) {
+    searchCriteria.address = {
+      [Op.like]: `%${address}%` 
+    };
+  }
+  if (state) {
+    searchCriteria.state = {
+      [Op.like]: `%${state}%`
+    };
+  }
+  if (city) {
+    searchCriteria.city = {
+      [Op.like]: `%${city}%`
+    };
+  }
+
+  try {
+    const businesses = await Business.findAll({
+      where: searchCriteria,
+      include: Review
+    });
+
+    if (reviewCount) {
+      const filteredBusinesses = businesses.filter(business => 
+        business.Reviews && business.Reviews.length >= reviewCount
+      );
+      return res.status(200).send({ businesses: filteredBusinesses });
+    }
+    
+    return res.status(200).send({ businesses });
+  } catch (error) {
+    if (error instanceof Sequelize.ValidationError) {
+      return res.status(400).send({ 
+        message: "Validation error", 
+        errors: error.errors 
+      });
+    } else {
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+};
+
+
+
+
+
