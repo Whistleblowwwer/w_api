@@ -11,4 +11,10 @@ const router = Router();
 //Create Review
 router.post('/:_id_business', validateToken, createReview)
 
+//Get Review
+
+//Update Review
+
+//Delete Review
+
 export default router;
