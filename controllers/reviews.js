@@ -4,9 +4,8 @@ import { Review } from "../models/reviews.js";
 
 // Create Review
 export const createReview = async (req, res) => {
-  const _id_business = req.params._id_business;
+  const { content, _id_business } = req.body; 
   const _id_user = req.user._id_user;
-  const { content } = req.body;
 
   if (!_id_business) {
     return res.status(400).send({ message: "Missing business ID" });
@@ -49,6 +48,123 @@ export const createReview = async (req, res) => {
         });
     } else {
       return res.status(500).send({ message: "Internal server error" });
+    }
+  }
+};
+
+// Get Review
+export const getReview = async (req, res) => {
+  const _id_review = req.params._id_review;
+
+  try {
+    const review = await Review.findByPk(_id_review);
+
+    if (!review) {
+      return res.status(404).send({ message: "Review not found" });
+    }
+
+    return res.status(200).send({ 
+      message: "Review found successfully", 
+      review
+    });
+
+  } catch (error) {
+    return res.status(500).send({ message: "Internal server error", error: error.message });
+  }
+};
+
+// Get Reviews of a Business
+export const getReviewsForBusiness = async (req, res) => {
+  const _id_business = req.params._id_business;
+
+  try {
+    const reviewsOfBusiness = await Review.findAll({
+      where: { _id_business },
+      order: [['createdAt', 'DESC']] 
+    });
+
+    if (reviewsOfBusiness.length === 0) {
+      return res.status(404).send({ message: "No reviews found for this business" });
+    }
+
+    return res.status(200).send({ 
+      message: "Reviews retrieved successfully", 
+      reviews: reviewsOfBusiness
+    });
+
+  } catch (error) {
+    return res.status(500).send({ message: "Internal server error", error: error.message });
+  }
+};
+
+
+// Update Review
+export const updateReview = async(req, res) => {
+  const { content } = req.body;
+
+  const _id_review = req.params._id_review;
+  const _id_user = req.user._id_user;
+
+  try{
+    const reviewToUpdate = await Review.findOne({
+      where: { _id_review },
+    });
+
+    if (!reviewToUpdate) {
+      return res.status(404).send({ message: "Review not found" });
+    }
+
+    if (reviewToUpdate._id_user !== _id_user) {
+      return res.status(403).send({ message: "You are not authorized to update this review" });
+    }
+
+    reviewToUpdate.content = content;
+    await reviewToUpdate.save();
+
+    return res.status(200).send({
+      message: "Review updated successfully",
+      review: reviewToUpdate,
+    });
+    
+  }catch (error) {
+    if (error instanceof Sequelize.ValidationError) {
+      return res.status(400).send({ 
+        message: "Validation error", 
+        errors: error.errors 
+      });
+    } else {
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+};
+
+// Delete Review
+export const deleteReview = async(req, res) => {
+  const _id_review = req.params._id_review;
+  const _id_user = req.user._id_user;
+
+  try{
+    const deletedReview = await Review.findOne({ where: { _id_review } })
+    if (!deletedReview) {
+      return res.status(404).send({ message: "Review not found" });
+    }
+
+    if (deletedReview._id_user !== _id_user) {
+      return res.status(403).send({ message: "You are not authorized to delete this review"});
+    }
+
+    deletedReview.is_valid = false;
+    await deletedReview.save();
+
+    return res.status(200).send({ message: "Review deleted successfully" });
+  } catch (error) {
+    if (error instanceof Sequelize.ValidationError) {
+      return res.status(400).send({ 
+        message: "Validation error", 
+        errors: error.errors 
+      });
+    } else {
+      return res.status(500).send({ message: "Internal Server Error" });
     }
   }
 };

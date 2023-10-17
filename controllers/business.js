@@ -190,7 +190,7 @@ export const deleteBusiness = async (req, res) => {
     deletedBusiness.is_valid = false;
     await deletedBusiness.save();
 
-    return res.status(200).send({ message: "Business marked as invalid successfully" });
+    return res.status(200).send({ message: "Business deleted successfully" });
   } catch (error) {
     if (error instanceof Sequelize.ValidationError) {
       return res.status(400).send({ 
