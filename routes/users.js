@@ -1,46 +1,51 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { 
-    createUser, 
-    logIn, 
-    updateUser, 
-    getUserDetails, 
-    likeReview, 
+import { validateToken } from "../middlewares/jwt.js";
+import {
+    createUser,
+    logIn,
+    updateUser,
+    getUserDetails,
+    likeReview,
     followUser,
     followBusiness,
     deactivateUser,
     VerifySMS,
-    sendSMS
+    sendSMS,
+    searchUser
 } from "../controllers/users.js";
-
 
 const router = Router();
 
 //----------User Routes-------------
 
 //Create User
-router.post('/', createUser);
+router.post("/", createUser);
 
 //Log In
-router.post('/login', logIn);
+router.post("/login", logIn);
 
 //Update User
-router.put('/', validateToken, updateUser);
+router.put("/", validateToken, updateUser);
 
 //Get User Details
-router.get('/',validateToken, getUserDetails);
+router.get("/", validateToken, getUserDetails);
 
 //Like Review
-router.post('/reviews/:_id_review/like', validateToken, likeReview);
+router.post("/reviews/:_id_review/like", validateToken, likeReview);
 
 //Follow User
-router.post('/:_id_followed/follow', validateToken, followUser);
+router.post("/:_id_followed/follow", validateToken, followUser);
 
 //Follow Business
-router.post('/business/:_id_business/follow', validateToken, followBusiness);
+router.post("/business/:_id_business/follow", validateToken, followBusiness);
 
 //Deactivate User
-router.put('/deactivate', deactivateUser);
+router.patch("/deactivate", deactivateUser);
+
+//Search User 
+router.get("/search", validateToken, searchUser);
+
+
 
 router.get('/sendsms', sendSMS);
 

@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const validateToken = (req, res, next) => {
-    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+    const token =
+        req.headers.authorization && req.headers.authorization.split(" ")[1];
 
     if (!token) {
         return res

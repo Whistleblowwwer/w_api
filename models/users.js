@@ -22,31 +22,32 @@ export const User = sequelize.define(
             allowNull: false,
             unique: true,
         },
-        phone_number: {  
+        phone_number: {
             type: DataTypes.STRING(20),
             allowNull: true,
             unique: true,
         },
-        birth_date: {  
+        birth_date: {
             type: DataTypes.DATE,
-            allowNull: true,
+            allowNull: false,
         },
-        gender: {  
-            type: DataTypes.ENUM('M', 'F', 'O'),
-            allowNull: true,
+        gender: {
+            type: DataTypes.ENUM("M", "F", "O"),
+            allowNull: false,
         },
-        password_token: {  
+        password_token: {
             type: DataTypes.STRING(255),
             allowNull: false,
         },
-        profile_picture: {
+        profile_picture_url: {
             type: DataTypes.STRING(255),
+            allowNull: true,
         },
         role: {
             type: DataTypes.ENUM("consumer", "admin"),
             allowNull: false,
-            defaultValue: "consumer"
-        },        
+            defaultValue: "consumer",
+        },
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,

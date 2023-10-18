@@ -16,10 +16,10 @@ export const Review = sequelize.define(
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
-        }
+        },
     },
     {
         tableName: "reviews",
-        timestamps: true, 
+        timestamps: true,
     }
 );

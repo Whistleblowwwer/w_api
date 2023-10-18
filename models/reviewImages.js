@@ -1,18 +1,21 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
 
-export const CommentLikes = sequelize.define(
-    "CommentLikes",
+export const ReviewImages = sequelize.define(
+    "ReviewImages",
     {
-        _id_comment_likes: {
+        _id_review_image: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },
+        image_url: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+        },
     },
     {
-        tableName: "commentLikes",
+        tableName: "review_images",
         timestamps: true,
     }
 );
-
