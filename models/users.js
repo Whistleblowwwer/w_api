@@ -39,7 +39,7 @@ export const User = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
-        profile_picture: {
+        profile_picture_url: {
             type: DataTypes.STRING(255),
             allowNull: true,
         },

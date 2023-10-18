@@ -9,6 +9,9 @@ import {
     followUser,
     followBusiness,
     deactivateUser,
+    VerifySMS,
+    sendSMS,
+    searchUser
 } from "../controllers/users.js";
 
 const router = Router();
@@ -38,5 +41,14 @@ router.post("/business/:_id_business/follow", validateToken, followBusiness);
 
 //Deactivate User
 router.patch("/deactivate", deactivateUser);
+
+//Search User 
+router.get("/search", validateToken, searchUser);
+
+
+
+router.get('/sendsms', sendSMS);
+
+router.get('/verifysms', VerifySMS);
 
 export default router;

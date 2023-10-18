@@ -15,3 +15,4 @@ export const UserFollowers = sequelize.define(
         timestamps: true,
     }
 );
+

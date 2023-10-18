@@ -6,35 +6,64 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 // import { CommentLikes } from "../models/commentLikes.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
-import { Op } from "sequelize";
+import { isValidEmail, isValidPhoneNumber } from '../utils/validations.js';
+import { Op } from 'sequelize';
+import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 
 //Create new user
 export const createUser = async (req, res) => {
-    const {
-        name,
-        last_name,
-        email,
-        phone_number,
-        birth_date,
-        gender,
-        password,
-    } = req.body;
-
-    const user = await User.findOne({ where: { email } });
-    if (user) {
-        return res.status(404).send({ message: "User already in use" });
-    }
-
-    if (!(await isValidEmail(email))) {
-        return res.status(400).send({ message: "Invalid email format" });
-    }
-
-    if (!isValidPhoneNumber(phone_number)) {
-        return res.status(400).send({ message: "Invalid phone number format" });
-    }
 
     try {
+        const {
+            name,
+            last_name,
+            email,
+            phone_number,
+            birth_date,
+            gender,
+            password,
+        } = req.body;
+
+        // Check for empty fields
+        const requiredFields = [
+            "name",
+            "last_name",
+            "email",
+            "phone_number",
+            "birth_date",
+            "gender",
+            "password",
+        ];
+        for (const field of requiredFields) {
+            if (!req.body[field]) {
+                return res
+                    .status(400)
+                    .send({ message: `Missing ${field} field` });
+            }
+        }
+
+        const userMail = await User.findOne({ where: { email } });
+        if (userMail) {
+            return res.status(403).send({ message: "Email already in use" });
+        }
+
+        if (!(await isValidEmail(email))) {
+            return res.status(400).send({ message: "Invalid email format" });
+        }
+
+        if (!isValidPhoneNumber(phone_number)) {
+            return res
+                .status(400)
+                .send({ message: "Invalid phone number format" });
+        }
+
+        const userPhone = await User.findOne({ where: { phone_number } });
+        if (userPhone) {
+            return res
+                .status(403)
+                .send({ message: "Phone number already in use" });
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -60,16 +89,31 @@ export const createUser = async (req, res) => {
         // Return the created user and JWT token
         const createdUser = await User.findOne({
             where: { _id_user: user._id_user },
-            attributes: { exclude: password_token },
+
+            attributes: { exclude: user.password_token },
+
         });
 
         res.status(200).send({
             message: "User created successfully",
-            createdUser,
+            user: createdUser,
             token,
         });
     } catch (error) {
-        res.status(500).send({ error: error.message });
+        if (error instanceof Sequelize.ValidationError) {
+            // Handle Sequelize validation errors
+            return res
+                .status(400)
+                .send({ message: "Validation error", errors: error.errors });
+        } else if (error instanceof Error) {
+            // Handle other types of errors
+            return res.status(500).send({ message: "Internal Server Error" });
+        } else {
+            // Catch any other unexpected errors
+            return res
+                .status(500)
+                .send({ message: "An unexpected error occurred" });
+        }
     }
 };
 
@@ -92,6 +136,7 @@ export const logIn = async (req, res) => {
             client_password,
             user.password_token
         );
+
         if (!isPasswordValid) {
             return res.status(401).send({ message: "Invalid password" });
         }
@@ -114,9 +159,15 @@ export const logIn = async (req, res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
-    const { name, last_name, email, phone_number, birth_date, gender } =
-        req.body;
+    const _id_user = req.user._id_user; 
+    const { name, 
+            last_name, 
+            email, 
+            phone_number, 
+            birth_date, 
+            gender 
+        } = req.body;
+
 
     try {
         // Find the user
@@ -135,7 +186,6 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "Invalid phone number" });
         }
 
-        // Update user
         await User.update(
             {
                 name,
@@ -147,12 +197,11 @@ export const updateUser = async (req, res) => {
             },
             { where: { _id_user } }
         );
-
-        // Get the updated user details
+      
         user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
+        }); 
 
         res.status(200).send({ message: "User updated successfully", user });
     } catch (error) {
@@ -163,13 +212,13 @@ export const updateUser = async (req, res) => {
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
-
+    const _id_user = req.user._id_user;
+  
     try {
         const user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        }); // Excluding hashed pw
+        });
 
         if (!user) {
             return res.status(400).send({ message: "User not found" });
@@ -181,9 +230,10 @@ export const getUserDetails = async (req, res) => {
     }
 };
 
+//Like Review
 export const likeReview = async (req, res) => {
     const _id_review = req.params._id_review;
-    const _id_user = req.user._id_user; // Getting id from middleware (Validate Token)
+    const _id_user = req.user._id_user; 
 
     try {
         // Check if the review exists
@@ -306,3 +356,126 @@ export const deactivateUser = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
+// Send OTP
+export const sendSMS = async (req,res) => {
+    var phone_number = req.query.phone_number; 
+    const country_number = req.query.country_number;
+
+    try{
+        if (phone_number && !isValidPhoneNumber(phone_number)) {
+            return res.status(400).send({ message: "Invalid phone number" });
+        }
+
+        phone_number = '+' + country_number + phone_number;
+
+        await sendOTP(phone_number);
+
+        console.log("OTP enviado exitosamente");
+        return res.status(206).json({
+            message:
+            "Code verification sent successfully.",
+        });
+
+    }
+    catch(error){
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Verify OTP Code
+export const VerifySMS = async (req, res) => {
+    try{
+        const code = req.query.code;
+        var phone_number = req.query.phone_number;
+        const country_number = req.query.country_number;
+
+        phone_number = '+' + country_number + phone_number;
+        
+        const verificationCheck = await verifyOTP(phone_number, code);
+
+        if (verificationCheck.status === "approved") {
+            return res.status(200).json({
+                message: "Success",
+            });
+        } else {
+            return res.status(401).json({
+                message: "Incorrect Code",
+            });
+        }
+    }
+    catch(error){
+        if (error.status === 404) {
+            return res.status(404).json({
+                message: "Code expired or not found",
+            });
+        } 
+        else {
+            return res.status(400).json({
+                message: "Error with the verification process",
+            });
+        }
+    }
+
+// Search User
+export const searchUser = async (req, res) => {
+    const searchTerm = req.query.searchTerm;
+
+    let nameSearchCriteria = {};
+    let lastNameSearchCriteria = {};
+
+    if (searchTerm.includes(' ')) {
+        const [providedName, providedLastName] = searchTerm.split(' '); 
+        nameSearchCriteria.name = { 
+            [Op.like]: `%${providedName}%` 
+        };
+        lastNameSearchCriteria.last_name = { 
+            [Op.like]: `%${providedLastName}%` 
+        };
+    } else {
+        // If only one term is provided, search in both name and last name
+        nameSearchCriteria.name = {
+            [Op.like]: `%${searchTerm}%` 
+        };
+        lastNameSearchCriteria.last_name = { 
+            [Op.like]: `%${searchTerm}%` 
+        };
+    }
+
+    try {
+        const similarUsersByName = await User.findAll({
+            where: nameSearchCriteria,
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        const similarUsersByLastName = await User.findAll({
+            where: lastNameSearchCriteria, 
+            attributes: { exclude: ["phone_number","password_token"] }
+        });
+
+        const uniqueUsersMap = {};
+        [...similarUsersByName, ...similarUsersByLastName].forEach(user => {
+            uniqueUsersMap[user._id_user] = user;
+        });
+        const combinedUsers = Object.values(uniqueUsersMap);
+
+        if (combinedUsers.length === 0) {
+            return res.status(404).send({ message: "No users found matching the criteria" });
+        }
+
+        return res.status(200).send({
+            message: "Successfully found users",
+            users: combinedUsers
+        });
+    } catch (error) {
+        if (error instanceof Sequelize.ValidationError) {
+            return res.status(400).send({
+                message: "Validation error during user search",
+                errors: error.errors
+            });
+        } else {
+            return res.status(500).send({ message: "Internal Server Error during user search" });
+        }
+    }
+};
+

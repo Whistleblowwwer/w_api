@@ -15,3 +15,4 @@ export const BusinessFollowers = sequelize.define(
         timestamps: true,
     }
 );
+
