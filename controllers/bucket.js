@@ -33,11 +33,6 @@ export const uploadFile = async (req, res) => {
                 }
     
                 const command = new PutObjectCommand(params);
-                
-                
-                
-                await s3.send(command);
-
 
                 //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
                 if(photo_type === "users_profile_img"){
@@ -77,7 +72,7 @@ export const uploadFile = async (req, res) => {
                         { where: { _id_business } }
                     );
                 }
-                else if(photo_type === "reviews_imgs"){
+                else if(photo_type === "reviews_img"){
                     const _id_review = id;
                     const image_url = fileName;
                     const review = await Review.findOne({
@@ -92,12 +87,13 @@ export const uploadFile = async (req, res) => {
                         {
                             image_url,
                         },
-                        { where: { _id_business } }
+                        { where: { _id_review } }
                     );
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
                 }
+                await s3.send(command);
                 return res.status(200).send({ message: "File Uploaded Successfully  "})
             }
         });
