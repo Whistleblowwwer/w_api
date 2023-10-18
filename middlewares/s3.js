@@ -1,23 +1,19 @@
 // npm install @aws-sdk/client-s3
-const { S3Client } = require("@aws-sdk/client-s3");
+import { S3Client } from "@aws-sdk/client-s3";
+
 // npm install dotenv
-const dotenv = require('dotenv')
+import dotenv from 'dotenv';
 dotenv.config();
 
-const bucketName = process.env.BUCKET_NAME;
+export const bucketName = process.env.BUCKET_NAME;
 const bucketRegion = process.env.BUCKET_REGION;
 const accessKey = process.env.ACCESSS_KEY;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY;
 
-const s3 = new S3Client({
+export const s3 = new S3Client({
     credentials: {
         accessKeyId: accessKey,
         secretAccessKey: secretAccessKey
     },
     region: bucketRegion
-})
-
-module.exports = {
-    bucketName,
-    s3
-}
+});
