@@ -416,6 +416,7 @@ export const VerifySMS = async (req, res) => {
             });
         }
     }
+}
 
 // Search User
 export const searchUser = async (req, res) => {
