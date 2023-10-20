@@ -51,6 +51,77 @@ export const createBusiness = async (req, res) => {
   }
 };
 
+// Get Business Details
+export const getBusinessDetails = async (req, res) => {
+  const { _id_business } = req.params;
+
+  try {
+    const business = await Business.findByPk(_id_business);
+
+    if (!business) {
+      return res.status(404).send({ message: "Business not found" });
+    }
+
+    return res.status(200).send({
+      message: "Business retrieved successfully",
+      business,
+    });
+  } catch (error) {
+    return res.status(500).send({ 
+      message: "Internal server error", 
+      error: error.message 
+    });
+  }
+};
+
+// Get Business List
+export const listAllBusinesses = async (req, res) => {
+  try {
+    const businesses = await Business.findAll();
+
+    if (businesses.length === 0) {
+      return res.status(404).send({ message: "No businesses found" });
+    }
+
+    return res.status(200).send({
+      message: "Businesses found successfully",
+      businesses
+    });
+
+  } catch (error) {
+    return res.status(500).send({ 
+      message: "Internal server error", 
+      error: error.message 
+    });
+  }
+};
+
+// Get Businesses created by a User
+export const getMyBusinesses = async (req, res) => {
+    const _id_user = req.user._id_user;
+
+    try {
+      const businesses = await Business.findAll({
+        where: { _id_user }
+      });
+
+      if (businesses.length === 0) {
+        return res.status(404).send({ message: "No businesses found" });
+      }
+
+      return res.status(200).send({
+        message: "Businesses found successfully",
+        businesses
+      });
+
+    } catch (error) {
+      return res.status(500).send({ 
+        message: "Internal server error", 
+        error: error.message 
+      });
+    }
+};
+
 // Update Business
 export const updateBusiness = async (req, res) => {
   try {
@@ -119,7 +190,7 @@ export const deleteBusiness = async (req, res) => {
     deletedBusiness.is_valid = false;
     await deletedBusiness.save();
 
-    return res.status(200).send({ message: "Business marked as invalid successfully" });
+    return res.status(200).send({ message: "Business deleted successfully" });
   } catch (error) {
     if (error instanceof Sequelize.ValidationError) {
       return res.status(400).send({ 

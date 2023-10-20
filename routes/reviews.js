@@ -1,14 +1,30 @@
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
 import { 
-    createReview
+    createReview,
+    getReview,
+    getReviewsForBusiness,
+    updateReview,
+    deleteReview
 } from "../controllers/reviews.js";
 
 const router = Router();
 
 //----------Reviews Routes-------------
 
-//Create Review
-router.post('/:_id_business', validateToken, createReview)
+// Create Review
+router.post('/', validateToken, createReview); 
+
+// Get Review
+router.get('/:_id_review', validateToken, getReview);
+
+// Get Reviews of a Business
+router.get('/business/:_id_business', validateToken, getReviewsForBusiness);
+
+// Update Review
+router.put('/:_id_review', validateToken, updateReview);
+
+// Delete Review
+router.patch('/:_id_review', validateToken, deleteReview);
 
 export default router;
