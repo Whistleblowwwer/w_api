@@ -7,6 +7,7 @@ import { UserFollowers } from "./userFollowers.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { CommentLikes } from "./commentLikes.js";
 import { ReviewImages } from "./reviewImages.js";
+import { Message } from "./messages.js";
 
 
 // Associations
@@ -78,3 +79,11 @@ Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
 
 // 10. Una imagen de review pertenece a un review
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
+
+// 11. Un usuario puede enviar y recibir muchos mensajes
+User.hasMany(Message, { foreignKey: '_id_sender'});
+User.hasMany(Message, { foreignKey: '_id_receiver'});
+
+// 12. Un mensaje pertenece a un usuario como remitente/destinatario
+Message.belongsTo(User, { foreignKey: '_id_sender'});
+Message.belongsTo(User, { foreignKey: '_id_receiver'});
