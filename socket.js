@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { disconnection } from "./utils/socketHandlers.js"
+import { sendMessage } from "./controllers/messages.js"
 
 
 dotenv.config();
@@ -30,9 +31,13 @@ export const initializeWebSocketServer = (httpServer) => {
 
   io.on('connection', (socket) => {
     console.log('User connected:', socket.user);
-    const roomId = `user-${socket.user._id_user}`;
-    socket.join(roomId);
-    console.log('Room joined:', roomId);
+    const _id_room = `user-${socket.user._id_user}`;
+    socket.join(_id_room);
+    console.log('Room joined:', _id_room);
+
+    socket.on('sendMessage', (messageData) => {
+      sendMessage(io, socket, messageData); 
+    }); // messageData = {content, _id_sender, _id_receiver}
 
     socket.on('disconnect', () => disconnection(socket));
   });
