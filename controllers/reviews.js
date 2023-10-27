@@ -134,6 +134,7 @@ export const getReview = async (req, res) => {
 };
 
 // Get Reviews of a Business
+// Get Reviews For Business
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.params._id_business;
 
@@ -146,6 +147,10 @@ export const getReviewsForBusiness = async (req, res) => {
                 {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
+                },
+                {
+                    model: User, // Include User model
+                    attributes: ["_id_user", "name", "last_name"], // Include user id, name, and last name
                 },
             ],
         });
@@ -165,6 +170,11 @@ export const getReviewsForBusiness = async (req, res) => {
                 _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
+            },
+            author: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
             },
         }));
 
@@ -190,6 +200,10 @@ export const getAllReviews = async (req, res) => {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
                 },
+                {
+                    model: User, // Include User model
+                    attributes: ["_id_user", "name", "last_name"], // Include user id, name, and last name
+                },
             ],
         });
 
@@ -206,6 +220,11 @@ export const getAllReviews = async (req, res) => {
                 _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
+            },
+            author: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
             },
         }));
 
