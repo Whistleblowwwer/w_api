@@ -7,7 +7,6 @@ import Sequelize from "sequelize";
 export const createBusiness = async (req, res) => {
     try {
         const { name, country, address, state, city } = req.body;
-
         const _id_user = req.query._id_user;
 
         const requiredFields = ["name", "country", "address", "state", "city"];
@@ -21,10 +20,10 @@ export const createBusiness = async (req, res) => {
 
         const createdBusiness = await Business.create({
             name,
-            country,
             address,
             state,
             city,
+            country,
             _id_user,
         });
 
@@ -39,7 +38,9 @@ export const createBusiness = async (req, res) => {
                 errors: error.errors,
             });
         } else {
-            return res.status(500).send({ message: "Internal Server Error" });
+            return res
+                .status(500)
+                .send({ message: "Internal Server Error", error });
         }
     }
 };
