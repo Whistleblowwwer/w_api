@@ -9,6 +9,6 @@ const router = Router();
 //----------Bucket Routes-------------
 
 //Add/Change Image to User/Buisiness/Review
-router.post("/", uploadFile);
+router.post("/",validateToken ,uploadFile);
 
 export default router;
