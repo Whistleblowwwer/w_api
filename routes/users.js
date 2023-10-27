@@ -9,6 +9,8 @@ import {
     followUser,
     followBusiness,
     deactivateUser,
+    VerifySMS,
+    sendSMS,
     searchUser
 } from "../controllers/users.js";
 
@@ -43,5 +45,10 @@ router.patch("/deactivate", deactivateUser);
 //Search User 
 router.get("/search", validateToken, searchUser);
 
+
+
+router.get('/sendsms', sendSMS);
+
+router.get('/verifysms', VerifySMS);
 
 export default router;
