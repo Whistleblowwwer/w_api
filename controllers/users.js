@@ -6,8 +6,9 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 // import { CommentLikes } from "../models/commentLikes.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
-import { Op } from "sequelize";
+import { isValidEmail, isValidPhoneNumber } from '../utils/validations.js';
+import { Op } from 'sequelize';
+import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 
 //Create new user
 export const createUser = async (req, res) => {
@@ -356,6 +357,65 @@ export const deactivateUser = async (req, res) => {
     }
 };
 
+// Send OTP
+export const sendSMS = async (req,res) => {
+    var phone_number = req.query.phone_number; 
+    const country_number = req.query.country_number;
+
+    try{
+        if (phone_number && !isValidPhoneNumber(phone_number)) {
+            return res.status(400).send({ message: "Invalid phone number" });
+        }
+
+        phone_number = '+' + country_number + phone_number;
+
+        await sendOTP(phone_number);
+
+        console.log("OTP enviado exitosamente");
+        return res.status(206).json({
+            message:
+            "Code verification sent successfully.",
+        });
+
+    }
+    catch(error){
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Verify OTP Code
+export const VerifySMS = async (req, res) => {
+    try{
+        const code = req.query.code;
+        var phone_number = req.query.phone_number;
+        const country_number = req.query.country_number;
+
+        phone_number = '+' + country_number + phone_number;
+        
+        const verificationCheck = await verifyOTP(phone_number, code);
+
+        if (verificationCheck.status === "approved") {
+            return res.status(200).json({
+                message: "Success",
+            });
+        } else {
+            return res.status(401).json({
+                message: "Incorrect Code",
+            });
+        }
+    }
+    catch(error){
+        if (error.status === 404) {
+            return res.status(404).json({
+                message: "Code expired or not found",
+            });
+        } 
+        else {
+            return res.status(400).json({
+                message: "Error with the verification process",
+            });
+        }
+    }
 
 // Search User
 export const searchUser = async (req, res) => {
