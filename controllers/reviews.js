@@ -132,8 +132,6 @@ export const getReview = async (req, res) => {
             .send({ message: "Internal server error", error: error.message });
     }
 };
-
-// Get Reviews of a Business
 // Get Reviews For Business
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.params._id_business;
@@ -162,7 +160,7 @@ export const getReviewsForBusiness = async (req, res) => {
         }
 
         const reviewsWithBusinessInfo = reviewsOfBusiness.map((review) => ({
-            _id_business: review.Business._id_business,
+            _id_review: review._id_review, // Include the _id_review
             content: review.content,
             isValid: review.is_valid,
             createdAt: review.createdAt,
@@ -212,7 +210,7 @@ export const getAllReviews = async (req, res) => {
         }
 
         const reviewsWithBusinessInfo = allReviews.map((review) => ({
-            _id_business: review.Business._id_business,
+            _id_review: review._id_review, // Include the _id_review
             content: review.content,
             isValid: review.is_valid,
             createdAt: review.createdAt,
