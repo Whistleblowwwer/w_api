@@ -3,6 +3,8 @@ import { Business } from "../models/business.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Sequelize } from "sequelize";
+// import { CommentLikes } from "../models/commentLikes.js";
+// import { ReviewLikes } from "../models/reviewLikes.js";
 
 // Create Review
 export const createReview = async (req, res) => {
@@ -53,12 +55,26 @@ export const createReview = async (req, res) => {
         }
     }
 };
+
 //Get Review by Id (with comments)
 export const getReview = async (req, res) => {
     const _id_review = req.params._id_review;
 
     try {
         const review = await Review.findByPk(_id_review, {
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "reviewLikes" AS reviewLikes
+                            WHERE
+                            reviewLikes."_id_review" = "Review"."_id_review"
+                        )`),
+                        'likes'
+                    ],
+                ]
+            },
             include: [
                 {
                     model: User,
@@ -71,7 +87,11 @@ export const getReview = async (req, res) => {
                     where: { _id_parent: null },
                     required: false,
                     include: [
-                        { model: User, attributes: ["name"], as: "User" },
+                        { 
+                            model: User, 
+                            attributes: ["name"], 
+                            as: "User" 
+                        },
                         {
                             model: Comment,
                             as: "Children",
@@ -85,6 +105,19 @@ export const getReview = async (req, res) => {
                             ],
                         },
                     ],
+                    attributes: {
+                        include: [
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM "commentLikes" AS commentLikes
+                                    WHERE
+                                    commentLikes."_id_comment" = "Comments"."_id_comment"
+                                )`),
+                                'likes'
+                            ],
+                        ]
+                    },
                 },
                 {
                     model: Business,
@@ -97,33 +130,19 @@ export const getReview = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        const transformedComments = review.Comments
-            ? review.Comments.map((comment) => ({
-                  author: comment.User.name,
-                  content: comment.content,
-                  children: comment.Children
-                      ? comment.Children.map((child) => ({
-                            author: child.User.name,
-                            content: child.content,
-                        }))
-                      : [],
-              }))
-            : [];
+        const transformedComments = review.Comments.map((comment) => ({
+            ...comment.dataValues,
+            likes: comment.getDataValue('likes'),
+            Children: comment.Children.map((child) => ({
+                ...child.dataValues,
+                likes: child.getDataValue('likes'),
+            })),
+        }));
 
         return res.status(200).send({
-            author: {
-                _id_user: review.User._id_user,
-                name: review.User.name,
-                last_name: review.User.last_name,
-            },
-            content: review.content,
-            createdAt: review.createdAt,
-            comments: transformedComments,
-            business: {
-                _id_business: review.Business._id_business,
-                name: review.Business.name,
-                entity: review.Business.entity,
-            },
+            ...review.dataValues,
+            likes: review.getDataValue('likes'),
+            Comments: transformedComments,
         });
     } catch (error) {
         console.error(error);
@@ -132,6 +151,8 @@ export const getReview = async (req, res) => {
             .send({ message: "Internal server error", error: error.message });
     }
 };
+
+
 // Get Reviews For Business
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.params._id_business;
@@ -141,14 +162,27 @@ export const getReviewsForBusiness = async (req, res) => {
             where: { _id_business },
             limit: 20,
             order: [["createdAt", "DESC"]],
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "reviewLikes" as reviewLikes
+                            WHERE
+                            reviewLikes._id_review = "Review"."_id_review"
+                        )`),
+                        'likes'
+                    ]
+                ]
+            },
             include: [
                 {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
                 },
                 {
-                    model: User, // Include User model
-                    attributes: ["_id_user", "name", "last_name"], // Include user id, name, and last name
+                    model: User, 
+                    attributes: ["_id_user", "name", "last_name"], 
                 },
             ],
         });
@@ -160,10 +194,11 @@ export const getReviewsForBusiness = async (req, res) => {
         }
 
         const reviewsWithBusinessInfo = reviewsOfBusiness.map((review) => ({
-            _id_review: review._id_review, // Include the _id_review
+            _id_review: review._id_review, 
             content: review.content,
             isValid: review.is_valid,
             createdAt: review.createdAt,
+            likes: review.getDataValue('likes'), 
             business: {
                 _id_business: review.Business._id_business,
                 name: review.Business.name,
@@ -187,20 +222,34 @@ export const getReviewsForBusiness = async (req, res) => {
     }
 };
 
+
 // Get All Reviews
 export const getAllReviews = async (req, res) => {
     try {
         const allReviews = await Review.findAll({
             limit: 20,
             order: [["createdAt", "DESC"]],
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "reviewLikes"
+                            WHERE
+                            "reviewLikes"."_id_review" = "Review"."_id_review"
+                        )`),
+                        'likes'
+                    ]
+                ]
+            },
             include: [
                 {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
                 },
                 {
-                    model: User, // Include User model
-                    attributes: ["_id_user", "name", "last_name"], // Include user id, name, and last name
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
                 },
             ],
         });
@@ -209,32 +258,21 @@ export const getAllReviews = async (req, res) => {
             return res.status(404).send({ message: "No reviews found" });
         }
 
-        const reviewsWithBusinessInfo = allReviews.map((review) => ({
-            _id_review: review._id_review, // Include the _id_review
-            content: review.content,
-            isValid: review.is_valid,
-            createdAt: review.createdAt,
-            business: {
-                _id_business: review.Business._id_business,
-                name: review.Business.name,
-                entity: review.Business.entity,
-            },
-            author: {
-                _id_user: review.User._id_user,
-                name: review.User.name,
-                last_name: review.User.last_name,
-            },
+        const reviewsWithLikes = allReviews.map((review) => ({
+            ...review.get({ plain: true }),
+            likes: parseInt(review.getDataValue('likes'), 10)
         }));
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
-            reviews: reviewsWithBusinessInfo,
+            reviews: reviewsWithLikes,
         });
     } catch (error) {
         console.error("Error retrieving reviews:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 };
+
 
 // Update Review
 export const updateReview = async (req, res) => {

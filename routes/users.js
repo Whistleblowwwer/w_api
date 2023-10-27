@@ -6,6 +6,7 @@ import {
     updateUser,
     getUserDetails,
     likeReview,
+    likeComment,
     followUser,
     followBusiness,
     deactivateUser,
@@ -33,6 +34,9 @@ router.get("/", validateToken, getUserDetails);
 //Like Review
 router.post("/reviews/:_id_review/like", validateToken, likeReview);
 
+//Like Comment
+router.post("/comments/:_id_comment/like", validateToken, likeComment);
+
 //Follow User
 router.post("/:_id_followed/follow", validateToken, followUser);
 
@@ -44,8 +48,6 @@ router.patch("/deactivate", deactivateUser);
 
 //Search User 
 router.get("/search", validateToken, searchUser);
-
-
 
 router.get('/sendsms', sendSMS);
 

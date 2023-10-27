@@ -7,7 +7,7 @@ import Sequelize from "sequelize";
 export const createBusiness = async (req, res) => {
     try {
         const { name, entity, country, address, state, city } = req.body;
-        const _id_user = req.query._id_user;
+        const _id_user = req.user._id_user;
 
         const requiredFields = [
             "name",
@@ -128,8 +128,7 @@ export const getMyBusinesses = async (req, res) => {
 // Update Business
 export const updateBusiness = async (req, res) => {
     try {
-        const { name, address, state, city } = req.body;
-
+        const { name, address, state, city, entity, country } = req.body;
         const _id_business = req.params._id_business;
         const _id_user = req.user._id_user;
 
@@ -147,10 +146,13 @@ export const updateBusiness = async (req, res) => {
             });
         }
 
-        businessToUpdate.name = name;
-        businessToUpdate.address = address;
-        businessToUpdate.state = state;
-        businessToUpdate.city = city;
+        businessToUpdate.name = name || businessToUpdate.name;
+        businessToUpdate.address = address || businessToUpdate.address;
+        businessToUpdate.state = state || businessToUpdate.state;
+        businessToUpdate.city = city || businessToUpdate.city;
+        businessToUpdate.entity = entity || businessToUpdate.entity;
+        businessToUpdate.country = country || businessToUpdate.country;
+
         await businessToUpdate.save();
 
         return res.status(200).send({
@@ -209,7 +211,7 @@ export const deleteBusiness = async (req, res) => {
 
 // Search Business
 export const searchBusiness = async (req, res) => {
-    const { name, address, state, city, reviewCount } = req.query;
+    const { name, address, state, city, country, entity, reviewCount } = req.query;
 
     let searchCriteria = {};
 
@@ -231,6 +233,16 @@ export const searchBusiness = async (req, res) => {
     if (city) {
         searchCriteria.city = {
             [Op.like]: `%${city}%`,
+        };
+    }
+    if (country) {
+        searchCriteria.country = {
+            [Op.like]: `%${country}%`,
+        };
+    }
+    if (entity) {
+        searchCriteria.entity = {
+            [Op.like]: `%${entity}%`,
         };
     }
 
@@ -256,7 +268,8 @@ export const searchBusiness = async (req, res) => {
                 errors: error.errors,
             });
         } else {
-            return res.status(500).send({ message: "Internal Server Error" });
+            console.error(error);
+            return res.status(500).send({ message: "Internal Server Error", error: error.message });
         }
     }
 };

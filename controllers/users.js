@@ -1,9 +1,10 @@
 import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
+import { Comment } from "../models/comments.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
+import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-// import { CommentLikes } from "../models/commentLikes.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
@@ -251,6 +252,39 @@ export const likeReview = async (req, res) => {
             return res
                 .status(200)
                 .send({ message: "Review liked successfully", liked: true });
+        }
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+//Like Comment
+export const likeComment = async (req, res) => {
+    const _id_comment = req.params._id_comment;
+    const _id_user = req.user._id_user;
+
+    try {
+        const comment = await Comment.findOne({ where: { _id_comment} });
+        if (!comment) {
+            return res.status(404).send({ message: "Comment not found" });
+        }
+
+        const existingLike = await CommentLikes.findOne({
+            where: { _id_comment, _id_user },
+        });
+
+        if (existingLike) {
+            // If the like exists, remove it
+            await existingLike.destroy();
+            return res
+                .status(200)
+                .send({ message: "Comment unliked successfully", liked: false });
+        } else {
+            // If the like doesn't exist, add it
+            await CommentLikes.create({ _id_comment, _id_user });
+            return res
+                .status(200)
+                .send({ message: "Comment liked successfully", liked: true });
         }
     } catch (error) {
         res.status(500).send({ error: error.message });
