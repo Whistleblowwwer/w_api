@@ -2,6 +2,7 @@ import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
+import { Sequelize } from "sequelize";
 
 // Create Review
 export const createReview = async (req, res) => {
@@ -135,6 +136,7 @@ export const getReviewsForBusiness = async (req, res) => {
   try {
     const reviewsOfBusiness = await Review.findAll({
       where: { _id_business },
+      limit:20,
       order: [['createdAt', 'DESC']] 
     });
 
@@ -223,4 +225,3 @@ export const deleteReview = async(req, res) => {
     }
   }
 };
-

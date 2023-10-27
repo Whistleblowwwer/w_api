@@ -2,7 +2,7 @@ import { sequelize } from "./config/db.js";
 import express from "express";
 import { createServer } from "http";
 import morgan from "morgan";
-import cors from "cors"; 
+import cors from "cors";
 import "./models/associations.js";
 import router from "./routes/routes.js";
 import { initializeWebSocketServer } from "./socket.js";
@@ -30,7 +30,7 @@ async function main() {
     await sequelize.sync({ force: true });
     const PORT = process.env.PORT || 4000;
     httpServer.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Server running on http://localhost:${PORT}`);
     });
 }
 main();
