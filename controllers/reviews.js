@@ -53,50 +53,6 @@ export const createReview = async (req, res) => {
         }
     }
 };
-
-// Get All Reviews
-export const getAllReviews = async (req, res) => {
-    try {
-        const allReviews = await Review.findAll({
-            limit: 20,
-            order: [["createdAt", "DESC"]],
-            include: [
-                {
-                    model: Business,
-                    attributes: ["name", "entity"], // Select the attributes you need
-                },
-            ],
-        });
-
-        if (!allReviews || allReviews.length === 0) {
-            return res.status(404).send({ message: "No reviews found" });
-        }
-
-        const formattedReviews = allReviews.map((review) => {
-            const { _id_review, content, is_valid, Business } = review;
-            const { name, entity } = Business;
-
-            return {
-                _id_review,
-                content,
-                is_valid,
-                business: {
-                    name,
-                    entity,
-                },
-            };
-        });
-
-        res.status(200).send({
-            message: "Reviews retrieved successfully",
-            reviews: formattedReviews,
-        });
-    } catch (error) {
-        console.error("Error retrieving reviews:", error);
-        res.status(500).send({ message: "Internal server error" });
-    }
-};
-
 //Get Review by Id (with comments)
 export const getReview = async (req, res) => {
     const _id_review = req.params._id_review;
@@ -106,7 +62,7 @@ export const getReview = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["name"],
+                    attributes: ["_id_user", "name", "last_name"],
                     as: "User",
                 },
                 {
@@ -131,8 +87,8 @@ export const getReview = async (req, res) => {
                     ],
                 },
                 {
-                    model: Business, // Add this association
-                    attributes: ["name", "entity"], // Specify the attributes you want to retrieve
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
                 },
             ],
         });
@@ -155,13 +111,16 @@ export const getReview = async (req, res) => {
             : [];
 
         return res.status(200).send({
-            review: {
-                author: review.User.name,
-                content: review.content,
+            author: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
             },
+            content: review.content,
+            createdAt: review.createdAt,
             comments: transformedComments,
             business: {
-                // Include business information in the response
+                _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
@@ -185,8 +144,8 @@ export const getReviewsForBusiness = async (req, res) => {
             order: [["createdAt", "DESC"]],
             include: [
                 {
-                    model: Business, // Add this association
-                    attributes: ["name", "entity"], // Specify the attributes you want to retrieve
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
                 },
             ],
         });
@@ -197,11 +156,13 @@ export const getReviewsForBusiness = async (req, res) => {
                 .send({ message: "No reviews found for this business" });
         }
 
-        // Include business information in each review object
         const reviewsWithBusinessInfo = reviewsOfBusiness.map((review) => ({
+            _id_business: review.Business._id_business,
             content: review.content,
             isValid: review.is_valid,
+            createdAt: review.createdAt,
             business: {
+                _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
@@ -215,6 +176,46 @@ export const getReviewsForBusiness = async (req, res) => {
         return res
             .status(500)
             .send({ message: "Internal server error", error: error.message });
+    }
+};
+
+// Get All Reviews
+export const getAllReviews = async (req, res) => {
+    try {
+        const allReviews = await Review.findAll({
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                },
+            ],
+        });
+
+        if (!allReviews || allReviews.length === 0) {
+            return res.status(404).send({ message: "No reviews found" });
+        }
+
+        const reviewsWithBusinessInfo = allReviews.map((review) => ({
+            _id_business: review.Business._id_business,
+            content: review.content,
+            isValid: review.is_valid,
+            createdAt: review.createdAt,
+            business: {
+                _id_business: review.Business._id_business,
+                name: review.Business.name,
+                entity: review.Business.entity,
+            },
+        }));
+
+        res.status(200).send({
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithBusinessInfo,
+        });
+    } catch (error) {
+        console.error("Error retrieving reviews:", error);
+        res.status(500).send({ message: "Internal server error" });
     }
 };
 
