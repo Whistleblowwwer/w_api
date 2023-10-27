@@ -1,6 +1,7 @@
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
 import { Review } from "../models/reviews.js";
+import { Comment } from "../models/comments.js";
 
 // Create Review
 export const createReview = async (req, res) => {
@@ -52,26 +53,57 @@ export const createReview = async (req, res) => {
   }
 };
 
-// Get Review
+//Get Review by Id (with comments)
 export const getReview = async (req, res) => {
   const _id_review = req.params._id_review;
 
   try {
-    const review = await Review.findByPk(_id_review);
+    const review = await Review.findByPk(_id_review, {
+      include: [
+        { model: User, attributes: ['name'], as: 'User' },
+        { 
+          model: Comment, 
+          as: 'Comments',
+          where: { _id_parent: null }, 
+          include: [
+            { model: User, attributes: ['name'], as: 'User' },
+            { 
+              model: Comment, 
+              as: 'Children', 
+              include: [{ model: User, attributes: ['name'], as: 'User' }]
+            }
+          ]
+        }
+      ]
+    });
 
     if (!review) {
       return res.status(404).send({ message: "Review not found" });
     }
 
-    return res.status(200).send({ 
-      message: "Review found successfully", 
-      review
+    const transformedComments = review.Comments.map(comment => ({
+      author: comment.User.name,
+      content: comment.content,
+      children: comment.Children.map(child => ({
+        author: child.User.name,
+        content: child.content
+      }))
+    }));
+
+    return res.status(200).send({
+      review: {
+        author: review.User.name,
+        content: review.content
+      },
+      comments: transformedComments
     });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).send({ message: "Internal server error", error: error.message });
   }
 };
+
 
 // Get Reviews of a Business
 export const getReviewsForBusiness = async (req, res) => {
