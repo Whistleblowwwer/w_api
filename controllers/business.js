@@ -6,10 +6,17 @@ import Sequelize from "sequelize";
 // Create Business
 export const createBusiness = async (req, res) => {
     try {
-        const { name, country, address, state, city } = req.body;
+        const { name, entity, country, address, state, city } = req.body;
         const _id_user = req.query._id_user;
 
-        const requiredFields = ["name", "country", "address", "state", "city"];
+        const requiredFields = [
+            "name",
+            "entity",
+            "country",
+            "address",
+            "state",
+            "city",
+        ];
         for (const field of requiredFields) {
             if (!req.body[field]) {
                 return res
@@ -24,6 +31,7 @@ export const createBusiness = async (req, res) => {
             state,
             city,
             country,
+            entity,
             _id_user,
         });
 

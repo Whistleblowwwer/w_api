@@ -13,6 +13,11 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
+        entity: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: null,
+        },
         address: {
             type: DataTypes.TEXT,
             allowNull: true,
