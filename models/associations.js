@@ -34,6 +34,7 @@ Business.hasMany(Review, { foreignKey: "_id_business" });
 
 // 4. Un review puede tener 0 o varios comments
 Review.hasMany(Comment, { foreignKey: "_id_review" });
+Comment.belongsTo(Review, { foreignKey: '_id_review' });
 
 // 5. Una empresa puede tener seguidores
 Business.belongsToMany(User, {
@@ -44,7 +45,8 @@ Business.belongsToMany(User, {
 });
 
 // 6. Un user puede hacer un review
-User.hasMany(Review, { foreignKey: "_id_user" });
+User.hasMany(Review, { foreignKey: "_id_user", as: 'Reviews' });
+Review.belongsTo(User, { foreignKey: "_id_user", as: 'User' });
 
 // 7. Un user puede likear un review
 User.belongsToMany(Review, {
@@ -87,3 +89,16 @@ User.hasMany(Message, { foreignKey: '_id_receiver'});
 // 12. Un mensaje pertenece a un usuario como remitente/destinatario
 Message.belongsTo(User, { foreignKey: '_id_sender'});
 Message.belongsTo(User, { foreignKey: '_id_receiver'});
+
+// 13. Un comentario puede tener varios comentarios hijos
+Comment.hasMany(Comment, { as: 'Children', foreignKey: '_id_parent' });
+
+// 14. Un comentario puede tener un comentario padre
+Comment.belongsTo(Comment, { as: 'Parent', foreignKey: '_id_parent' });
+
+// 15. Un comentario pertenece a un usuario
+Comment.belongsTo(User, { foreignKey: '_id_user', as: 'User' });
+
+// 16. Un usuario puede tener muchos comentarios
+User.hasMany(Comment, { foreignKey: '_id_user', as: 'Comments' });
+

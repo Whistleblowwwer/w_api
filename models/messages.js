@@ -4,17 +4,23 @@ import { sequelize } from "../config/db.js";
 export const Message = sequelize.define(
     'Message', 
     {
+        _id_message: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+        },
         content: {
             type: DataTypes.TEXT,
             allowNull: false,
-            validate: {
-            notEmpty: { msg: 'El mensaje no puede estar vacío' }
-            }
-        }
+        },
+        is_valid: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+        },
     }, 
     {
-        timestamps: true,
-        tableName: 'messages'
+        tableName: 'messages',
+        timestamps: true
     }
 );
 

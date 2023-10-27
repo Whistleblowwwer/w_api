@@ -1,10 +1,10 @@
-//Client test script
+//Client test script (Only for tests)
 import { io } from "socket.io-client";
 import readline from "readline";
 
 const socket = io("http://localhost:4000", {
   auth: {
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6ImUyNGM4YTY1LWQwOTUtNDg0NC05NWZhLWE5Y2EwYzliZmQ0YiIsImlhdCI6MTY5ODE4NTc4NSwiZXhwIjoxNjk4NDQ0OTg1fQ.eeMJ4RR7W8ysaW5-Yc_7vB5t8xqld_o6ZpQWVm-v8Js",
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6IjU1Y2VkMTdjLTIzNjktNDQ5MS05ZGEwLTg3ZmJmOTBkNTllYiIsImlhdCI6MTY5ODM1Mjk0NCwiZXhwIjoxNjk4NjEyMTQ0fQ.9Rw7HzTPpUy_NEzXwZpyCyxJ1e299K-LcQb7nXNoFUE",
   },
 });
 
@@ -27,7 +27,7 @@ socket.on("connect", () => {
       } else {
         const messageData = {
           content: message,
-          _id_sender: "e24c8a65-d095-4844-95fa-a9ca0c9bfd4b",  // 
+          _id_sender: "55ced17c-2369-4491-9da0-87fbf90d59eb",  
           _id_receiver
         };
         socket.emit('sendMessage', messageData);

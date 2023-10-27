@@ -77,7 +77,10 @@ export const getBusinessDetails = async (req, res) => {
 // Get Business List
 export const listAllBusinesses = async (req, res) => {
   try {
-    const businesses = await Business.findAll();
+    const businesses = await Business.findAll({
+      limit: 20,
+      order: [['createdAt', 'DESC']]
+    });
 
     if (businesses.length === 0) {
       return res.status(404).send({ message: "No businesses found" });
