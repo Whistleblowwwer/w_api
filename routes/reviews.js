@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
 import { 
     createReview,
+    getAllReviews, 
     getReview,
     getReviewsForBusiness,
     updateReview,
@@ -15,7 +16,10 @@ const router = Router();
 // Create Review
 router.post('/', validateToken, createReview); 
 
-// Get Review
+// Get all reviews 
+router.get('/', validateToken, getAllReviews);
+
+// Get Review (with comments)
 router.get('/:_id_review', validateToken, getReview);
 
 // Get Reviews of a Business

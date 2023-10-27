@@ -53,6 +53,29 @@ export const createReview = async (req, res) => {
   }
 };
 
+// Get All Reviews
+export const getAllReviews = async (req, res) => {
+  try {
+    const allReviews = await Review.findAll({
+      limit: 20,
+      order: [['createdAt', 'DESC']] 
+    });
+
+    if (!allReviews || allReviews.length === 0) {
+      return res.status(404).send({ message: "No reviews found" });
+    }
+
+    res.status(200).send({
+      message: "Reviews retrieved successfully",
+      reviews: allReviews
+    });
+  } catch (error) {
+    console.error("Error retrieving reviews:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+
 //Get Review by Id (with comments)
 export const getReview = async (req, res) => {
   const _id_review = req.params._id_review;
