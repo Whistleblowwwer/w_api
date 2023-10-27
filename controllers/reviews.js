@@ -209,3 +209,24 @@ export const deleteReview = async (req, res) => {
         }
     }
 };
+
+export const getAllReviews = async (req, res) => {
+    try {
+        const allReviews = await Review.findAll({
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+        });
+
+        if (!allReviews || allReviews.length === 0) {
+            return res.status(404).send({ message: "No reviews found" });
+        }
+
+        res.status(200).send({
+            message: "Reviews retrieved successfully",
+            reviews: allReviews,
+        });
+    } catch (error) {
+        console.error("Error retrieving reviews:", error);
+        res.status(500).send({ message: "Internal server error" });
+    }
+};

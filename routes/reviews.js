@@ -27,4 +27,7 @@ router.put("/", validateToken, updateReview);
 // Delete Review
 router.patch("/", validateToken, deleteReview);
 
+// Get all reviews
+router.get("/", validateToken, getAllReviews);
+
 export default router;
