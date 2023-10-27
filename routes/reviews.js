@@ -6,6 +6,7 @@ import {
     getReviewsForBusiness,
     updateReview,
     deleteReview,
+    getAllReviews,
 } from "../controllers/reviews.js";
 
 const router = Router();
