@@ -29,6 +29,11 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: true,
         },
+        country: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: "Mexico",
+        },
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
