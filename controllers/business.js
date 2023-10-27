@@ -8,9 +8,9 @@ export const createBusiness = async (req, res) => {
     try {
         const { name, country, address, state, city } = req.body;
 
-        const _id_user = req.user._id_user;
+        const _id_user = req.query._id_user;
 
-        const requiredFields = ["name", "address", "state", "city"];
+        const requiredFields = ["name", "country", "address", "state", "city"];
         for (const field of requiredFields) {
             if (!req.body[field]) {
                 return res
