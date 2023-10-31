@@ -140,8 +140,21 @@ export const getReview = async (req, res) => {
         }));
 
         return res.status(200).send({
-            ...review.dataValues,
-            likes: review.getDataValue("likes"),
+            _id_review: review._id_review,
+            content: review.content,
+            isValid: review.is_valid,
+            createdAt: review.createdAt,
+            likes: review.getDataValue("likes").toString(),
+            business: {
+                _id_business: review.Business._id_business,
+                name: review.Business.name,
+                entity: review.Business.entity,
+            },
+            author: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
+            },
             comments: transformedComments,
         });
     } catch (error) {
@@ -221,7 +234,6 @@ export const getReviewsForBusiness = async (req, res) => {
     }
 };
 
-// Get All Reviews
 export const getAllReviews = async (req, res) => {
     try {
         const allReviews = await Review.findAll({
@@ -257,8 +269,21 @@ export const getAllReviews = async (req, res) => {
         }
 
         const reviewsWithLikes = allReviews.map((review) => ({
-            ...review.get({ plain: true }),
-            likes: parseInt(review.getDataValue("likes"), 10),
+            _id_review: review._id_review,
+            content: review.content,
+            isValid: review.is_valid,
+            createdAt: review.createdAt,
+            likes: review.getDataValue("likes").toString(), // Convert likes to string
+            business: {
+                _id_business: review.Business._id_business,
+                name: review.Business.name,
+                entity: review.Business.entity,
+            },
+            author: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
+            },
         }));
 
         res.status(200).send({
