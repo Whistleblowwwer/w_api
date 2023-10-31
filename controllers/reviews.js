@@ -150,7 +150,7 @@ export const getReview = async (req, res) => {
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
-            author: {
+            user: {
                 _id_user: review.User._id_user,
                 name: review.User.name,
                 last_name: review.User.last_name,
@@ -279,7 +279,7 @@ export const getAllReviews = async (req, res) => {
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
-            author: {
+            user: {
                 _id_user: review.User._id_user,
                 name: review.User.name,
                 last_name: review.User.last_name,
