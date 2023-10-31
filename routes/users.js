@@ -44,7 +44,7 @@ router.post("/:_id_followed/follow", validateToken, followUser);
 router.post("/business/:_id_business/follow", validateToken, followBusiness);
 
 //Deactivate User
-router.patch("/deactivate", deactivateUser);
+router.patch("/deactivate", validateToken, deactivateUser);
 
 //Search User 
 router.get("/search", validateToken, searchUser);

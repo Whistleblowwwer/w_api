@@ -158,7 +158,7 @@ export const logIn = async (req, res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.query._id_user;
+    const _id_user = req.user._id_user;
     const { name, last_name, email, phone_number, birth_date, gender } =
         req.body;
 
@@ -205,7 +205,7 @@ export const updateUser = async (req, res) => {
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
-    const _id_user = req.query._id_user;
+    const _id_user = req.user._id_user;
 
     try {
         const user = await User.findOne({

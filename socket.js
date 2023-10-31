@@ -4,6 +4,7 @@ import {
     disconnection, 
     authenticateSocket,
     sendMessage, 
+    userTyping
 } from "./utils/socketHandlers.js";
 
 
@@ -20,6 +21,8 @@ const handleConnection = (io) => (socket) => {
   console.log('Room joined:', personalRoomId);
 
   socket.on('sendMessage', (messageData) => sendMessage(io, socket, messageData));
+  socket.on('userTyping', (messageData) => userTyping(socket, messageData));
+  // socket.on('messageRead', (data) => messageRead(io, socket, messageData));
   socket.on('disconnect', () => disconnection(socket));
 };
 

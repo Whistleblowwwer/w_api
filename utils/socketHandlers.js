@@ -64,7 +64,14 @@ export const sendMessage = async (io, socket, messageData) => {
 
     const message = await Message.create({ content, _id_sender, _id_receiver });
 
-    io.to(_id_room).emit('newMessage', message.content);
+    const messageToSend = {
+      content: message.content,
+      _id_sender: message._id_sender,
+      _id_receiver: message._id_receiver,
+      createdAt: message.createdAt
+    };
+
+    io.to(_id_room).emit('newMessage', messageToSend);
   } catch (error) {
     console.error("An error occurred", error);
     if (error instanceof Sequelize.ValidationError) {
@@ -85,6 +92,23 @@ export const getRoomId = (_id_sender, _id_receiver) => {
   }
   const sortedIds = [_id_sender, _id_receiver].sort();
   return `room-${sortedIds[0]}-${sortedIds[1]}`;
+};
+
+//Handle notifying a user typing in a private room
+export const userTyping = (socket, messageData) => {
+  const { _id_sender, _id_receiver } = messageData;
+
+  if (!_id_sender) {
+      return socket.emit("error", "Sender ID not provided");
+    }
+  
+  if (!_id_receiver) {
+      return socket.emit("error", "Receiver ID not provided");
+    }
+
+  const _id_room = getRoomId(_id_sender, _id_receiver);
+  
+  socket.to(_id_room).emit('userTyping', { _id_user_typing: _id_sender});
 };
 
 
