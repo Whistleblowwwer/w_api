@@ -71,9 +71,9 @@ export const getReview = async (req, res) => {
                             WHERE
                             reviewLikes."_id_review" = "Review"."_id_review"
                         )`),
-                        'likes'
+                        "likes",
                     ],
-                ]
+                ],
             },
             include: [
                 {
@@ -87,10 +87,10 @@ export const getReview = async (req, res) => {
                     where: { _id_parent: null },
                     required: false,
                     include: [
-                        { 
-                            model: User, 
-                            attributes: ["name"], 
-                            as: "User" 
+                        {
+                            model: User,
+                            attributes: ["name"],
+                            as: "User",
                         },
                         {
                             model: Comment,
@@ -114,9 +114,9 @@ export const getReview = async (req, res) => {
                                     WHERE
                                     commentLikes."_id_comment" = "Comments"."_id_comment"
                                 )`),
-                                'likes'
+                                "likes",
                             ],
-                        ]
+                        ],
                     },
                 },
                 {
@@ -132,17 +132,17 @@ export const getReview = async (req, res) => {
 
         const transformedComments = review.Comments.map((comment) => ({
             ...comment.dataValues,
-            likes: comment.getDataValue('likes'),
+            likes: comment.getDataValue("likes"),
             Children: comment.Children.map((child) => ({
                 ...child.dataValues,
-                likes: child.getDataValue('likes'),
+                likes: child.getDataValue("likes"),
             })),
         }));
 
         return res.status(200).send({
             ...review.dataValues,
-            likes: review.getDataValue('likes'),
-            Comments: transformedComments,
+            likes: review.getDataValue("likes"),
+            comments: transformedComments,
         });
     } catch (error) {
         console.error(error);
@@ -151,7 +151,6 @@ export const getReview = async (req, res) => {
             .send({ message: "Internal server error", error: error.message });
     }
 };
-
 
 // Get Reviews For Business
 export const getReviewsForBusiness = async (req, res) => {
@@ -171,9 +170,9 @@ export const getReviewsForBusiness = async (req, res) => {
                             WHERE
                             reviewLikes._id_review = "Review"."_id_review"
                         )`),
-                        'likes'
-                    ]
-                ]
+                        "likes",
+                    ],
+                ],
             },
             include: [
                 {
@@ -181,8 +180,8 @@ export const getReviewsForBusiness = async (req, res) => {
                     attributes: ["_id_business", "name", "entity"],
                 },
                 {
-                    model: User, 
-                    attributes: ["_id_user", "name", "last_name"], 
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
                 },
             ],
         });
@@ -194,17 +193,17 @@ export const getReviewsForBusiness = async (req, res) => {
         }
 
         const reviewsWithBusinessInfo = reviewsOfBusiness.map((review) => ({
-            _id_review: review._id_review, 
+            _id_review: review._id_review,
             content: review.content,
-            isValid: review.is_valid,
-            createdAt: review.createdAt,
-            likes: review.getDataValue('likes'), 
+            is_valid: review.is_valid,
+            created_at: review.createdAt,
+            likes: review.getDataValue("likes"),
             business: {
                 _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
-            author: {
+            user: {
                 _id_user: review.User._id_user,
                 name: review.User.name,
                 last_name: review.User.last_name,
@@ -222,7 +221,6 @@ export const getReviewsForBusiness = async (req, res) => {
     }
 };
 
-
 // Get All Reviews
 export const getAllReviews = async (req, res) => {
     try {
@@ -238,9 +236,9 @@ export const getAllReviews = async (req, res) => {
                             WHERE
                             "reviewLikes"."_id_review" = "Review"."_id_review"
                         )`),
-                        'likes'
-                    ]
-                ]
+                        "likes",
+                    ],
+                ],
             },
             include: [
                 {
@@ -260,7 +258,7 @@ export const getAllReviews = async (req, res) => {
 
         const reviewsWithLikes = allReviews.map((review) => ({
             ...review.get({ plain: true }),
-            likes: parseInt(review.getDataValue('likes'), 10)
+            likes: parseInt(review.getDataValue("likes"), 10),
         }));
 
         res.status(200).send({
@@ -272,7 +270,6 @@ export const getAllReviews = async (req, res) => {
         res.status(500).send({ message: "Internal server error" });
     }
 };
-
 
 // Update Review
 export const updateReview = async (req, res) => {
