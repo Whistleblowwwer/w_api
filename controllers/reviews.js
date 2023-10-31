@@ -199,12 +199,12 @@ export const getReviewsForBusiness = async (req, res) => {
             isValid: review.is_valid,
             createdAt: review.createdAt,
             likes: review.getDataValue('likes'), 
-            business: {
+            Business: {
                 _id_business: review.Business._id_business,
                 name: review.Business.name,
                 entity: review.Business.entity,
             },
-            author: {
+            User: {
                 _id_user: review.User._id_user,
                 name: review.User.name,
                 last_name: review.User.last_name,
