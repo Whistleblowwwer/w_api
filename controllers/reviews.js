@@ -89,7 +89,7 @@ export const getReview = async (req, res) => {
                     include: [
                         { 
                             model: User, 
-                            attributes: ["name"], 
+                            attributes: ["name", "last_name"], 
                             as: "User" 
                         },
                         {
@@ -99,7 +99,7 @@ export const getReview = async (req, res) => {
                             include: [
                                 {
                                     model: User,
-                                    attributes: ["name"],
+                                    attributes: ["name", "last_name"],
                                     as: "User",
                                 },
                             ],

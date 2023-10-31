@@ -27,10 +27,10 @@ router.get("/", validateToken, listAllBusinesses);
 router.get("/my-businesses", validateToken, getMyBusinesses);
 
 //Update Business
-router.put("/:_id_business", validateToken, updateBusiness);
+router.put("/", validateToken, updateBusiness);
 
 //Delete Business
-router.patch("/:_id_business", validateToken, deleteBusiness);
+router.patch("/", validateToken, deleteBusiness);
 
 //Search Business
 router.get("/search", validateToken, searchBusiness);

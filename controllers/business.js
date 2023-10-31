@@ -107,6 +107,7 @@ export const getMyBusinesses = async (req, res) => {
     try {
         const businesses = await Business.findAll({
             where: { _id_user },
+            order: [["createdAt", "DESC"]]
         });
 
         if (businesses.length === 0) {
@@ -129,7 +130,7 @@ export const getMyBusinesses = async (req, res) => {
 export const updateBusiness = async (req, res) => {
     try {
         const { name, address, state, city, entity, country } = req.body;
-        const _id_business = req.params._id_business;
+        const { _id_business } = req.query;
         const _id_user = req.user._id_user;
 
         const businessToUpdate = await Business.findOne({
@@ -174,7 +175,7 @@ export const updateBusiness = async (req, res) => {
 // Delete Business
 export const deleteBusiness = async (req, res) => {
     try {
-        const _id_business = req.params._id_business;
+        const { _id_business } = req.query;
         const _id_user = req.user._id_user;
 
         const deletedBusiness = await Business.findOne({

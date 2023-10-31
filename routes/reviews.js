@@ -26,9 +26,9 @@ router.get("/:_id_review", validateToken, getReview);
 router.get("/business/:_id_business", validateToken, getReviewsForBusiness);
 
 // Update Review
-router.put("/", validateToken, updateReview);
+router.put("/:_id_review", validateToken, updateReview);
 
 // Delete Review
-router.patch("/", validateToken, deleteReview);
+router.patch("/:_id_review", validateToken, deleteReview);
 
 export default router;
