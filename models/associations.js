@@ -7,7 +7,7 @@ import { UserFollowers } from "./userFollowers.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { CommentLikes } from "./commentLikes.js";
 import { ReviewImages } from "./reviewImages.js";
-
+import { Message } from "./messages.js";
 
 // Associations
 
@@ -30,9 +30,11 @@ User.belongsToMany(Business, {
 
 // 3. Una empresa puede tener 0 o varios reviews
 Business.hasMany(Review, { foreignKey: "_id_business" });
+Review.belongsTo(Business, { foreignKey: "_id_business" });
 
 // 4. Un review puede tener 0 o varios comments
 Review.hasMany(Comment, { foreignKey: "_id_review" });
+Comment.belongsTo(Review, { foreignKey: "_id_review" });
 
 // 5. Una empresa puede tener seguidores
 Business.belongsToMany(User, {
@@ -44,6 +46,7 @@ Business.belongsToMany(User, {
 
 // 6. Un user puede hacer un review
 User.hasMany(Review, { foreignKey: "_id_user" });
+Review.belongsTo(User, { foreignKey: "_id_user" });
 
 // 7. Un user puede likear un review
 User.belongsToMany(Review, {
@@ -78,3 +81,23 @@ Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
 
 // 10. Una imagen de review pertenece a un review
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
+
+// 11. Un usuario puede enviar y recibir muchos mensajes
+User.hasMany(Message, { foreignKey: "_id_sender" });
+User.hasMany(Message, { foreignKey: "_id_receiver" });
+
+// 12. Un mensaje pertenece a un usuario como remitente/destinatario
+Message.belongsTo(User, { foreignKey: "_id_sender" });
+Message.belongsTo(User, { foreignKey: "_id_receiver" });
+
+// 13. Un comentario puede tener varios comentarios hijos
+Comment.hasMany(Comment, { as: "Children", foreignKey: "_id_parent" });
+
+// 14. Un comentario puede tener un comentario padre
+Comment.belongsTo(Comment, { as: "Parent", foreignKey: "_id_parent" });
+
+// 15. Un comentario pertenece a un usuario
+Comment.belongsTo(User, { foreignKey: "_id_user", as: "User" });
+
+// 16. Un usuario puede tener muchos comentarios
+User.hasMany(Comment, { foreignKey: "_id_user", as: "Comments" });

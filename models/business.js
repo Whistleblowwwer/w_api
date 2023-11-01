@@ -13,6 +13,11 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
+        entity: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: null,
+        },
         address: {
             type: DataTypes.TEXT,
             allowNull: true,
@@ -28,6 +33,11 @@ export const Business = sequelize.define(
         profile_picture_url: {
             type: DataTypes.STRING(255),
             allowNull: true,
+        },
+        country: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: "Mexico",
         },
         is_valid: {
             type: DataTypes.BOOLEAN,
