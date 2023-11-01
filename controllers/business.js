@@ -55,13 +55,13 @@ export const createBusiness = async (req, res) => {
 export const updateBusiness = async (req, res) => {
   try {
     const { 
+      _id_business,
       name, 
       address, 
       state, 
       city 
     } = req.body;
-
-    const _id_business = req.params._id_business;
+    
     const _id_user = req.user._id_user;
 
     const businessToUpdate = await Business.findOne({
