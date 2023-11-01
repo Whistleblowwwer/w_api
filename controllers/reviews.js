@@ -4,8 +4,8 @@ import { Review } from "../models/reviews.js";
 
 // Create Review
 export const createReview = async (req, res) => {
-    const { _id_business, _id_user } = req.query;
-    const { content } = req.body;
+    const _id_user = req.user._id_user
+    const { _id_business, content } = req.body;
 
     if (!_id_business) {
         return res.status(400).send({ message: "Missing business ID" });

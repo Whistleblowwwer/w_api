@@ -18,9 +18,9 @@ export const uploadFile = async (req, res) => {
             } else {
                 //Get image and check it is an image type file.
                 const contentType = req.file.mimetype;
-                if (contentType !== "image/jpeg") {
-                    return res.status(400).send({ message: "Unsupported Media Type" });
-                }
+                // if (contentType !== "image/jpeg") {
+                //     return res.status(400).send({ message: "Unsupported Media Type" });
+                // }
     
                 //Prepare file for bucket and send file.
                 const file = req.file.buffer;
