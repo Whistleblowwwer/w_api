@@ -29,19 +29,19 @@ router.post("/login", logIn);
 router.put("/", validateToken, updateUser);
 
 //Get User Details
-router.get("/", validateToken, getUserDetails);
+router.get("/:_id_user", validateToken, getUserDetails);
 
 //Like Review
-router.post("/reviews/:_id_review/like", validateToken, likeReview);
+router.post("/reviews/like", validateToken, likeReview);
 
 //Like Comment
 router.post("/comments/:_id_comment/like", validateToken, likeComment);
 
 //Follow User
-router.post("/:_id_followed/follow", validateToken, followUser);
+router.post("/follow", validateToken, followUser);
 
 //Follow Business
-router.post("/business/:_id_business/follow", validateToken, followBusiness);
+router.post("/business/follow", validateToken, followBusiness);
 
 //Deactivate User
 router.patch("/deactivate", deactivateUser);

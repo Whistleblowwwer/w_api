@@ -158,7 +158,7 @@ export const logIn = async (req, res) => {
 
 // Update User
 export const updateUser = async (req, res) => {
-    const _id_user = req.query._id_user;
+    const _id_user = req.user._id_user;
     const { name, last_name, email, phone_number, birth_date, gender } =
         req.body;
 
@@ -225,7 +225,7 @@ export const getUserDetails = async (req, res) => {
 
 //Like Review
 export const likeReview = async (req, res) => {
-    const _id_review = req.params._id_review;
+    const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
 
     try {
@@ -294,7 +294,7 @@ export const likeComment = async (req, res) => {
 
 //Follow User
 export const followUser = async (req, res) => {
-    const _id_followed = req.params._id_followed;
+    const _id_followed = req.query._id_followed;
     const _id_follower = req.user._id_user;
 
     try {
@@ -329,7 +329,7 @@ export const followUser = async (req, res) => {
 
 //Follow Business
 export const followBusiness = async (req, res) => {
-    const _id_business = req.params._id_business;
+    const _id_business = req.query._id_business;
     const _id_user = req.user._id_user;
 
     try {

@@ -8,8 +8,8 @@ import { Sequelize } from "sequelize";
 
 // Create Review
 export const createReview = async (req, res) => {
-    const { content, _id_business } = req.body;
-    const _id_user = req.user._id_user;
+    const _id_user = req.user._id_user
+    const { _id_business, content } = req.body;
 
     if (!_id_business) {
         return res.status(400).send({ message: "Missing business ID" });
