@@ -35,3 +35,84 @@ export const createComment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Update Comment
+export const updateComment = async (req, res) => {
+  const { _id_comment } = req.params;
+  const { content } = req.body;
+  const _id_user = req.user._id_user; 
+
+  if (!content) {
+    return res.status(400).json({ message: "Content is required" });
+  }
+
+  try {
+    const commentToUpdate = await Comment.findOne({
+      where: { _id_comment }
+    });
+
+    if (!commentToUpdate) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (commentToUpdate._id_user !== _id_user) {
+      return res.status(403).json({ message: "You do not have permission to edit this comment" });
+    }
+
+    commentToUpdate.content = content;
+    await commentToUpdate.save();
+
+    res.status(200).json({
+      message: "Comment updated successfully",
+      comment: commentToUpdate
+    });
+  } catch (error) {
+    console.error("Error updating comment:", error);
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        message: "Validation Error", 
+        errors: error.errors.map(err => err.message) 
+      });
+    } else {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+};
+
+// Deactivate Comment
+export const deactivateComment = async (req, res) => {
+  const { _id_comment } = req.params;
+  const _id_user = req.user._id_user;
+
+  try {
+    const commentToDeactivate = await Comment.findOne({
+      where: { _id_comment }
+    });
+
+    if (!commentToDeactivate) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (commentToDeactivate._id_user !== _id_user) {
+      return res.status(403).json({ message: "You do not have permission to deactivate this comment" });
+    }
+
+    commentToDeactivate.is_valid = false;
+    await commentToDeactivate.save();
+
+    return res.status(200).json({
+      message: "Comment deactivated successfully",
+      deactivated: true
+    });
+  } catch (error) {
+    console.error("Error deactivating comment:", error);
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        message: "Validation Error", 
+        errors: error.errors.map(err => err.message) 
+      });
+    } else {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+};
