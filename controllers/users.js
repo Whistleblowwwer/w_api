@@ -224,7 +224,7 @@ export const getUserDetails = async (req, res) => {
 
 //Like Review
 export const likeReview = async (req, res) => {
-    const _id_review = req.params._id_review;
+    const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
 
     try {
@@ -259,7 +259,7 @@ export const likeReview = async (req, res) => {
 
 //Like Comment
 export const likeComment = async (req, res) => {
-    const _id_comment = req.params._id_comment;
+    const _id_comment = req.query._id_comment;
     const _id_user = req.user._id_user;
 
     try {
@@ -292,7 +292,7 @@ export const likeComment = async (req, res) => {
 
 //Follow User
 export const followUser = async (req, res) => {
-    const _id_followed = req.params._id_followed;
+    const _id_followed = req.query._id_followed;
     const _id_follower = req.user._id_user;
 
     try {
@@ -327,7 +327,7 @@ export const followUser = async (req, res) => {
 
 //Follow Business
 export const followBusiness = async (req, res) => {
-    const _id_business = req.params._id_business;
+    const _id_business = req.query._id_business;
     const _id_user = req.user._id_user;
 
     try {

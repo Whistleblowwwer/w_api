@@ -20,15 +20,15 @@ router.post("/", validateToken, createReview);
 router.get("/", validateToken, getAllReviews);
 
 // Get Review (with comments)
-router.get("/:_id_review", validateToken, getReview);
+router.get("/", validateToken, getReview);
 
 // Get Reviews of a Business
-router.get("/business/:_id_business", validateToken, getReviewsForBusiness);
+router.get("/business", validateToken, getReviewsForBusiness);
 
 // Update Review
-router.put("/:_id_review", validateToken, updateReview);
+router.put("/", validateToken, updateReview);
 
 // Delete Review
-router.patch("/:_id_review", validateToken, deleteReview);
+router.patch("/", validateToken, deleteReview);
 
 export default router;

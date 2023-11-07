@@ -11,13 +11,13 @@ const router = Router();
 // //----------Messages Routes-------------
 
 // Get Messages from a conversation
-router.get('/:_id_receiver', validateToken, getMessages); 
+router.get('/', validateToken, getMessages); 
 
 // Update message
-router.put('/:_id_message', validateToken, updateMessage);
+router.put('/', validateToken, updateMessage);
 
 // Delete message
-router.patch('/:_id_message', validateToken, deleteMessage);
+router.patch('/', validateToken, deleteMessage);
 
 export default router;
 

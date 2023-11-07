@@ -14,9 +14,9 @@ const router = Router();
 router.post('/', validateToken, createComment);
 
 //Update Comment
-router.put('/:_id_comment', validateToken, updateComment);
+router.put('/', validateToken, updateComment);
 
 //Delete Comment
-router.patch('/:_id_comment', validateToken, deactivateComment);
+router.patch('/', validateToken, deactivateComment);
 
 export default router;

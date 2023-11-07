@@ -38,7 +38,7 @@ export const createComment = async (req, res) => {
 
 // Update Comment
 export const updateComment = async (req, res) => {
-  const { _id_comment } = req.params;
+  const _id_comment  = req.query._id_comment;
   const { content } = req.body;
   const _id_user = req.user._id_user; 
 
@@ -81,7 +81,7 @@ export const updateComment = async (req, res) => {
 
 // Deactivate Comment
 export const deactivateComment = async (req, res) => {
-  const { _id_comment } = req.params;
+  const _id_comment  = req.query._id_comment ;
   const _id_user = req.user._id_user;
 
   try {

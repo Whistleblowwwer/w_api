@@ -58,7 +58,7 @@ export const createReview = async (req, res) => {
 
 //Get Review by Id (with comments)
 export const getReview = async (req, res) => {
-    const _id_review = req.params._id_review;
+    const _id_review = req.query._id_review;
 
     try {
         const review = await Review.findByPk(_id_review, {
@@ -155,7 +155,7 @@ export const getReview = async (req, res) => {
 
 // Get Reviews For Business
 export const getReviewsForBusiness = async (req, res) => {
-    const _id_business = req.params._id_business;
+    const _id_business = req.query._id_business;
 
     try {
         const reviewsOfBusiness = await Review.findAll({
@@ -278,7 +278,7 @@ export const getAllReviews = async (req, res) => {
 export const updateReview = async (req, res) => {
     const { content } = req.body;
 
-    const _id_review = req.params._id_review;
+    const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
 
     try {
@@ -317,7 +317,7 @@ export const updateReview = async (req, res) => {
 
 // Delete Review
 export const deleteReview = async (req, res) => {
-    const _id_review = req.params._id_review;
+    const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
 
     try {
