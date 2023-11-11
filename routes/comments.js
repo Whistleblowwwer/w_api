@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
 import { 
+    getCommentChildren,
     createComment,
     updateComment,
     deactivateComment
@@ -9,6 +10,9 @@ import {
 const router = Router();
 
 //----------Comments Routes-------------
+
+//Get Comment Children
+router.get('/children', validateToken, getCommentChildren)
 
 //Create Comment
 router.post('/', validateToken, createComment);
