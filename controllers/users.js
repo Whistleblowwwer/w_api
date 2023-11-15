@@ -11,7 +11,6 @@ import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 import { Op } from "sequelize";
 import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 
-//Create new user
 export const createUser = async (req, res) => {
     try {
         const {
@@ -42,11 +41,6 @@ export const createUser = async (req, res) => {
             }
         }
 
-        const userMail = await User.findOne({ where: { email } });
-        if (userMail) {
-            return res.status(403).send({ message: "Email already in use" });
-        }
-
         if (!(await isValidEmail(email))) {
             return res.status(400).send({ message: "Invalid email format" });
         }
@@ -57,45 +51,40 @@ export const createUser = async (req, res) => {
                 .send({ message: "Invalid phone number format" });
         }
 
-        const userPhone = await User.findOne({ where: { phone_number } });
-        if (userPhone) {
-            return res
-                .status(403)
-                .send({ message: "Phone number already in use" });
-        }
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const user = await User.create({
-            name,
-            last_name,
-            email,
-            phone_number,
-            birth_date,
-            gender,
-            password_token: hashedPassword,
+        const [userCreated, created] = await User.findOrCreate({
+            where: { email },
+            defaults: {
+                name,
+                last_name,
+                phone_number,
+                birth_date,
+                gender,
+                password_token: hashedPassword,
+            }
         });
+
+        if (!created) {
+            return res.status(403).send({ message: "Email already in use" });
+        }
+
+        const userData = userCreated.get({ plain: true });
+        delete userData.password_token;
 
         // Generate a JWT token
         const token = jwt.sign(
-            { _id_user: user._id_user },
+            { _id_user: userCreated._id_user },
             process.env.TOKEN_SECRET,
             { expiresIn: "3d" }
         );
 
         //TODO: Add email distribution
 
-        // Return the created user and JWT token
-        const createdUser = await User.findOne({
-            where: { _id_user: user._id_user },
-
-            attributes: { exclude: user.password_token },
-        });
-
         res.status(200).send({
             message: "User created successfully",
-            user: createdUser,
+            user: userData,
             token,
         });
     } catch (error) {
@@ -104,9 +93,6 @@ export const createUser = async (req, res) => {
             return res
                 .status(400)
                 .send({ message: "Validation error", errors: error.errors });
-        } else if (error instanceof Error) {
-            // Handle other types of errors
-            return res.status(500).send({ message: "Internal Server Error" });
         } else {
             // Catch any other unexpected errors
             return res
@@ -115,6 +101,7 @@ export const createUser = async (req, res) => {
         }
     }
 };
+
 
 //Log In
 export const logIn = async (req, res) => {
