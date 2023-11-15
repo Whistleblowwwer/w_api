@@ -218,32 +218,32 @@ export const searchBusiness = async (req, res) => {
 
     if (name) {
         searchCriteria.name = {
-            [Op.like]: `%${name}%`,
+            [Op.iLike]: `%${name}%`,
         };
     }
     if (address) {
         searchCriteria.address = {
-            [Op.like]: `%${address}%`,
+            [Op.iLike]: `%${address}%`,
         };
     }
     if (state) {
         searchCriteria.state = {
-            [Op.like]: `%${state}%`,
+            [Op.iLike]: `%${state}%`,
         };
     }
     if (city) {
         searchCriteria.city = {
-            [Op.like]: `%${city}%`,
+            [Op.iLike]: `%${city}%`,
         };
     }
     if (country) {
         searchCriteria.country = {
-            [Op.like]: `%${country}%`,
+            [Op.iLike]: `%${country}%`,
         };
     }
     if (entity) {
         searchCriteria.entity = {
-            [Op.like]: `%${entity}%`,
+            [Op.iLike]: `%${entity}%`,
         };
     }
 

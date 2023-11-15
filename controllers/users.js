@@ -448,18 +448,18 @@ export const searchUser = async (req, res) => {
     if (searchTerm.includes(" ")) {
         const [providedName, providedLastName] = searchTerm.split(" ");
         nameSearchCriteria.name = {
-            [Op.like]: `%${providedName}%`,
+            [Op.iLike]: `%${providedName}%`,
         };
         lastNameSearchCriteria.last_name = {
-            [Op.like]: `%${providedLastName}%`,
+            [Op.iLike]: `%${providedLastName}%`,
         };
     } else {
         // If only one term is provided, search in both name and last name
         nameSearchCriteria.name = {
-            [Op.like]: `%${searchTerm}%`,
+            [Op.iLike]: `%${searchTerm}%`,
         };
         lastNameSearchCriteria.last_name = {
-            [Op.like]: `%${searchTerm}%`,
+            [Op.iLike]: `%${searchTerm}%`,
         };
     }
 
