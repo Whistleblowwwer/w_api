@@ -149,6 +149,9 @@ export const updateUser = async (req, res) => {
     const _id_user = req.user._id_user;
 
     const { name, last_name, email, phone_number, birth_date, gender } = req.body;
+    const _id_user = req.user._id_user;
+    const { name, last_name, email, phone_number, birth_date, gender } =
+        req.body;
 
     try {
         const user = await User.findOne({ where: { _id_user } });
@@ -250,7 +253,7 @@ export const likeComment = async (req, res) => {
     const _id_user = req.user._id_user;
 
     try {
-        const comment = await Comment.findOne({ where: { _id_comment} });
+        const comment = await Comment.findOne({ where: { _id_comment } });
         if (!comment) {
             return res.status(404).send({ message: "Comment not found" });
         }
@@ -262,9 +265,10 @@ export const likeComment = async (req, res) => {
         if (existingLike) {
             // If the like exists, remove it
             await existingLike.destroy();
-            return res
-                .status(200)
-                .send({ message: "Comment unliked successfully", liked: false });
+            return res.status(200).send({
+                message: "Comment unliked successfully",
+                liked: false,
+            });
         } else {
             // If the like doesn't exist, add it
             await CommentLikes.create({ _id_comment, _id_user });

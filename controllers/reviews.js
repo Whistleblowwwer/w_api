@@ -8,8 +8,8 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 
 // Create Review
 export const createReview = async (req, res) => {
-    const { content, _id_business } = req.body;
-    const _id_user = req.user._id_user;
+    const _id_user = req.user._id_user
+    const { _id_business, content } = req.body;
 
     if (!_id_business) {
         return res.status(400).send({ message: "Missing business ID" });
@@ -177,7 +177,7 @@ export const getReviewChildren = async (req, res) => {
                             WHERE
                             reviewLikes."_id_review" = "Review"."_id_review"
                         )`),
-                        'likes'
+                        "likes",
                     ],
                     [
                         Sequelize.literal(`(
@@ -211,6 +211,7 @@ export const getReviewChildren = async (req, res) => {
                             attributes: ["name", "last_name"], 
                             as: "User" 
                         },
+
                         {
                             model: Comment,
                             as: "Children",
@@ -233,9 +234,9 @@ export const getReviewChildren = async (req, res) => {
                                     WHERE
                                     commentLikes."_id_comment" = "Comments"."_id_comment"
                                 )`),
-                                'likes'
+                                "likes",
                             ],
-                        ]
+                        ],
                     },
                 },
             ],
@@ -271,7 +272,13 @@ export const getReviewChildren = async (req, res) => {
                 followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
-        });
+            likes: comment.getDataValue("likes"),
+            Children: comment.Children.map((child) => ({
+                ...child.dataValues,
+                likes: child.getDataValue("likes"),
+            })),
+        }));
+
     } catch (error) {
         console.error(error);
         return res
@@ -281,6 +288,7 @@ export const getReviewChildren = async (req, res) => {
 };
 
 //Get Reviews of a Business
+
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.query._id_business;
     const _id_user_requesting = req.user._id_user; 
@@ -311,6 +319,7 @@ export const getReviewsForBusiness = async (req, res) => {
                         'comments'
                     ]
                 ]
+
             },
             include: [
                 {
@@ -318,8 +327,8 @@ export const getReviewsForBusiness = async (req, res) => {
                     attributes: ["_id_business", "name", "entity"],
                 },
                 {
-                    model: User, 
-                    attributes: ["_id_user", "name", "last_name"], 
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
                 },
             ],
         });
@@ -434,7 +443,6 @@ export const getAllReviews = async (req, res) => {
         res.status(500).send({ message: "Internal server error" });
     }
 };
-
 
 // Update Review
 export const updateReview = async (req, res) => {
