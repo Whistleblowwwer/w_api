@@ -8,7 +8,7 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 
 // Create Review
 export const createReview = async (req, res) => {
-    const _id_user = req.user._id_user
+    const _id_user = req.user._id_user;
     const { _id_business, content } = req.body;
 
     if (!_id_business) {
@@ -57,113 +57,7 @@ export const createReview = async (req, res) => {
 };
 
 export const getReviewParent = async (req, res) => {
-    const _id_user_requesting = req.user._id_user; 
-    const _id_review = req.query._id_review;
-
-    try {
-          const review = await Review.findByPk(_id_review, {
-            attributes: {
-                include: [
-                    [
-                        Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "reviewLikes" AS reviewLikes
-                            WHERE
-                            reviewLikes."_id_review" = "Review"."_id_review"
-                        )`),
-                        'likes'
-                    ],
-                    [
-                        Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "comments" as Comments
-                            WHERE
-                            Comments._id_review = "Review"."_id_review"
-                        )`),
-                        'comments'
-                    ]
-                ]
-            },
-            include: [
-                {
-                    model: User,
-                    attributes: ["_id_user", "name", "last_name"],
-                    as: "User",
-                },
-                {
-                    model: Business,
-                    attributes: ["_id_business", "name", "entity"],
-                },
-                {
-                    model: Comment,
-                    as: "Comments",
-                    where: { _id_parent: null },
-                    required: false,
-                    include: [
-                        { 
-                            model: User, 
-                            attributes: ["name", "last_name"], 
-                            as: "User" 
-                        },
-                    ],
-                    attributes: {
-                        include: [
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM "commentLikes" AS commentLikes
-                                    WHERE
-                                    commentLikes."_id_comment" = "Comments"."_id_comment"
-                                )`),
-                                'likes'
-                            ],
-                        ]
-                    },
-                },
-            ],
-        });
-
-        if (!review) {
-            return res.status(404).send({ message: "Review not found" });
-        }
-
-        const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_followed)));
-
-        const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_business)));
-
-        const transformedComments = review.Comments.map((comment) => ({
-            ...comment.dataValues,
-            likes: comment.getDataValue('likes'),
-        }));
-
-        return res.status(200).send({
-            ...review.dataValues,
-            likes: review.getDataValue('likes'),
-            User: {
-                ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user),
-            },
-            Business: {
-                ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
-            },
-            Comments: transformedComments,
-        });
-    } catch (error) {
-        console.error(error);
-        return res
-            .status(500)
-            .send({ message: "Internal server error", error: error.message });
-    }
-};
-
-//Get Review by Id (with comments and children)
-export const getReviewChildren = async (req, res) => {
-    const _id_user_requesting = req.user._id_user; 
+    const _id_user_requesting = req.user._id_user;
     const _id_review = req.query._id_review;
 
     try {
@@ -186,9 +80,9 @@ export const getReviewChildren = async (req, res) => {
                             WHERE
                             Comments._id_review = "Review"."_id_review"
                         )`),
-                        'comments'
-                    ]
-                ]
+                        "comments",
+                    ],
+                ],
             },
             include: [
                 {
@@ -206,10 +100,122 @@ export const getReviewChildren = async (req, res) => {
                     where: { _id_parent: null },
                     required: false,
                     include: [
-                        { 
-                            model: User, 
-                            attributes: ["name", "last_name"], 
-                            as: "User" 
+                        {
+                            model: User,
+                            attributes: ["name", "last_name"],
+                            as: "User",
+                        },
+                    ],
+                    attributes: {
+                        include: [
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM "commentLikes" AS commentLikes
+                                    WHERE
+                                    commentLikes."_id_comment" = "Comments"."_id_comment"
+                                )`),
+                                "likes",
+                            ],
+                        ],
+                    },
+                },
+            ],
+        });
+
+        if (!review) {
+            return res.status(404).send({ message: "Review not found" });
+        }
+
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
+
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
+
+        const transformedComments = review.Comments.map((comment) => ({
+            ...comment.dataValues,
+            likes: comment.getDataValue("likes"),
+        }));
+
+        return res.status(200).send({
+            ...review.dataValues,
+            likes: review.getDataValue("likes"),
+            User: {
+                ...review.User.get({ plain: true }),
+                followed: userFollowings.has(review.User._id_user),
+            },
+            Business: {
+                ...review.Business.get({ plain: true }),
+                followed: businessFollowings.has(review.Business._id_business),
+            },
+            Comments: transformedComments,
+        });
+    } catch (error) {
+        console.error(error);
+        return res
+            .status(500)
+            .send({ message: "Internal server error", error: error.message });
+    }
+};
+
+//Get Review by Id (with comments and children)
+export const getReviewChildren = async (req, res) => {
+    const _id_user_requesting = req.user._id_user;
+    const _id_review = req.query._id_review;
+
+    try {
+        const review = await Review.findByPk(_id_review, {
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "reviewLikes" AS reviewLikes
+                            WHERE
+                            reviewLikes."_id_review" = "Review"."_id_review"
+                        )`),
+                        "likes",
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "comments" as Comments
+                            WHERE
+                            Comments._id_review = "Review"."_id_review"
+                        )`),
+                        "comments",
+                    ],
+                ],
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
+                    as: "User",
+                },
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                },
+                {
+                    model: Comment,
+                    as: "Comments",
+                    where: { _id_parent: null },
+                    required: false,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["name", "last_name"],
+                            as: "User",
                         },
 
                         {
@@ -248,21 +254,27 @@ export const getReviewChildren = async (req, res) => {
 
         // Obtén los seguimientos del usuario para negocios y otros usuarios
         const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_followed)));
+            where: { _id_follower: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
 
         const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_business)));
+            where: { _id_user: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
 
         const transformedComments = review.Comments.map((comment) => ({
             ...comment.dataValues,
-            likes: comment.getDataValue('likes'),
+            likes: comment.getDataValue("likes"),
         }));
 
         return res.status(200).send({
             ...review.dataValues,
-            likes: review.getDataValue('likes'),
+            likes: review.getDataValue("likes"),
             User: {
                 ...review.User.get({ plain: true }),
                 followed: userFollowings.has(review.User._id_user),
@@ -277,8 +289,7 @@ export const getReviewChildren = async (req, res) => {
                 ...child.dataValues,
                 likes: child.getDataValue("likes"),
             })),
-        }));
-
+        });
     } catch (error) {
         console.error(error);
         return res
@@ -291,7 +302,7 @@ export const getReviewChildren = async (req, res) => {
 
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.query._id_business;
-    const _id_user_requesting = req.user._id_user; 
+    const _id_user_requesting = req.user._id_user;
 
     try {
         const reviewsOfBusiness = await Review.findAll({
@@ -307,7 +318,7 @@ export const getReviewsForBusiness = async (req, res) => {
                             WHERE
                             reviewLikes._id_review = "Review"."_id_review"
                         )`),
-                        'likes'
+                        "likes",
                     ],
                     [
                         Sequelize.literal(`(
@@ -316,10 +327,9 @@ export const getReviewsForBusiness = async (req, res) => {
                             WHERE
                             Comments._id_review = "Review"."_id_review"
                         )`),
-                        'comments'
-                    ]
-                ]
-
+                        "comments",
+                    ],
+                ],
             },
             include: [
                 {
@@ -334,36 +344,50 @@ export const getReviewsForBusiness = async (req, res) => {
         });
 
         if (reviewsOfBusiness.length === 0) {
-            return res.status(404).send({ message: "No reviews found for this business" });
+            return res
+                .status(404)
+                .send({ message: "No reviews found for this business" });
         }
 
         const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_followed)));
+            where: { _id_follower: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
 
         const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_business)));
-        
-        const reviewsWithBusinessAndFollowInfo = reviewsOfBusiness.map(review => ({
-            ...review.get({ plain: true }), 
-            User: {
-                ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user), 
-            },
-            Business: {
-                ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
-            },
-        }));
+            where: { _id_user: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
+
+        const reviewsWithBusinessAndFollowInfo = reviewsOfBusiness.map(
+            (review) => ({
+                ...review.get({ plain: true }),
+                User: {
+                    ...review.User.get({ plain: true }),
+                    followed: userFollowings.has(review.User._id_user),
+                },
+                Business: {
+                    ...review.Business.get({ plain: true }),
+                    followed: businessFollowings.has(
+                        review.Business._id_business
+                    ),
+                },
+            })
+        );
 
         return res.status(200).send({
             message: "Reviews retrieved successfully",
             reviews: reviewsWithBusinessAndFollowInfo,
         });
     } catch (error) {
-        console.error(error); 
-        return res.status(500).send({ message: "Internal server error", error: error.message });
+        console.error(error);
+        return res
+            .status(500)
+            .send({ message: "Internal server error", error: error.message });
     }
 };
 
@@ -384,7 +408,7 @@ export const getAllReviews = async (req, res) => {
                             WHERE
                             "reviewLikes"."_id_review" = "Review"."_id_review"
                         )`),
-                        'likes'
+                        "likes",
                     ],
                     [
                         Sequelize.literal(`(
@@ -393,9 +417,9 @@ export const getAllReviews = async (req, res) => {
                             WHERE
                             Comments._id_review = "Review"."_id_review"
                         )`),
-                        'comments'
-                    ]
-                ]
+                        "comments",
+                    ],
+                ],
             },
             include: [
                 {
@@ -414,16 +438,22 @@ export const getAllReviews = async (req, res) => {
         }
 
         const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_followed)));
+            where: { _id_follower: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
 
         const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user_requesting }
-        }).then(followings => new Set(followings.map(following => following._id_business)));
+            where: { _id_user: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
 
-        const reviewsWithLikesAndFollowInfo = allReviews.map(review => ({
+        const reviewsWithLikesAndFollowInfo = allReviews.map((review) => ({
             ...review.get({ plain: true }),
-            likes: parseInt(review.getDataValue('likes'), 10),
+            likes: parseInt(review.getDataValue("likes"), 10),
             User: {
                 ...review.User.get({ plain: true }),
                 followed: userFollowings.has(review.User._id_user),
