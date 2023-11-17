@@ -63,7 +63,7 @@ export const createUser = async (req, res) => {
                 birth_date,
                 gender,
                 password_token: hashedPassword,
-            }
+            },
         });
 
         if (!created) {
@@ -101,7 +101,6 @@ export const createUser = async (req, res) => {
         }
     }
 };
-
 
 //Log In
 export const logIn = async (req, res) => {
@@ -145,10 +144,6 @@ export const logIn = async (req, res) => {
 
 //Update User
 export const updateUser = async (req, res) => {
-
-    const _id_user = req.user._id_user;
-
-    const { name, last_name, email, phone_number, birth_date, gender } = req.body;
     const _id_user = req.user._id_user;
     const { name, last_name, email, phone_number, birth_date, gender } =
         req.body;
@@ -160,8 +155,14 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "User not found" });
         }
 
-        if (email && email !== user.email && !(await isValidEmail(email, _id_user))) {
-            return res.status(400).send({ message: "Invalid or already in use email address" });
+        if (
+            email &&
+            email !== user.email &&
+            !(await isValidEmail(email, _id_user))
+        ) {
+            return res
+                .status(400)
+                .send({ message: "Invalid or already in use email address" });
         }
 
         if (phone_number && !isValidPhoneNumber(phone_number)) {
@@ -184,13 +185,17 @@ export const updateUser = async (req, res) => {
             attributes: { exclude: ["password_token"] },
         });
 
-        res.status(200).send({ message: "User updated successfully", user: updatedUser });
+        res.status(200).send({
+            message: "User updated successfully",
+            user: updatedUser,
+        });
     } catch (error) {
         console.error(`Error updating user: ${error.message}`);
-        res.status(500).send({ error: "An error occurred while updating the user" });
+        res.status(500).send({
+            error: "An error occurred while updating the user",
+        });
     }
 };
-
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
