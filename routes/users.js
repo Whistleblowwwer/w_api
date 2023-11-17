@@ -35,7 +35,7 @@ router.get("/:_id_user", validateToken, getUserDetails);
 router.post("/reviews/like", validateToken, likeReview);
 
 //Like Comment
-router.post("/comments/:_id_comment/like", validateToken, likeComment);
+router.post("/comments/like", validateToken, likeComment);
 
 //Follow User
 router.post("/follow", validateToken, followUser);
@@ -44,7 +44,7 @@ router.post("/follow", validateToken, followUser);
 router.post("/business/follow", validateToken, followBusiness);
 
 //Deactivate User
-router.patch("/deactivate", deactivateUser);
+router.patch("/deactivate", validateToken, deactivateUser);
 
 //Search User 
 router.get("/search", validateToken, searchUser);

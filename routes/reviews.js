@@ -3,7 +3,8 @@ import { validateToken } from "../middlewares/jwt.js"; // Import the validateTok
 import {
     createReview,
     getAllReviews,
-    getReview,
+    getReviewParent,
+    getReviewChildren,
     getReviewsForBusiness,
     updateReview,
     deleteReview,
@@ -19,11 +20,14 @@ router.post("/", validateToken, createReview);
 // Get all reviews
 router.get("/", validateToken, getAllReviews);
 
-// Get Review (with comments)
-router.get("/:_id_review", validateToken, getReview);
+// Get Review (with only parent comments)
+router.get("/info", validateToken, getReviewParent);
+
+// Get Review (with comments and children)
+router.get("/info/thread", validateToken, getReviewChildren);
 
 // Get Reviews of a Business
-router.get("/business/:_id_business", validateToken, getReviewsForBusiness);
+router.get("/business", validateToken, getReviewsForBusiness);
 
 // Update Review
 router.put("/", validateToken, updateReview);

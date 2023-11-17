@@ -11,7 +11,6 @@ import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 import { Op } from "sequelize";
 import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 
-//Create new user
 export const createUser = async (req, res) => {
     try {
         const {
@@ -42,11 +41,6 @@ export const createUser = async (req, res) => {
             }
         }
 
-        const userMail = await User.findOne({ where: { email } });
-        if (userMail) {
-            return res.status(403).send({ message: "Email already in use" });
-        }
-
         if (!(await isValidEmail(email))) {
             return res.status(400).send({ message: "Invalid email format" });
         }
@@ -57,45 +51,40 @@ export const createUser = async (req, res) => {
                 .send({ message: "Invalid phone number format" });
         }
 
-        const userPhone = await User.findOne({ where: { phone_number } });
-        if (userPhone) {
-            return res
-                .status(403)
-                .send({ message: "Phone number already in use" });
-        }
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const user = await User.create({
-            name,
-            last_name,
-            email,
-            phone_number,
-            birth_date,
-            gender,
-            password_token: hashedPassword,
+        const [userCreated, created] = await User.findOrCreate({
+            where: { email },
+            defaults: {
+                name,
+                last_name,
+                phone_number,
+                birth_date,
+                gender,
+                password_token: hashedPassword,
+            }
         });
+
+        if (!created) {
+            return res.status(403).send({ message: "Email already in use" });
+        }
+
+        const userData = userCreated.get({ plain: true });
+        delete userData.password_token;
 
         // Generate a JWT token
         const token = jwt.sign(
-            { _id_user: user._id_user },
+            { _id_user: userCreated._id_user },
             process.env.TOKEN_SECRET,
             { expiresIn: "3d" }
         );
 
         //TODO: Add email distribution
 
-        // Return the created user and JWT token
-        const createdUser = await User.findOne({
-            where: { _id_user: user._id_user },
-
-            attributes: { exclude: user.password_token },
-        });
-
         res.status(200).send({
             message: "User created successfully",
-            user: createdUser,
+            user: userData,
             token,
         });
     } catch (error) {
@@ -104,9 +93,6 @@ export const createUser = async (req, res) => {
             return res
                 .status(400)
                 .send({ message: "Validation error", errors: error.errors });
-        } else if (error instanceof Error) {
-            // Handle other types of errors
-            return res.status(500).send({ message: "Internal Server Error" });
         } else {
             // Catch any other unexpected errors
             return res
@@ -115,6 +101,7 @@ export const createUser = async (req, res) => {
         }
     }
 };
+
 
 //Log In
 export const logIn = async (req, res) => {
@@ -156,52 +143,54 @@ export const logIn = async (req, res) => {
     }
 };
 
-// Update User
+//Update User
 export const updateUser = async (req, res) => {
+
+    const _id_user = req.user._id_user;
+
+    const { name, last_name, email, phone_number, birth_date, gender } = req.body;
     const _id_user = req.user._id_user;
     const { name, last_name, email, phone_number, birth_date, gender } =
         req.body;
 
     try {
-        // Find the user
-        let user = await User.findOne({ where: { _id_user } });
+        const user = await User.findOne({ where: { _id_user } });
+
         if (!user) {
             return res.status(400).send({ message: "User not found" });
         }
 
-        // if (email !== user.email && !(await isValidEmail(email, _id_user))) {
-        //     return res
-        //         .status(400)
-        //         .send({ message: "Invalid or already in use email address" });
-        // }
+        if (email && email !== user.email && !(await isValidEmail(email, _id_user))) {
+            return res.status(400).send({ message: "Invalid or already in use email address" });
+        }
 
         if (phone_number && !isValidPhoneNumber(phone_number)) {
             return res.status(400).send({ message: "Invalid phone number" });
         }
 
-        await User.update(
-            {
-                name,
-                last_name,
-                email,
-                phone_number,
-                birth_date,
-                gender,
-            },
-            { where: { _id_user } }
-        );
+        const updateData = {
+            ...(name !== undefined && { name }),
+            ...(last_name !== undefined && { last_name }),
+            ...(email !== undefined && { email }),
+            ...(phone_number !== undefined && { phone_number }),
+            ...(birth_date !== undefined && { birth_date }),
+            ...(gender !== undefined && { gender }),
+        };
 
-        user = await User.findOne({
+        await User.update(updateData, { where: { _id_user } });
+
+        const updatedUser = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
         });
 
-        res.status(200).send({ message: "User updated successfully", user });
+        res.status(200).send({ message: "User updated successfully", user: updatedUser });
     } catch (error) {
-        console.error(`Error updating user`);
-        res.status(500).send({ error: error.message });
+        console.error(`Error updating user: ${error.message}`);
+        res.status(500).send({ error: "An error occurred while updating the user" });
     }
 };
+
 
 //Get User Details
 export const getUserDetails = async (req, res) => {
@@ -260,7 +249,7 @@ export const likeReview = async (req, res) => {
 
 //Like Comment
 export const likeComment = async (req, res) => {
-    const _id_comment = req.params._id_comment;
+    const _id_comment = req.query._id_comment;
     const _id_user = req.user._id_user;
 
     try {
@@ -450,18 +439,18 @@ export const searchUser = async (req, res) => {
     if (searchTerm.includes(" ")) {
         const [providedName, providedLastName] = searchTerm.split(" ");
         nameSearchCriteria.name = {
-            [Op.like]: `%${providedName}%`,
+            [Op.iLike]: `%${providedName}%`,
         };
         lastNameSearchCriteria.last_name = {
-            [Op.like]: `%${providedLastName}%`,
+            [Op.iLike]: `%${providedLastName}%`,
         };
     } else {
         // If only one term is provided, search in both name and last name
         nameSearchCriteria.name = {
-            [Op.like]: `%${searchTerm}%`,
+            [Op.iLike]: `%${searchTerm}%`,
         };
         lastNameSearchCriteria.last_name = {
-            [Op.like]: `%${searchTerm}%`,
+            [Op.iLike]: `%${searchTerm}%`,
         };
     }
 

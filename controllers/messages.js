@@ -5,7 +5,7 @@ import Sequelize from "sequelize";
 // Get Messages from a conversation
 export const getMessages = async (req, res) => {
   const _id_user = req.user._id_user; 
-  const { _id_receiver } = req.params;
+  const _id_receiver  = req.query._id_receiver;
 
   const _id_sender = _id_user;
 
@@ -46,7 +46,7 @@ export const getMessages = async (req, res) => {
 
 // Update a message
 export const updateMessage = async (req, res) => {
-  const { _id_message } = req.params;
+  const _id_message  = req.query._id_message;
   const { content } = req.body;
   const _id_user = req.user._id_user; 
 
@@ -90,7 +90,7 @@ export const updateMessage = async (req, res) => {
 // Delete a message
 export const deleteMessage = async (req, res) => {
   const _id_user = req.user._id_user;
-  const { _id_message } = req.params;
+  const _id_message  = req.query._id_message;
 
   try {
     const messageToDelete = await Message.findOne({

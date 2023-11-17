@@ -4,7 +4,7 @@ import readline from "readline";
 
 const socket = io("http://localhost:4000", {
   auth: {
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6IjU1Y2VkMTdjLTIzNjktNDQ5MS05ZGEwLTg3ZmJmOTBkNTllYiIsImlhdCI6MTY5ODM1Mjk0NCwiZXhwIjoxNjk4NjEyMTQ0fQ.9Rw7HzTPpUy_NEzXwZpyCyxJ1e299K-LcQb7nXNoFUE",
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6IjBiZmIyMzE2LTJmZTktNGMyMy1hYmE4LTE4Zjk3MDhjYTg2ZSIsImlhdCI6MTY5OTM3ODIxMSwiZXhwIjoxNjk5NjM3NDExfQ.8oGu_7e1hVU2HOPRybNVekNqe6h_7Gmbuj9ihvtGHKw",
   },
 });
 
@@ -27,7 +27,7 @@ socket.on("connect", () => {
       } else {
         const messageData = {
           content: message,
-          _id_sender: "55ced17c-2369-4491-9da0-87fbf90d59eb",  
+          _id_sender: "0bfb2316-2fe9-4c23-aba8-18f9708ca86e",  
           _id_receiver
         };
         socket.emit('sendMessage', messageData);
@@ -48,4 +48,3 @@ socket.on("newMessage", (message) => {
 socket.on("disconnect", () => {
   console.log("Desconectado del servidor");
 });
-

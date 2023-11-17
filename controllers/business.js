@@ -107,6 +107,7 @@ export const getMyBusinesses = async (req, res) => {
     try {
         const businesses = await Business.findAll({
             where: { _id_user },
+            order: [["createdAt", "DESC"]]
         });
 
         if (businesses.length === 0) {
@@ -129,7 +130,7 @@ export const getMyBusinesses = async (req, res) => {
 export const updateBusiness = async (req, res) => {
     try {
         const { name, address, state, city, entity, country } = req.body;
-        const _id_business = req.params._id_business;
+        const { _id_business } = req.query;
         const _id_user = req.user._id_user;
 
         const businessToUpdate = await Business.findOne({
@@ -174,7 +175,7 @@ export const updateBusiness = async (req, res) => {
 // Delete Business
 export const deleteBusiness = async (req, res) => {
     try {
-        const _id_business = req.params._id_business;
+        const { _id_business } = req.query;
         const _id_user = req.user._id_user;
 
         const deletedBusiness = await Business.findOne({
@@ -217,32 +218,32 @@ export const searchBusiness = async (req, res) => {
 
     if (name) {
         searchCriteria.name = {
-            [Op.like]: `%${name}%`,
+            [Op.iLike]: `%${name}%`,
         };
     }
     if (address) {
         searchCriteria.address = {
-            [Op.like]: `%${address}%`,
+            [Op.iLike]: `%${address}%`,
         };
     }
     if (state) {
         searchCriteria.state = {
-            [Op.like]: `%${state}%`,
+            [Op.iLike]: `%${state}%`,
         };
     }
     if (city) {
         searchCriteria.city = {
-            [Op.like]: `%${city}%`,
+            [Op.iLike]: `%${city}%`,
         };
     }
     if (country) {
         searchCriteria.country = {
-            [Op.like]: `%${country}%`,
+            [Op.iLike]: `%${country}%`,
         };
     }
     if (entity) {
         searchCriteria.entity = {
-            [Op.like]: `%${entity}%`,
+            [Op.iLike]: `%${entity}%`,
         };
     }
 

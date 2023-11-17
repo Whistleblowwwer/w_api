@@ -15,7 +15,7 @@ export const ReviewImages = sequelize.define(
         },
     },
     {
-        tableName: "review_images",
+        tableName: "reviewImages",
         timestamps: true,
     }
 );
