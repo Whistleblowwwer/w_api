@@ -149,10 +149,6 @@ export const updateUser = async (req, res) => {
     const _id_user = req.user._id_user;
 
     const { name, last_name, email, phone_number, birth_date, gender } = req.body;
-    const _id_user = req.user._id_user;
-    const { name, last_name, email, phone_number, birth_date, gender } =
-        req.body;
-
     try {
         const user = await User.findOne({ where: { _id_user } });
 

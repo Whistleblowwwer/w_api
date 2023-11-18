@@ -196,7 +196,7 @@ export const getReviewChildren = async (req, res) => {
                             WHERE
                             reviewLikes."_id_review" = "Review"."_id_review"
                         )`),
-                        "likes",
+                        'likes'
                     ],
                     [
                         Sequelize.literal(`(
@@ -230,7 +230,6 @@ export const getReviewChildren = async (req, res) => {
                             attributes: ["name", "last_name"], 
                             as: "User" 
                         },
-
                         {
                             model: Comment,
                             as: "Children",
@@ -253,9 +252,9 @@ export const getReviewChildren = async (req, res) => {
                                     WHERE
                                     commentLikes."_id_comment" = "Comments"."_id_comment"
                                 )`),
-                                "likes",
+                                'likes'
                             ],
-                        ],
+                        ]
                     },
                 },
             ],
@@ -305,13 +304,9 @@ export const getReviewChildren = async (req, res) => {
                 followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
-            likes: comment.getDataValue("likes"),
-            Children: comment.Children.map((child) => ({
-                ...child.dataValues,
-                likes: child.getDataValue("likes"),
-            })),
-        }));
+        };
 
+        return res.status(200).send(reviewData);
     } catch (error) {
         console.error(error);
         return res
