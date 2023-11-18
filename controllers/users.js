@@ -1,15 +1,18 @@
+dotenv.config();
+import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { Op } from "sequelize";
+import { promisify } from "util";
 import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { CommentLikes } from "../models/commentLikes.js";
+import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
-import { Op } from "sequelize";
-import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -498,4 +501,12 @@ export const searchUser = async (req, res) => {
                 .send({ message: "Internal Server Error during user search" });
         }
     }
+};
+
+export const verifyToken = (req, res) => {
+    // If the execution reaches here, the token is valid.
+    res.status(200).json({
+        success: true,
+        message: "Token is valid",
+    });
 };

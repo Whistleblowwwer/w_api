@@ -13,6 +13,7 @@ import {
     VerifySMS,
     sendSMS,
     searchUser,
+    verifyToken,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -52,5 +53,8 @@ router.get("/search", validateToken, searchUser);
 router.get("/sendsms", sendSMS);
 
 router.get("/verifysms", VerifySMS);
+
+// Validate token
+router.get("/token", validateToken, verifyToken);
 
 export default router;
