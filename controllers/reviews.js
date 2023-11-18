@@ -5,6 +5,7 @@ import { Comment } from "../models/comments.js";
 import { Sequelize } from "sequelize";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
+import { ReviewLikes } from "../models/reviewLikes.js";
 
 // Create Review
 export const createReview = async (req, res) => {
@@ -56,6 +57,7 @@ export const createReview = async (req, res) => {
     }
 };
 
+//Get Review by id only with parent comments
 export const getReviewParent = async (req, res) => {
     const _id_user_requesting = req.user._id_user; 
     const _id_review = req.query._id_review;
@@ -127,6 +129,13 @@ export const getReviewParent = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
+        const userLike = await ReviewLikes.findOne({
+            where: {
+                _id_review: _id_review,
+                _id_user: _id_user_requesting
+            }
+        });
+
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_followed)));
@@ -140,9 +149,17 @@ export const getReviewParent = async (req, res) => {
             likes: comment.getDataValue('likes'),
         }));
 
-        return res.status(200).send({
-            ...review.dataValues,
+        const reviewData = {
+            _id_review: review._id_review,
+            content: review.content,
+            is_valid: review.is_valid,
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt,
+            _id_business: review._id_business,
+            _id_user: review._id_user,
             likes: review.getDataValue('likes'),
+            comments: review.getDataValue('comments'),
+            liked: !!userLike, 
             User: {
                 ...review.User.get({ plain: true }),
                 followed: userFollowings.has(review.User._id_user),
@@ -152,7 +169,9 @@ export const getReviewParent = async (req, res) => {
                 followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
-        });
+        };
+
+        return res.status(200).send(reviewData);
     } catch (error) {
         console.error(error);
         return res
@@ -245,7 +264,13 @@ export const getReviewChildren = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        // Obtén los seguimientos del usuario para negocios y otros usuarios
+        const userLike = await ReviewLikes.findOne({
+            where: {
+                _id_review: _id_review,
+                _id_user: _id_user_requesting
+            }
+        });
+
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_followed)));
@@ -259,9 +284,17 @@ export const getReviewChildren = async (req, res) => {
             likes: comment.getDataValue('likes'),
         }));
 
-        return res.status(200).send({
-            ...review.dataValues,
+        const reviewData = {
+            _id_review: review._id_review,
+            content: review.content,
+            is_valid: review.is_valid,
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt,
+            _id_business: review._id_business,
+            _id_user: review._id_user,
             likes: review.getDataValue('likes'),
+            comments: review.getDataValue('comments'),
+            liked: !!userLike, 
             User: {
                 ...review.User.get({ plain: true }),
                 followed: userFollowings.has(review.User._id_user),
@@ -271,7 +304,9 @@ export const getReviewChildren = async (req, res) => {
                 followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
-        });
+        };
+
+        return res.status(200).send(reviewData);
     } catch (error) {
         console.error(error);
         return res
