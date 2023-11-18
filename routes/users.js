@@ -12,7 +12,7 @@ import {
     deactivateUser,
     VerifySMS,
     sendSMS,
-    searchUser
+    searchUser,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -29,7 +29,7 @@ router.post("/login", logIn);
 router.put("/", validateToken, updateUser);
 
 //Get User Details
-router.get("/:_id_user", validateToken, getUserDetails);
+router.get("/", validateToken, getUserDetails);
 
 //Like Review
 router.post("/reviews/like", validateToken, likeReview);
@@ -46,11 +46,11 @@ router.post("/business/follow", validateToken, followBusiness);
 //Deactivate User
 router.patch("/deactivate", validateToken, deactivateUser);
 
-//Search User 
+//Search User
 router.get("/search", validateToken, searchUser);
 
-router.get('/sendsms', sendSMS);
+router.get("/sendsms", sendSMS);
 
-router.get('/verifysms', VerifySMS);
+router.get("/verifysms", VerifySMS);
 
 export default router;
