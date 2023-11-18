@@ -29,7 +29,7 @@ router.post("/login", logIn);
 router.put("/", validateToken, updateUser);
 
 //Get User Details
-router.get("/", validateToken, getUserDetails);
+router.get("/:_id_user", validateToken, getUserDetails);
 
 //Like Review
 router.post("/reviews/like", validateToken, likeReview);
