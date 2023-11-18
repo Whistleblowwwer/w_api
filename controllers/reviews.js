@@ -157,16 +157,16 @@ export const getReviewParent = async (req, res) => {
             updatedAt: review.updatedAt,
             _id_business: review._id_business,
             _id_user: review._id_user,
+            is_liked: !!userLike, 
             likes: review.getDataValue('likes'),
             comments: review.getDataValue('comments'),
-            liked: !!userLike, 
             User: {
                 ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user),
+                is_followed: userFollowings.has(review.User._id_user),
             },
             Business: {
                 ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
+                is_followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
         };
@@ -292,16 +292,16 @@ export const getReviewChildren = async (req, res) => {
             updatedAt: review.updatedAt,
             _id_business: review._id_business,
             _id_user: review._id_user,
+            is_liked: !!userLike, 
             likes: review.getDataValue('likes'),
             comments: review.getDataValue('comments'),
-            liked: !!userLike, 
             User: {
                 ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user),
+                is_followed: userFollowings.has(review.User._id_user),
             },
             Business: {
                 ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
+                is_followed: businessFollowings.has(review.Business._id_business),
             },
             Comments: transformedComments,
         };
@@ -316,7 +316,6 @@ export const getReviewChildren = async (req, res) => {
 };
 
 //Get Reviews of a Business
-
 export const getReviewsForBusiness = async (req, res) => {
     const _id_business = req.query._id_business;
     const _id_user_requesting = req.user._id_user; 
@@ -365,6 +364,16 @@ export const getReviewsForBusiness = async (req, res) => {
             return res.status(404).send({ message: "No reviews found for this business" });
         }
 
+        const userLikes = await ReviewLikes.findAll({
+            where: {
+                _id_review: {
+                    [Sequelize.Op.in]: reviewsOfBusiness.map(review => review._id_review)
+                },
+                _id_user: _id_user_requesting
+            }
+        });
+        const likedReviewsSet = new Set(userLikes.map(like => like._id_review));
+
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_followed)));
@@ -373,17 +382,30 @@ export const getReviewsForBusiness = async (req, res) => {
             where: { _id_user: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_business)));
         
-        const reviewsWithBusinessAndFollowInfo = reviewsOfBusiness.map(review => ({
-            ...review.get({ plain: true }), 
-            User: {
-                ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user), 
-            },
-            Business: {
-                ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
-            },
-        }));
+        const reviewsWithBusinessAndFollowInfo = reviewsOfBusiness.map(review => {
+            const reviewData = {
+                _id_review: review._id_review,
+                content: review.content,
+                is_valid: review.is_valid,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                _id_business: review._id_business,
+                _id_user: review._id_user,
+                is_liked: likedReviewsSet.has(review._id_review), 
+                likes: review.getDataValue('likes'),
+                comments: review.getDataValue('comments'),
+                User: {
+                    ...review.User.get({ plain: true }),
+                    is_followed: userFollowings.has(review.User._id_user),
+                },
+                Business: {
+                    ...review.Business.get({ plain: true }),
+                    is_followed: businessFollowings.has(review.Business._id_business),
+                },
+            };
+
+            return reviewData;
+        });
 
         return res.status(200).send({
             message: "Reviews retrieved successfully",
@@ -441,6 +463,16 @@ export const getAllReviews = async (req, res) => {
             return res.status(404).send({ message: "No reviews found" });
         }
 
+        const userLikes = await ReviewLikes.findAll({
+            where: {
+                _id_review: {
+                    [Sequelize.Op.in]: allReviews.map(review => review._id_review)
+                },
+                _id_user: _id_user_requesting
+            }
+        });
+        const likedReviewsSet = new Set(userLikes.map(like => like._id_review));
+
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_followed)));
@@ -449,19 +481,30 @@ export const getAllReviews = async (req, res) => {
             where: { _id_user: _id_user_requesting }
         }).then(followings => new Set(followings.map(following => following._id_business)));
 
-        const reviewsWithLikesAndFollowInfo = allReviews.map(review => ({
-            ...review.get({ plain: true }),
-            likes: parseInt(review.getDataValue('likes'), 10),
-            User: {
-                ...review.User.get({ plain: true }),
-                followed: userFollowings.has(review.User._id_user),
-            },
-            Business: {
-                ...review.Business.get({ plain: true }),
-                followed: businessFollowings.has(review.Business._id_business),
-            },
-        }));
+        const reviewsWithLikesAndFollowInfo = allReviews.map(review => {
+            const reviewData = { 
+                _id_review: review._id_review,
+                content: review.content,
+                is_valid: review.is_valid,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                _id_business: review._id_business,
+                _id_user: review._id_user,
+                is_liked: likedReviewsSet.has(review._id_review),
+                likes: parseInt(review.getDataValue('likes'), 10),
+                comments: review.getDataValue('comments'),
+                User: {
+                    ...review.User.get({ plain: true }),
+                    is_followed: userFollowings.has(review.User._id_user),
+                },
+                Business: {
+                    ...review.Business.get({ plain: true }),
+                    is_followed: businessFollowings.has(review.Business._id_business),
+                },
+            };
 
+            return reviewData;
+        });
         res.status(200).send({
             message: "Reviews retrieved successfully",
             reviews: reviewsWithLikesAndFollowInfo,
