@@ -274,7 +274,7 @@ export const getReviewChildren = async (req, res) => {
                     include: [
                         {
                             model: User,
-                            attributes: ["name", "last_name"],
+                            attributes: ["_id_user", "name", "last_name"],
                             as: "User",
                         },
                         {
@@ -284,7 +284,7 @@ export const getReviewChildren = async (req, res) => {
                             include: [
                                 {
                                     model: User,
-                                    attributes: ["name", "last_name"],
+                                    attributes: ["_id_user", "name", "last_name"],
                                     as: "User",
                                 },
                             ],
