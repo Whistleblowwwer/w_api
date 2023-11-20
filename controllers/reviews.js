@@ -104,7 +104,7 @@ export const getReviewParent = async (req, res) => {
                     include: [
                         {
                             model: User,
-                            attributes: ["name", "last_name"],
+                            attributes: ["_id_user", "name", "last_name"],
                             as: "User",
                         },
                     ],
@@ -119,6 +119,15 @@ export const getReviewParent = async (req, res) => {
                                 )`),
                                 "likes",
                             ],
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM Comments as "children"
+                                    WHERE
+                                    "children"."_id_parent" = "Comments"."_id_comment"
+                                )`),
+                                "childrenCommentCount",
+                            ],
                         ],
                     },
                 },
@@ -129,7 +138,7 @@ export const getReviewParent = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        const userLike = await ReviewLikes.findOne({
+        const userLikedReviews = await ReviewLikes.findOne({
             where: {
                 _id_review: _id_review,
                 _id_user: _id_user_requesting,
@@ -178,7 +187,7 @@ export const getReviewParent = async (req, res) => {
             _id_review: comment._id_review,
             is_liked: likedCommentsSet.has(comment._id_comment),
             likes: comment.getDataValue("likes"),
-            comments: comment.getDataValue("comments"),
+            comments: comment.getDataValue("childrenCommentCount"),
             User: {
                 ...comment.User.get({ plain: true }),
                 is_followed: userFollowings.has(comment.User._id_user),
@@ -193,7 +202,7 @@ export const getReviewParent = async (req, res) => {
             updatedAt: review.updatedAt,
             _id_business: review._id_business,
             _id_user: review._id_user,
-            is_liked: !!userLike,
+            is_liked: !!userLikedReviews,
             likes: review.getDataValue("likes"),
             comments: review.getDataValue("comments"),
             User: {
@@ -302,12 +311,47 @@ export const getReviewChildren = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        const userLike = await ReviewLikes.findOne({
+        const userLikedReviews = await ReviewLikes.findOne({
             where: {
                 _id_review: _id_review,
                 _id_user: _id_user_requesting,
             },
         });
+
+        const userLikedComments = await CommentLikes.findAll({
+        where: {
+            _id_comment: {
+                [Sequelize.Op.in]: review.Comments.map(
+                    (comment) => comment._id_comment
+                ),
+            },
+            _id_user: _id_user_requesting,
+        },
+        });
+
+        const likedCommentsSet = new Set(
+            userLikedComments.map((like) => like._id_comment)
+        );
+        
+        const childCommentsIds = review.Comments.flatMap(parentComment =>
+        parentComment.Children.map(childComment => childComment._id_comment));
+
+        const childCommentLikesCounts = await CommentLikes.findAll({
+            attributes: [
+                '_id_comment',
+                [Sequelize.fn('COUNT', Sequelize.col('_id_comment')), 'totalLikes']
+            ],
+            where: {
+                _id_comment: {
+                    [Sequelize.Op.in]: childCommentsIds
+                }
+            },
+            group: ['_id_comment']
+        });
+
+        const likesCountByChildCommentId = new Map(childCommentLikesCounts.map(commentLike => 
+            [commentLike._id_comment, commentLike.getDataValue('totalLikes')]));
+
 
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
@@ -323,10 +367,46 @@ export const getReviewChildren = async (req, res) => {
                 new Set(followings.map((following) => following._id_business))
         );
 
-        const transformedComments = review.Comments.map((comment) => ({
-            ...comment.dataValues,
-            likes: comment.getDataValue("likes"),
-        }));
+       const transformedComments = review.Comments.map((parentComment) => {
+            const children = parentComment.Children.map((childComment) => {
+                const childCommentLikesCount = likesCountByChildCommentId.get(childComment._id_comment) || 0;
+
+                return {
+                    _id_comment: childComment._id_comment,
+                    content: childComment.content,
+                    is_valid: childComment.is_valid,
+                    createdAt: childComment.createdAt,
+                    updatedAt: childComment.updatedAt,
+                    _id_user: childComment._id_user,
+                    _id_review: childComment._id_review,
+                    is_liked: likedCommentsSet.has(childComment._id_comment), 
+                    likes: childCommentLikesCount.toString(), 
+                    comments: childComment.Children ? childComment.Children.length.toString() : "0",
+                    User: {
+                        ...childComment.User.get({ plain: true }),
+                        is_followed: userFollowings.has(childComment.User._id_user),
+                    },
+                };
+            });
+
+            return {
+                _id_comment: parentComment._id_comment,
+                content: parentComment.content,
+                is_valid: parentComment.is_valid,
+                createdAt: parentComment.createdAt,
+                updatedAt: parentComment.updatedAt,
+                _id_user: parentComment._id_user,
+                _id_review: parentComment._id_review,
+                is_liked: likedCommentsSet.has(parentComment._id_comment),
+                likes: parentComment.getDataValue("likes"),
+                comments: children.length.toString(), 
+                User: {
+                    ...parentComment.User.get({ plain: true }),
+                    is_followed: userFollowings.has(parentComment.User._id_user),
+                },
+                Children: children,
+            };
+        });
 
         const reviewData = {
             _id_review: review._id_review,
@@ -336,7 +416,7 @@ export const getReviewChildren = async (req, res) => {
             updatedAt: review.updatedAt,
             _id_business: review._id_business,
             _id_user: review._id_user,
-            is_liked: !!userLike,
+            is_liked: !!userLikedReviews,
             likes: review.getDataValue("likes"),
             comments: review.getDataValue("comments"),
             User: {
