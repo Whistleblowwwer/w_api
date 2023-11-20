@@ -6,7 +6,7 @@ import { Sequelize } from "sequelize";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
-
+import { CommentLikes } from "../models/commentLikes.js";
 // Create Review
 export const createReview = async (req, res) => {
     const _id_user = req.user._id_user;
@@ -150,9 +150,39 @@ export const getReviewParent = async (req, res) => {
                 new Set(followings.map((following) => following._id_business))
         );
 
+        // Retrieve liked comments for the user
+        const userLikedComments = await CommentLikes.findAll({
+            where: {
+                _id_comment: {
+                    [Sequelize.Op.in]: review.Comments.map(
+                        (comment) => comment._id_comment
+                    ),
+                },
+                _id_user: _id_user_requesting,
+            },
+        });
+
+        // Create a set of liked comment IDs
+        const likedCommentsSet = new Set(
+            userLikedComments.map((like) => like._id_comment)
+        );
+
         const transformedComments = review.Comments.map((comment) => ({
-            ...comment.dataValues,
+            _id_comment: comment._id_comment,
+            content: comment.content,
+            is_valid: comment.is_valid,
+            createdAt: comment.createdAt,
+            updatedAt: comment.updatedAt,
+            _id_business: comment._id_business,
+            _id_user: comment._id_user,
+            _id_review: comment._id_review,
+            is_liked: likedCommentsSet.has(comment._id_comment),
             likes: comment.getDataValue("likes"),
+            comments: comment.getDataValue("comments"),
+            User: {
+                ...comment.User.get({ plain: true }),
+                is_followed: userFollowings.has(comment.User._id_user),
+            },
         }));
 
         const reviewData = {
