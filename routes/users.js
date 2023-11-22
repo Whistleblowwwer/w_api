@@ -10,6 +10,7 @@ import {
     followUser,
     followBusiness,
     deactivateUser,
+    nukeUser,
     VerifySMS,
     sendSMS,
     searchUser,
@@ -47,11 +48,16 @@ router.post("/business/follow", validateToken, followBusiness);
 //Deactivate User
 router.patch("/deactivate", validateToken, deactivateUser);
 
+//Nuke User
+router.delete("/delete/all", validateToken, nukeUser);
+
 //Search User
 router.get("/search", validateToken, searchUser);
 
+//Send SMS
 router.get("/sendsms", sendSMS);
 
+//Verify SMS
 router.get("/verifysms", VerifySMS);
 
 // Validate token

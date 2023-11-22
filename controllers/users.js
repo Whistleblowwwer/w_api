@@ -2,12 +2,15 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { promisify } from "util";
 import { User } from "../models/users.js";
+import { Business } from "../models/business.js"
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
+import { Message } from "../models/messages.js"
 import { ReviewLikes } from "../models/reviewLikes.js";
+import { ReviewImages } from "../models/reviewImages.js"
 import { CommentLikes } from "../models/commentLikes.js";
 import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 import { UserFollowers } from "../models/userFollowers.js";
@@ -369,6 +372,49 @@ export const deactivateUser = async (req, res) => {
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
+};
+
+//Nuke User (Cascade Deleting all user appearences)
+export const nukeUser = async (req, res) => {
+  const _id_user = req.user._id_user;
+
+  try {
+    const review = await Review.findOne({
+      where: { _id_user },
+    });
+
+    const imagesToDelete = await ReviewImages.findAll({
+      where: { _id_review: review._id_review },
+    });
+
+    for (const image of imagesToDelete) {
+      await image.destroy();
+    }
+
+    await ReviewLikes.destroy({ where: { _id_user } });
+    await CommentLikes.destroy({ where: { _id_user } });
+    await BusinessFollowers.destroy({ where: { _id_user } });
+    await UserFollowers.destroy({
+      where: {
+        [Op.or]: [{ _id_follower: _id_user }, { _id_followed: _id_user }],
+      },
+    });
+    await Message.destroy({
+      where: {
+        [Op.or]: [{ _id_sender: _id_user }, { _id_receiver: _id_user }],
+      },
+    });
+    await Comment.destroy({ where: { _id_user } });
+    await Review.destroy({ where: { _id_user } });
+    await Business.destroy({ where: { _id_user }})
+    await User.destroy({ where: { _id_user }})
+    
+    return res
+      .status(200)
+      .send({ message: "User deleted successfully" });
+  } catch (error) {
+    return res.status(500).send({ error: error.message });
+  }
 };
 
 // Send OTP
