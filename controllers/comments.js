@@ -39,16 +39,6 @@ export const getCommentChildren = async (req, res) => {
             },
             include: [
                 {
-                    model: Review,
-                    attributes: [
-                        "_id_review",
-                        "createdAt",
-                        "updatedAt",
-                        "_id_user",
-                    ],
-                    as: "Review",
-                },
-                {
                     model: User,
                     attributes: ["_id_user", "name", "last_name"],
                     as: "User",
@@ -101,6 +91,7 @@ export const getCommentChildren = async (req, res) => {
                 _id_user,
             },
         });
+        console.log("\n-- IS USER LIKED: ", !!userLikedComment);
 
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user },
@@ -126,21 +117,21 @@ export const getCommentChildren = async (req, res) => {
             userLikedComments.map((like) => like._id_comment)
         );
 
-        const transformedComments = comment.Children.map((comment) => ({
-            _id_comment: comment._id_comment,
-            content: comment.content,
-            is_valid: comment.is_valid,
-            createdAt: comment.createdAt,
-            updatedAt: comment.updatedAt,
-            _id_business: comment._id_business,
-            _id_user: comment._id_user,
-            _id_review: comment._id_review,
-            is_liked: likedCommentsSet.has(comment._id_comment),
-            likes: comment.getDataValue("likes"),
-            comments: comment.getDataValue("childrenCommentCount"),
+        const transformedComments = comment.Children.map((childComment) => ({
+            _id_comment: childComment._id_comment,
+            content: childComment.content,
+            is_valid: childComment.is_valid,
+            createdAt: childComment.createdAt,
+            updatedAt: childComment.updatedAt,
+            _id_business: childComment._id_business,
+            _id_user: childComment._id_user,
+            _id_review: childComment._id_review,
+            is_liked: likedCommentsSet.has(childComment._id_comment),
+            likes: childComment.getDataValue("likes"),
+            comments: childComment.getDataValue("childrenCommentCount"),
             User: {
-                ...comment.User.get({ plain: true }),
-                is_followed: userFollowings.has(comment.User._id_user),
+                ...childComment.User.get({ plain: true }),
+                is_followed: userFollowings.has(childComment.User._id_user),
             },
         }));
 
@@ -166,7 +157,7 @@ export const getCommentChildren = async (req, res) => {
         console.log("\n-- COMMENT: ", commentData);
         res.status(200).json({
             message: "Comments retrieved successfully",
-            comment: comment.toJSON(),
+            comment: commentData,
         });
     } catch (error) {
         console.error("Error finding comments:", error);
