@@ -284,7 +284,11 @@ export const getReviewChildren = async (req, res) => {
                             include: [
                                 {
                                     model: User,
-                                    attributes: ["_id_user", "name", "last_name"],
+                                    attributes: [
+                                        "_id_user",
+                                        "name",
+                                        "last_name",
+                                    ],
                                     as: "User",
                                 },
                             ],
@@ -319,39 +323,48 @@ export const getReviewChildren = async (req, res) => {
         });
 
         const userLikedComments = await CommentLikes.findAll({
-        where: {
-            _id_comment: {
-                [Sequelize.Op.in]: review.Comments.map(
-                    (comment) => comment._id_comment
-                ),
+            where: {
+                _id_comment: {
+                    [Sequelize.Op.in]: review.Comments.map(
+                        (comment) => comment._id_comment
+                    ),
+                },
+                _id_user: _id_user_requesting,
             },
-            _id_user: _id_user_requesting,
-        },
         });
 
         const likedCommentsSet = new Set(
             userLikedComments.map((like) => like._id_comment)
         );
-        
-        const childCommentsIds = review.Comments.flatMap(parentComment =>
-        parentComment.Children.map(childComment => childComment._id_comment));
+
+        const childCommentsIds = review.Comments.flatMap((parentComment) =>
+            parentComment.Children.map(
+                (childComment) => childComment._id_comment
+            )
+        );
 
         const childCommentLikesCounts = await CommentLikes.findAll({
             attributes: [
-                '_id_comment',
-                [Sequelize.fn('COUNT', Sequelize.col('_id_comment')), 'totalLikes']
+                "_id_comment",
+                [
+                    Sequelize.fn("COUNT", Sequelize.col("_id_comment")),
+                    "totalLikes",
+                ],
             ],
             where: {
                 _id_comment: {
-                    [Sequelize.Op.in]: childCommentsIds
-                }
+                    [Sequelize.Op.in]: childCommentsIds,
+                },
             },
-            group: ['_id_comment']
+            group: ["_id_comment"],
         });
 
-        const likesCountByChildCommentId = new Map(childCommentLikesCounts.map(commentLike => 
-            [commentLike._id_comment, commentLike.getDataValue('totalLikes')]));
-
+        const likesCountByChildCommentId = new Map(
+            childCommentLikesCounts.map((commentLike) => [
+                commentLike._id_comment,
+                commentLike.getDataValue("totalLikes"),
+            ])
+        );
 
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
@@ -367,9 +380,11 @@ export const getReviewChildren = async (req, res) => {
                 new Set(followings.map((following) => following._id_business))
         );
 
-       const transformedComments = review.Comments.map((parentComment) => {
+        const transformedComments = review.Comments.map((parentComment) => {
             const children = parentComment.Children.map((childComment) => {
-                const childCommentLikesCount = likesCountByChildCommentId.get(childComment._id_comment) || 0;
+                const childCommentLikesCount =
+                    likesCountByChildCommentId.get(childComment._id_comment) ||
+                    0;
 
                 return {
                     _id_comment: childComment._id_comment,
@@ -379,12 +394,16 @@ export const getReviewChildren = async (req, res) => {
                     updatedAt: childComment.updatedAt,
                     _id_user: childComment._id_user,
                     _id_review: childComment._id_review,
-                    is_liked: likedCommentsSet.has(childComment._id_comment), 
-                    likes: childCommentLikesCount.toString(), 
-                    comments: childComment.Children ? childComment.Children.length.toString() : "0",
+                    is_liked: likedCommentsSet.has(childComment._id_comment),
+                    likes: childCommentLikesCount.toString(),
+                    comments: childComment.Children
+                        ? childComment.Children.length.toString()
+                        : "0",
                     User: {
                         ...childComment.User.get({ plain: true }),
-                        is_followed: userFollowings.has(childComment.User._id_user),
+                        is_followed: userFollowings.has(
+                            childComment.User._id_user
+                        ),
                     },
                 };
             });
@@ -399,10 +418,12 @@ export const getReviewChildren = async (req, res) => {
                 _id_review: parentComment._id_review,
                 is_liked: likedCommentsSet.has(parentComment._id_comment),
                 likes: parentComment.getDataValue("likes"),
-                comments: children.length.toString(), 
+                comments: children.length.toString(),
                 User: {
                     ...parentComment.User.get({ plain: true }),
-                    is_followed: userFollowings.has(parentComment.User._id_user),
+                    is_followed: userFollowings.has(
+                        parentComment.User._id_user
+                    ),
                 },
                 Children: children,
             };
