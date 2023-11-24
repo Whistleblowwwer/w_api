@@ -128,7 +128,7 @@ export const getCommentChildren = async (req, res) => {
             _id_review: childComment._id_review,
             is_liked: likedCommentsSet.has(childComment._id_comment),
             likes: childComment.getDataValue("likes"),
-            comments: childComment.getDataValue("childrenCommentCount"),
+            comments: childComment.getDataValue("comments"),
             User: {
                 ...childComment.User.get({ plain: true }),
                 is_followed: userFollowings.has(childComment.User._id_user),
