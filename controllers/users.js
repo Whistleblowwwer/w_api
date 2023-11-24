@@ -27,6 +27,7 @@ export const createUser = async (req, res) => {
             birth_date,
             gender,
             password,
+            role
         } = req.body;
 
         // Check for empty fields
@@ -69,6 +70,7 @@ export const createUser = async (req, res) => {
                 birth_date,
                 gender,
                 password_token: hashedPassword,
+                role: role ? "admin" : "consumer"
             },
         });
 
@@ -377,18 +379,26 @@ export const deactivateUser = async (req, res) => {
 //Nuke User (Cascade Deleting all user appearences)
 export const nukeUser = async (req, res) => {
   const _id_user = req.user._id_user;
-
+  const user = await User.findByPk(_id_user);
   try {
-    const review = await Review.findOne({
+    if (user.role !== "admin") {
+            return res.status(403).json({
+                message: "Permission denied. Only admins can nuke users.",
+            });
+        }
+
+    const reviews = await Review.findAll({
       where: { _id_user },
     });
 
-    const imagesToDelete = await ReviewImages.findAll({
-      where: { _id_review: review._id_review },
-    });
+    for (const review of reviews) {
+      const imagesToDelete = await ReviewImages.findAll({
+        where: { _id_review: review._id_review },
+      });
 
-    for (const image of imagesToDelete) {
-      await image.destroy();
+      for (const image of imagesToDelete) {
+        await image.destroy();
+      }
     }
 
     await ReviewLikes.destroy({ where: { _id_user } });
