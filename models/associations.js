@@ -1,14 +1,15 @@
-import { User } from "./users.js";
-import { Business } from "./business.js";
-import { Review } from "./reviews.js";
-import { Comment } from "./comments.js";
 import { BusinessFollowers } from "./businessFollowers.js";
 import { UserFollowers } from "./userFollowers.js";
-import { ReviewLikes } from "./reviewLikes.js";
 import { CommentLikes } from "./commentLikes.js";
 import { ReviewImages } from "./reviewImages.js";
+import { ReviewLikes } from "./reviewLikes.js";
+import { Category } from "./categories.js";
+import { Business } from "./business.js";
+import { Article } from "./articles.js";
 import { Message } from "./messages.js";
-
+import { Comment } from "./comments.js";
+import { Review } from "./reviews.js";
+import { User } from "./users.js";
 // Associations
 
 // 1. Un user puede seguir a otro usuario
@@ -101,3 +102,17 @@ Comment.belongsTo(User, { foreignKey: "_id_user", as: "User" });
 
 // 16. Un usuario puede tener muchos comentarios
 User.hasMany(Comment, { foreignKey: "_id_user", as: "Comments" });
+
+// 17. Una categoria puede pertenecer a una categoria
+Category.hasMany(Category, { foreignKey: "parent_id", as: "children" });
+Category.belongsTo(Category, { foreignKey: "parent_id", as: "parent" });
+
+// 18. Un usuario puede publicar varios articulos
+Article.belongsTo(User, {
+    foreignKey: "_id_user",
+    as: "Author", // alias for the User association
+});
+User.hasMany(Article, {
+    foreignKey: "_id_user",
+    as: "Articles", // alias for the Article association
+});

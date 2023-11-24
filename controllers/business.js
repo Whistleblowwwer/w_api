@@ -1,12 +1,14 @@
 import { Business } from "../models/business.js";
+import { Category } from "../models/categories.js";
 import { Review } from "../models/reviews.js";
-import { Op } from "sequelize";
 import Sequelize from "sequelize";
+import { Op } from "sequelize";
 
 // Create Business
 export const createBusiness = async (req, res) => {
     try {
-        const { name, entity, country, address, state, city } = req.body;
+        const { name, entity, country, address, state, city, category } =
+            req.body;
         const _id_user = req.user._id_user;
 
         const requiredFields = [
@@ -25,6 +27,30 @@ export const createBusiness = async (req, res) => {
             }
         }
 
+        // Check if category exists or has a good similarity rate
+        let categoryInstance;
+        if (category) {
+            const existingCategory = await Category.findOne({
+                where: {
+                    name: {
+                        [Sequelize.Op.iLike]: category, // Case-insensitive search
+                    },
+                },
+            });
+
+            if (existingCategory) {
+                categoryInstance = existingCategory;
+            } else {
+                // Create a new category if not found
+                const createdCategory = await Category.create({
+                    name: category,
+                });
+                categoryInstance = createdCategory;
+            }
+        }
+
+        console.log("\n-- CATEGORY: ", categoryInstance._id_category);
+        // Create business with category
         const createdBusiness = await Business.create({
             name,
             address,
@@ -33,6 +59,9 @@ export const createBusiness = async (req, res) => {
             country,
             entity,
             _id_user,
+            _id_category: categoryInstance
+                ? categoryInstance._id_category
+                : null,
         });
 
         return res.status(201).send({
@@ -107,7 +136,7 @@ export const getMyBusinesses = async (req, res) => {
     try {
         const businesses = await Business.findAll({
             where: { _id_user },
-            order: [["createdAt", "DESC"]]
+            order: [["createdAt", "DESC"]],
         });
 
         if (businesses.length === 0) {
@@ -212,7 +241,8 @@ export const deleteBusiness = async (req, res) => {
 
 // Search Business
 export const searchBusiness = async (req, res) => {
-    const { name, address, state, city, country, entity, reviewCount } = req.query;
+    const { name, address, state, city, country, entity, reviewCount } =
+        req.query;
 
     let searchCriteria = {};
 
@@ -270,7 +300,10 @@ export const searchBusiness = async (req, res) => {
             });
         } else {
             console.error(error);
-            return res.status(500).send({ message: "Internal Server Error", error: error.message });
+            return res.status(500).send({
+                message: "Internal Server Error",
+                error: error.message,
+            });
         }
     }
 };

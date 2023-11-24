@@ -39,6 +39,16 @@ export const Business = sequelize.define(
             allowNull: false,
             defaultValue: "Mexico",
         },
+        _id_category: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: "categories",
+                key: "_id_category",
+            },
+            onUpdate: "CASCADE",
+            onDelete: "SET NULL",
+        },
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
