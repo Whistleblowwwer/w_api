@@ -16,6 +16,7 @@ import {
     searchUser,
     verifyToken,
 } from "../controllers/users.js";
+import { getUserReviews } from "../controllers/reviews.js";
 
 const router = Router();
 
@@ -32,6 +33,9 @@ router.put("/", validateToken, updateUser);
 
 //Get User Details
 router.get("/", validateToken, getUserDetails);
+
+//Get User Reviews
+router.get("/reviews", validateToken, getUserReviews);
 
 //Like Review
 router.post("/reviews/like", validateToken, likeReview);

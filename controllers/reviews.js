@@ -581,6 +581,128 @@ export const getReviewsForBusiness = async (req, res) => {
     }
 };
 
+// Get Reviews for User
+export const getUserReviews = async (req, res) => {
+    let _id_user = req.query._id_user;
+
+    if (!_id_user) {
+        _id_user = req.user._id_user;
+    }
+
+    const _id_user_requesting = req.user._id_user;
+
+    try {
+        const reviewsOfUser = await Review.findAll({
+            where: { _id_user },
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "reviewLikes" as reviewLikes
+                            WHERE
+                            reviewLikes._id_review = "Review"."_id_review"
+                        )`),
+                        "likes",
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "comments" as Comments
+                            WHERE
+                            Comments._id_review = "Review"."_id_review"
+                        )`),
+                        "comments",
+                    ],
+                ],
+            },
+            include: [
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                },
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
+                },
+            ],
+        });
+
+        if (reviewsOfUser.length === 0) {
+            return res
+                .status(404)
+                .send({ message: "No reviews found for this user" });
+        }
+
+        const userLikes = await ReviewLikes.findAll({
+            where: {
+                _id_review: {
+                    [Sequelize.Op.in]: reviewsOfUser.map(
+                        (review) => review._id_review
+                    ),
+                },
+                _id_user: _id_user_requesting,
+            },
+        });
+        const likedReviewsSet = new Set(
+            userLikes.map((like) => like._id_review)
+        );
+
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
+
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user_requesting },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
+
+        const reviewsWithBusinessAndFollowInfo = reviewsOfUser.map((review) => {
+            const reviewData = {
+                _id_review: review._id_review,
+                content: review.content,
+                is_valid: review.is_valid,
+                createdAt: review.createdAt,
+                updatedAt: review.updatedAt,
+                _id_business: review._id_business,
+                _id_user: review._id_user,
+                is_liked: likedReviewsSet.has(review._id_review),
+                likes: review.getDataValue("likes"),
+                comments: review.getDataValue("comments"),
+                User: {
+                    ...review.User.get({ plain: true }),
+                    is_followed: userFollowings.has(review.User._id_user),
+                },
+                Business: {
+                    ...review.Business.get({ plain: true }),
+                    is_followed: businessFollowings.has(
+                        review.Business._id_business
+                    ),
+                },
+            };
+
+            return reviewData;
+        });
+
+        return res.status(200).send({
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithBusinessAndFollowInfo,
+        });
+    } catch (error) {
+        console.error(error);
+        return res
+            .status(500)
+            .send({ message: "Internal server error", error: error.message });
+    }
+};
+
 //Get All Reviews
 export const getAllReviews = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
