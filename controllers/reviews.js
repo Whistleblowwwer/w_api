@@ -203,6 +203,7 @@ export const getReviewParent = async (req, res) => {
         const reviewData = {
             _id_review: review._id_review,
             content: review.content,
+            rating: review.rating,
             is_valid: review.is_valid,
             createdAt: review.createdAt,
             updatedAt: review.updatedAt,
@@ -438,6 +439,7 @@ export const getReviewChildren = async (req, res) => {
         const reviewData = {
             _id_review: review._id_review,
             content: review.content,
+            rating: review.rating,
             is_valid: review.is_valid,
             createdAt: review.createdAt,
             updatedAt: review.updatedAt,
@@ -551,6 +553,7 @@ export const getReviewsForBusiness = async (req, res) => {
                 const reviewData = {
                     _id_review: review._id_review,
                     content: review.content,
+                    rating: review.rating,
                     is_valid: review.is_valid,
                     createdAt: review.createdAt,
                     updatedAt: review.updatedAt,
@@ -674,6 +677,7 @@ export const getUserReviews = async (req, res) => {
             const reviewData = {
                 _id_review: review._id_review,
                 content: review.content,
+                rating: review.rating,
                 is_valid: review.is_valid,
                 createdAt: review.createdAt,
                 updatedAt: review.updatedAt,
@@ -787,6 +791,7 @@ export const getAllReviews = async (req, res) => {
             const reviewData = {
                 _id_review: review._id_review,
                 content: review.content,
+                rating: review.rating,
                 is_valid: review.is_valid,
                 createdAt: review.createdAt,
                 updatedAt: review.updatedAt,
@@ -821,7 +826,7 @@ export const getAllReviews = async (req, res) => {
 
 // Update Review
 export const updateReview = async (req, res) => {
-    const { content } = req.body;
+    const { content, rating } = req.body;
 
     const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
@@ -842,6 +847,7 @@ export const updateReview = async (req, res) => {
         }
 
         reviewToUpdate.content = content;
+        reviewToUpdate.rating = rating;
         await reviewToUpdate.save();
 
         return res.status(200).send({
