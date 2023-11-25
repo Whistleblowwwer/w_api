@@ -10,7 +10,7 @@ import { CommentLikes } from "../models/commentLikes.js";
 // Create Review
 export const createReview = async (req, res) => {
     const _id_user = req.user._id_user;
-    const { _id_business, content } = req.body;
+    const { _id_business, content, rating } = req.body;
 
     if (!_id_business) {
         return res.status(400).send({ message: "Missing business ID" });
@@ -22,6 +22,11 @@ export const createReview = async (req, res) => {
         return res
             .status(400)
             .send({ message: "Missing content for the review" });
+    }
+    if(!rating){
+        return res
+            .status(400)
+            .send({ message: "Missing rating for the review" });
     }
 
     try {
@@ -39,6 +44,7 @@ export const createReview = async (req, res) => {
             content,
             _id_business,
             _id_user,
+            rating
         });
 
         return res.status(201).send({

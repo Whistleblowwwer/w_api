@@ -27,7 +27,7 @@ app.use(router);
 const io = initializeWebSocketServer(httpServer);
 
 async function main() {
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: true });
     const PORT = process.env.PORT || 4000;
     httpServer.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
