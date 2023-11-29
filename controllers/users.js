@@ -195,7 +195,6 @@ export const updateUser = async (req, res) => {
 };
 
 
-//Get User Details
 export const getUserDetails = async (req, res) => {
     const _id_user = req.user._id_user;
 
@@ -205,15 +204,32 @@ export const getUserDetails = async (req, res) => {
             attributes: { exclude: ["password_token"] },
         });
 
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user }
+        });
+
+        const userFollowers = await UserFollowers.findAll({
+            where: { _id_followed: _id_user }
+        });
+
         if (!user) {
             return res.status(400).send({ message: "User not found" });
         }
 
-        res.status(200).send({ message: "User found", user });
+        const followingsCount = userFollowings.length;
+        const followersCount = userFollowers.length;
+
+        res.status(200).send({ 
+            message: "User found", 
+            user,
+            followings: followingsCount, 
+            followers: followersCount 
+        });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 };
+
 
 //Like Review
 export const likeReview = async (req, res) => {
