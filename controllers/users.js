@@ -199,37 +199,35 @@ export const getUserDetails = async (req, res) => {
     const _id_user = req.query._id_user || req.user._id_user;
 
     try {
-        const user = await User.findOne({
+        let user = await User.findOne({
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
-        });
-
-        const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user }
-        });
-
-        const userFollowers = await UserFollowers.findAll({
-            where: { _id_followed: _id_user }
         });
 
         if (!user) {
             return res.status(400).send({ message: "User not found" });
         }
 
-        const followingsCount = userFollowings.length;
-        const followersCount = userFollowers.length;
+        const followingsCount = await UserFollowers.count({
+            where: { _id_follower: _id_user }
+        });
+
+        const followersCount = await UserFollowers.count({
+            where: { _id_followed: _id_user }
+        });
+
+        user = user.toJSON();
+        user.followings = followingsCount;
+        user.followers = followersCount;
 
         res.status(200).send({ 
             message: "User found", 
-            user,
-            followings: followingsCount, 
-            followers: followersCount 
+            user 
         });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 };
-
 
 //Like Review
 export const likeReview = async (req, res) => {

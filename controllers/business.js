@@ -133,10 +133,12 @@ export const getBusinessFeed = async (req, res) => {
             const businessFollowStatus = followedBusinessesSet.has(business._id_business);
 
             return {
-                Business: business.name,
+                Business: {
+                    name: business.name,
+                    is_followed: businessFollowStatus
+                },
                 Review: mostLikedReview, 
                 average_rating: averageRating,
-                is_followed: businessFollowStatus
             };
         }));
 
@@ -146,16 +148,19 @@ export const getBusinessFeed = async (req, res) => {
     }
 };
 
+//Get Business Details
 export const getBusinessDetails = async (req, res) => {
     const { _id_business } = req.query;
     const _id_user = req.user._id_user;
 
     try {
-        const business = await Business.findByPk(_id_business);
+        let business = await Business.findByPk(_id_business);
 
         if (!business) {
             return res.status(404).send({ message: "Business not found" });
         }
+
+        business = business.get({ plain: true });
 
         const businessFollowStatus = await BusinessFollowers.findOne({
             where: {
@@ -164,10 +169,11 @@ export const getBusinessDetails = async (req, res) => {
             }
         });
 
+        business.is_followed = !!businessFollowStatus;
+
         return res.status(200).send({
             message: "Business retrieved successfully",
-            business,
-            is_followed: !!businessFollowStatus 
+            business 
         });
     } catch (error) {
         return res.status(500).send({
