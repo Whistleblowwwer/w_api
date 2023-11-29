@@ -1,6 +1,10 @@
+import { User } from "../models/users.js"
 import { Business } from "../models/business.js";
 import { Category } from "../models/categories.js";
 import { Review } from "../models/reviews.js";
+import { UserFollowers } from "../models/userFollowers.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
+import { ReviewLikes } from "../models/reviewLikes.js";
 import Sequelize from "sequelize";
 import { Op } from "sequelize";
 
@@ -82,9 +86,69 @@ export const createBusiness = async (req, res) => {
     }
 };
 
-// Get Business Details
+//Get Business Feed
+export const getBusinessFeed = async (req, res) => {
+    const _id_user = req.user._id_user;
+
+    try {
+        const followedBusinesses = await BusinessFollowers.findAll({
+            where: { _id_user },
+            attributes: ['_id_user']
+        });
+
+        const followedBusinessesSet = new Set(followedBusinesses.map(followedBusiness => followedBusiness._id_user));
+
+        const businesses = await Business.findAll({
+            include: [{
+                model: Review,
+                include: [{
+                    model: User,
+                    attributes: ['name', 'last_name']
+                }]
+            }]
+        });
+
+        const feedData = await Promise.all(businesses.map(async (business) => {
+            const averageRating = business.Reviews.reduce((acc, review) => acc + review.rating, 0) / business.Reviews.length;
+
+            let mostLikedReview = null;
+            let maxLikes = -1;
+            for (let review of business.Reviews) {
+                const likesCount = await ReviewLikes.count({
+                    where: { _id_review: review._id_review }
+                });
+                if (likesCount > maxLikes) {
+                    maxLikes = likesCount;
+                    mostLikedReview = {
+                        ...review.dataValues,
+                        likes: likesCount,
+                        User: {
+                            name: review.User.name,
+                            last_name : review.User.last_name
+                        }
+                    };
+                }
+            }
+
+            const businessFollowStatus = followedBusinessesSet.has(business._id_business);
+
+            return {
+                Business: business.name,
+                Review: mostLikedReview, 
+                average_rating: averageRating,
+                is_followed: businessFollowStatus
+            };
+        }));
+
+        res.status(200).json({businesses: feedData});
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
 export const getBusinessDetails = async (req, res) => {
     const { _id_business } = req.query;
+    const _id_user = req.user._id_user;
 
     try {
         const business = await Business.findByPk(_id_business);
@@ -93,9 +157,17 @@ export const getBusinessDetails = async (req, res) => {
             return res.status(404).send({ message: "Business not found" });
         }
 
+        const businessFollowStatus = await BusinessFollowers.findOne({
+            where: {
+                _id_business: _id_business,
+                _id_user: _id_user
+            }
+        });
+
         return res.status(200).send({
             message: "Business retrieved successfully",
             business,
+            is_followed: !!businessFollowStatus 
         });
     } catch (error) {
         return res.status(500).send({
@@ -307,3 +379,4 @@ export const searchBusiness = async (req, res) => {
         }
     }
 };
+
