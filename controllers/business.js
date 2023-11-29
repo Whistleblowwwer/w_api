@@ -135,14 +135,14 @@ export const getBusinessFeed = async (req, res) => {
             return {
                 Business: {
                     name: business.name,
-                    is_followed: businessFollowStatus
+                    is_followed: businessFollowStatus,
+                    average_rating: averageRating
                 },
-                Review: mostLikedReview, 
-                average_rating: averageRating,
+                Review: mostLikedReview
             };
         }));
 
-        res.status(200).json({businesses: feedData});
+        res.status(200).json({feed: feedData});
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
