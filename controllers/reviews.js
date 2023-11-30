@@ -10,21 +10,21 @@ import { CommentLikes } from "../models/commentLikes.js";
 // Create Review
 export const createReview = async (req, res) => {
     try {
-        // Extracting data from request
         const { _id_business, content, rating } = req.body;
         const _id_user = req.user._id_user;
 
-        // Validation checks
-        const missingFields = ["_id_business", "content", "rating"].filter(
-            (field) => !req.body[field]
-        );
+        const missingFields = [
+            "_id_business",
+            "_id_user",
+            "content",
+            "rating",
+        ].filter((field) => !req.body[field]);
         if (missingFields.length > 0) {
             return res
                 .status(400)
                 .send({ message: `Missing ${missingFields.join(", ")}` });
         }
 
-        // Check if the business and user exist
         const [businessReviewed, userCreatingReview] = await Promise.all([
             Business.findByPk(_id_business),
             User.findByPk(_id_user),
@@ -38,7 +38,6 @@ export const createReview = async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
 
-        // Creating the review
         const createdReview = await Review.create({
             content,
             _id_business,
@@ -46,10 +45,48 @@ export const createReview = async (req, res) => {
             rating,
         });
 
-        // Sending the response
+        // Additional details
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_followed))
+        );
+
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user },
+        }).then(
+            (followings) =>
+                new Set(followings.map((following) => following._id_business))
+        );
+
+        const reviewData = {
+            _id_review: createdReview._id_review,
+            content: createdReview.content,
+            rating: createdReview.rating,
+            is_valid: createdReview.is_valid,
+            createdAt: createdReview.createdAt,
+            updatedAt: createdReview.updatedAt,
+            _id_business: createdReview._id_business,
+            _id_user: createdReview._id_user,
+            is_liked: false, // Since it's a new review, initially not liked
+            likes: 0, // Initial likes count
+            comments: 0, // Initial comments count
+            User: {
+                ...userCreatingReview.get({ plain: true }),
+                is_followed: userFollowings.has(userCreatingReview._id_user),
+            },
+            Business: {
+                ...businessReviewed.get({ plain: true }),
+                is_followed: businessFollowings.has(
+                    businessReviewed._id_business
+                ),
+            },
+        };
+
         return res.status(201).send({
             message: "Review created successfully",
-            review: createdReview,
+            review: reviewData,
         });
     } catch (error) {
         if (error instanceof Sequelize.ValidationError) {
