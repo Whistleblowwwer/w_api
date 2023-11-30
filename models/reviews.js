@@ -15,16 +15,16 @@ export const Review = sequelize.define(
         },
         rating: {
             type: DataTypes.FLOAT,
-            allowNull: false,
+            allowNull: true,
             validate: {
-                min: 0, 
-                max: 5  
-            }
+                min: 0,
+                max: 5,
+            },
         },
         is_valid: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
-        }
+        },
     },
     {
         tableName: "reviews",

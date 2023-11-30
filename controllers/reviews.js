@@ -9,44 +9,47 @@ import { ReviewLikes } from "../models/reviewLikes.js";
 import { CommentLikes } from "../models/commentLikes.js";
 // Create Review
 export const createReview = async (req, res) => {
-    const _id_user = req.user._id_user;
-    const { _id_business, content, rating } = req.body;
-
-    if (!_id_business) {
-        return res.status(400).send({ message: "Missing business ID" });
-    }
-    if (!_id_user) {
-        return res.status(400).send({ message: "Missing user ID" });
-    }
-    if (!content) {
-        return res
-            .status(400)
-            .send({ message: "Missing content for the review" });
-    }
-    if(!rating){
-        return res
-            .status(400)
-            .send({ message: "Missing rating for the review" });
-    }
-
     try {
-        const businessReviewed = await Business.findByPk(_id_business);
+        // Extracting data from request
+        const { _id_business, content, rating } = req.body;
+        const _id_user = req.user._id_user;
+
+        // Validation checks
+        const missingFields = [
+            "_id_business",
+            "_id_user",
+            "content",
+            "rating",
+        ].filter((field) => !req.body[field]);
+        if (missingFields.length > 0) {
+            return res
+                .status(400)
+                .send({ message: `Missing ${missingFields.join(", ")}` });
+        }
+
+        // Check if the business and user exist
+        const [businessReviewed, userCreatingReview] = await Promise.all([
+            Business.findByPk(_id_business),
+            User.findByPk(_id_user),
+        ]);
+
         if (!businessReviewed) {
             return res.status(404).send({ message: "Business not found" });
         }
 
-        const userCreatingReview = await User.findByPk(_id_user);
         if (!userCreatingReview) {
             return res.status(404).send({ message: "User not found" });
         }
 
+        // Creating the review
         const createdReview = await Review.create({
             content,
             _id_business,
             _id_user,
-            rating
+            rating,
         });
 
+        // Sending the response
         return res.status(201).send({
             message: "Review created successfully",
             review: createdReview,
@@ -58,6 +61,7 @@ export const createReview = async (req, res) => {
                 errors: error.errors,
             });
         } else {
+            console.error("Error creating review:", error);
             return res.status(500).send({ message: "Internal server error" });
         }
     }
