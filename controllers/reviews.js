@@ -15,12 +15,9 @@ export const createReview = async (req, res) => {
         const _id_user = req.user._id_user;
 
         // Validation checks
-        const missingFields = [
-            "_id_business",
-            "_id_user",
-            "content",
-            "rating",
-        ].filter((field) => !req.body[field]);
+        const missingFields = ["_id_business", "content", "rating"].filter(
+            (field) => !req.body[field]
+        );
         if (missingFields.length > 0) {
             return res
                 .status(400)
