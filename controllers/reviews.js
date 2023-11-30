@@ -42,21 +42,6 @@ export const createReview = async (req, res) => {
             rating,
         });
 
-        // Additional details
-        const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user },
-        }).then(
-            (followings) =>
-                new Set(followings.map((following) => following._id_followed))
-        );
-
-        const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user },
-        }).then(
-            (followings) =>
-                new Set(followings.map((following) => following._id_business))
-        );
-
         const reviewData = {
             _id_review: createdReview._id_review,
             content: createdReview.content,
@@ -66,18 +51,20 @@ export const createReview = async (req, res) => {
             updatedAt: createdReview.updatedAt,
             _id_business: createdReview._id_business,
             _id_user: createdReview._id_user,
-            is_liked: false, // Since it's a new review, initially not liked
-            likes: 0, // Initial likes count
-            comments: 0, // Initial comments count
+            is_liked: false,
+            likes: 0,
+            comments: "0",
             User: {
-                ...userCreatingReview.get({ plain: true }),
-                is_followed: userFollowings.has(userCreatingReview._id_user),
+                _id_user: userCreatingReview._id_user,
+                name: userCreatingReview.name,
+                last_name: userCreatingReview.last_name,
+                is_followed: false,
             },
             Business: {
-                ...businessReviewed.get({ plain: true }),
-                is_followed: businessFollowings.has(
-                    businessReviewed._id_business
-                ),
+                _id_business: businessReviewed._id_business,
+                name: businessReviewed.name,
+                entity: businessReviewed.entity,
+                is_followed: false,
             },
         };
 
