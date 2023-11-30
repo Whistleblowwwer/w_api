@@ -319,7 +319,7 @@ export const deleteBusiness = async (req, res) => {
 
 // Search Business
 export const searchBusiness = async (req, res) => {
-    const { name, address, state, city, country, entity, reviewCount } =
+    const { name, address, state, city, country, entity } =
         req.query;
 
     let searchCriteria = {};
@@ -358,16 +358,14 @@ export const searchBusiness = async (req, res) => {
     try {
         const businesses = await Business.findAll({
             where: searchCriteria,
-            include: Review,
+            attributes: {
+                exclude: ['_id_category']
+            },
+            include: [{
+                model: Category,
+                attributes: ['_id_category', 'name'],
+            }],
         });
-
-        if (reviewCount) {
-            const filteredBusinesses = businesses.filter(
-                (business) =>
-                    business.Reviews && business.Reviews.length >= reviewCount
-            );
-            return res.status(200).send({ businesses: filteredBusinesses });
-        }
 
         return res.status(200).send({ businesses });
     } catch (error) {

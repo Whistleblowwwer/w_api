@@ -110,9 +110,13 @@ Category.belongsTo(Category, { foreignKey: "parent_id", as: "parent" });
 // 18. Un usuario puede publicar varios articulos
 Article.belongsTo(User, {
     foreignKey: "_id_user",
-    as: "Author", // alias for the User association
+    as: "Author", 
 });
 User.hasMany(Article, {
     foreignKey: "_id_user",
-    as: "Articles", // alias for the Article association
+    as: "Articles", 
 });
+
+//19. Un business tiene una categoria
+Business.belongsTo(Category, { foreignKey: '_id_category' });
+Category.hasMany(Business, { foreignKey: '_id_category' });
