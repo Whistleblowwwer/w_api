@@ -84,12 +84,13 @@ Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
 
 // 11. Un usuario puede enviar y recibir muchos mensajes
-User.hasMany(Message, { foreignKey: "_id_sender" });
-User.hasMany(Message, { foreignKey: "_id_receiver" });
+User.hasMany(Message, { foreignKey: "_id_sender", as: 'SentMessages' });
+User.hasMany(Message, { foreignKey: "_id_receiver", as: 'ReceivedMessages' });
+
 
 // 12. Un mensaje pertenece a un usuario como remitente/destinatario
-Message.belongsTo(User, { foreignKey: "_id_sender" });
-Message.belongsTo(User, { foreignKey: "_id_receiver" });
+Message.belongsTo(User, { foreignKey: "_id_sender", as: 'Sender' });
+Message.belongsTo(User, { foreignKey: "_id_receiver", as: 'Receiver' });
 
 // 13. Un comentario puede tener varios comentarios hijos
 Comment.hasMany(Comment, { as: "Children", foreignKey: "_id_parent" });

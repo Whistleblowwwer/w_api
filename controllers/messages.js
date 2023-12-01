@@ -1,23 +1,37 @@
 import { Message } from "../models/messages.js";
+import { User } from "../models/users.js";
 import { Op } from "sequelize";
 import Sequelize from "sequelize";
 
 // Get Messages from a conversation
 export const getMessages = async (req, res) => {
   const _id_user = req.user._id_user; 
-  const _id_receiver  = req.query._id_receiver;
-
-  const _id_sender = _id_user;
+  const _id_receiver = req.query._id_receiver;
 
   try {
     const conversation = await Message.findAll({
       where: {
         [Op.or]: [
-          { _id_sender, _id_receiver }, 
-          { _id_sender: _id_receiver, _id_receiver: _id_sender } 
+          { _id_sender: _id_user, _id_receiver }, 
+          { _id_sender: _id_receiver, _id_receiver: _id_user } 
         ]
       },
-      limit: 20,
+      attributes: {
+        include: ['_id_message', 'content', 'is_valid', 'createdAt', 'updatedAt'],
+        exclude: ['_id_sender', '_id_receiver'] 
+      },
+      include: [
+        { 
+          model: User, 
+          as: 'Sender',
+          attributes: ['_id_user', 'name', 'last_name']
+        },
+        { 
+          model: User, 
+          as: 'Receiver',
+          attributes: ['_id_user', 'name', 'last_name']
+        }
+      ],
       order: [['createdAt', 'DESC']]
     });
 
@@ -32,12 +46,7 @@ export const getMessages = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving messages:", error);
     if (error instanceof Sequelize.ValidationError) {
-      return res
-        .status(400)
-        .send({ 
-          message: "Validation Error", 
-          errors: error.errors 
-        });
+      return res.status(400).send({ message: "Validation Error", errors: error.errors });
     } else {
       return res.status(500).send({ message: "Internal Server Error" });
     }

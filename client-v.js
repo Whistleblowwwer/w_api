@@ -4,7 +4,7 @@ import readline from "readline";
 
 const socket = io("http://localhost:4000", {
   auth: {
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6ImRiYjJkYTZhLWIwYzEtNGJjNC04NzE3LWJhY2U3ZDhiMzI3ZSIsImlhdCI6MTcwMTM4NTExOSwiZXhwIjoxNzAxNjQ0MzE5fQ.dLgu8QwuOL-Q24HgMRJ5W1cg_aDQVV7eoL3-QuL_iRw",
+    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWRfdXNlciI6IjIzZmViMDhiLTFkY2UtNGI0OC1hMGIwLTQ2YTg0NjgyMjA3YyIsImlhdCI6MTcwMTM4NTMwNCwiZXhwIjoxNzAxNjQ0NTA0fQ.rSpHRvPcTOkAEi4U36bkFQ4Gxl8jxH5U_VIEkkmYVZQ",
   },
 });
 
@@ -27,7 +27,7 @@ socket.on("connect", () => {
       } else {
         const messageData = {
           content: message,
-          _id_sender: "dbb2da6a-b0c1-4bc4-8717-bace7d8b327e",  
+          _id_sender: "23feb08b-1dce-4b48-a0b0-46a84682207c",  
           _id_receiver
         };
         socket.emit('sendMessage', messageData);
