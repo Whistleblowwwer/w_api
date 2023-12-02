@@ -5,14 +5,14 @@ import Sequelize from "sequelize";
 
 // Get Messages from a conversation
 export const getMessages = async (req, res) => {
-  const _id_user = req.user._id_user; 
+  const _id_user = req.user._id_user;
   const _id_receiver = req.query._id_receiver;
 
   try {
     const conversation = await Message.findAll({
       where: {
         [Op.or]: [
-          { _id_sender: _id_user, _id_receiver }, 
+          { _id_sender: _id_user, _id_receiver: _id_receiver }, 
           { _id_sender: _id_receiver, _id_receiver: _id_user } 
         ]
       },
@@ -52,6 +52,7 @@ export const getMessages = async (req, res) => {
     }
   }
 };
+
 
 //Get All Conversations of a user
 export const getAllConversations = async (req, res) => {
