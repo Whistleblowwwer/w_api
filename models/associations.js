@@ -84,13 +84,12 @@ Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
 
 // 11. Un usuario puede enviar y recibir muchos mensajes
-User.hasMany(Message, { foreignKey: "_id_sender", as: 'SentMessages' });
-User.hasMany(Message, { foreignKey: "_id_receiver", as: 'ReceivedMessages' });
-
+User.hasMany(Message, { foreignKey: "_id_sender", as: "SentMessages" });
+User.hasMany(Message, { foreignKey: "_id_receiver", as: "ReceivedMessages" });
 
 // 12. Un mensaje pertenece a un usuario como remitente/destinatario
-Message.belongsTo(User, { foreignKey: "_id_sender", as: 'Sender' });
-Message.belongsTo(User, { foreignKey: "_id_receiver", as: 'Receiver' });
+Message.belongsTo(User, { foreignKey: "_id_sender", as: "Sender" });
+Message.belongsTo(User, { foreignKey: "_id_receiver", as: "Receiver" });
 
 // 13. Un comentario puede tener varios comentarios hijos
 Comment.hasMany(Comment, { as: "Children", foreignKey: "_id_parent" });
@@ -105,19 +104,19 @@ Comment.belongsTo(User, { foreignKey: "_id_user", as: "User" });
 User.hasMany(Comment, { foreignKey: "_id_user", as: "Comments" });
 
 // 17. Una categoria puede pertenecer a una categoria
-Category.hasMany(Category, { foreignKey: "parent_id", as: "children" });
-Category.belongsTo(Category, { foreignKey: "parent_id", as: "parent" });
+Category.hasMany(Category, { foreignKey: "_id_parent", as: "children" });
+Category.belongsTo(Category, { foreignKey: "_id_parent", as: "parent" });
 
 // 18. Un usuario puede publicar varios articulos
 Article.belongsTo(User, {
     foreignKey: "_id_user",
-    as: "Author", 
+    as: "Author",
 });
 User.hasMany(Article, {
     foreignKey: "_id_user",
-    as: "Articles", 
+    as: "Articles",
 });
 
 //19. Un business tiene una categoria
-Business.belongsTo(Category, { foreignKey: '_id_category' });
-Category.hasMany(Business, { foreignKey: '_id_category' });
+Business.belongsTo(Category, { foreignKey: "_id_category" });
+Category.hasMany(Business, { foreignKey: "_id_category" });

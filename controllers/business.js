@@ -1,4 +1,4 @@
-import { User } from "../models/users.js"
+import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
 import { Category } from "../models/categories.js";
 import { Review } from "../models/reviews.js";
@@ -22,6 +22,7 @@ export const createBusiness = async (req, res) => {
             "address",
             "state",
             "city",
+            "category",
         ];
         for (const field of requiredFields) {
             if (!req.body[field]) {
@@ -93,56 +94,72 @@ export const getBusinessFeed = async (req, res) => {
     try {
         const followedBusinesses = await BusinessFollowers.findAll({
             where: { _id_user },
-            attributes: ['_id_user']
+            attributes: ["_id_user"],
         });
 
-        const followedBusinessesSet = new Set(followedBusinesses.map(followedBusiness => followedBusiness._id_user));
+        const followedBusinessesSet = new Set(
+            followedBusinesses.map(
+                (followedBusiness) => followedBusiness._id_user
+            )
+        );
 
         const businesses = await Business.findAll({
-            include: [{
-                model: Review,
-                include: [{
-                    model: User,
-                    attributes: ['name', 'last_name']
-                }]
-            }]
+            include: [
+                {
+                    model: Review,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["name", "last_name"],
+                        },
+                    ],
+                },
+            ],
         });
 
-        const feedData = await Promise.all(businesses.map(async (business) => {
-            const averageRating = business.Reviews.reduce((acc, review) => acc + review.rating, 0) / business.Reviews.length;
+        const feedData = await Promise.all(
+            businesses.map(async (business) => {
+                const averageRating =
+                    business.Reviews.reduce(
+                        (acc, review) => acc + review.rating,
+                        0
+                    ) / business.Reviews.length;
 
-            let mostLikedReview = null;
-            let maxLikes = -1;
-            for (let review of business.Reviews) {
-                const likesCount = await ReviewLikes.count({
-                    where: { _id_review: review._id_review }
-                });
-                if (likesCount > maxLikes) {
-                    maxLikes = likesCount;
-                    mostLikedReview = {
-                        ...review.dataValues,
-                        likes: likesCount,
-                        User: {
-                            name: review.User.name,
-                            last_name : review.User.last_name
-                        }
-                    };
+                let mostLikedReview = null;
+                let maxLikes = -1;
+                for (let review of business.Reviews) {
+                    const likesCount = await ReviewLikes.count({
+                        where: { _id_review: review._id_review },
+                    });
+                    if (likesCount > maxLikes) {
+                        maxLikes = likesCount;
+                        mostLikedReview = {
+                            ...review.dataValues,
+                            likes: likesCount,
+                            User: {
+                                name: review.User.name,
+                                last_name: review.User.last_name,
+                            },
+                        };
+                    }
                 }
-            }
 
-            const businessFollowStatus = followedBusinessesSet.has(business._id_business);
+                const businessFollowStatus = followedBusinessesSet.has(
+                    business._id_business
+                );
 
-            return {
-                Business: {
-                    name: business.name,
-                    is_followed: businessFollowStatus,
-                    average_rating: averageRating
-                },
-                Review: mostLikedReview
-            };
-        }));
+                return {
+                    Business: {
+                        name: business.name,
+                        is_followed: businessFollowStatus,
+                        average_rating: averageRating,
+                    },
+                    Review: mostLikedReview,
+                };
+            })
+        );
 
-        res.status(200).json({feed: feedData});
+        res.status(200).json({ feed: feedData });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
@@ -165,15 +182,15 @@ export const getBusinessDetails = async (req, res) => {
         const businessFollowStatus = await BusinessFollowers.findOne({
             where: {
                 _id_business: _id_business,
-                _id_user: _id_user
-            }
+                _id_user: _id_user,
+            },
         });
 
         business.is_followed = !!businessFollowStatus;
 
         return res.status(200).send({
             message: "Business retrieved successfully",
-            business 
+            business,
         });
     } catch (error) {
         return res.status(500).send({
@@ -319,8 +336,7 @@ export const deleteBusiness = async (req, res) => {
 
 // Search Business
 export const searchBusiness = async (req, res) => {
-    const { name, address, state, city, country, entity } =
-        req.query;
+    const { name, address, state, city, country, entity } = req.query;
 
     let searchCriteria = {};
 
@@ -359,12 +375,14 @@ export const searchBusiness = async (req, res) => {
         const businesses = await Business.findAll({
             where: searchCriteria,
             attributes: {
-                exclude: ['_id_category']
+                exclude: ["_id_category"],
             },
-            include: [{
-                model: Category,
-                attributes: ['_id_category', 'name'],
-            }],
+            include: [
+                {
+                    model: Category,
+                    attributes: ["_id_category", "name"],
+                },
+            ],
         });
 
         return res.status(200).send({ businesses });
@@ -383,4 +401,3 @@ export const searchBusiness = async (req, res) => {
         }
     }
 };
-
