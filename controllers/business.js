@@ -1,6 +1,7 @@
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
 import { Category } from "../models/categories.js";
+import { Comment } from "../models/comments.js";
 import { Review } from "../models/reviews.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
@@ -165,6 +166,151 @@ export const getBusinessFeed = async (req, res) => {
     }
 };
 
+//Generate Followed Business Feed
+export const getFollowedBusinessFeed = async (req, res) => {
+    const _id_user = req.user._id_user;
+
+    try {
+        const followedBusinesses = await BusinessFollowers.findAll({
+            where: { _id_user },
+            attributes: ["_id_business"],
+        });
+
+        const followedBusinessesIds = followedBusinesses.map(business => business._id_business);
+
+        const businesses = await Business.findAll({
+            where: {
+                _id_business: followedBusinessesIds
+            },
+            include: [
+                {
+                    model: Review,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["name", "last_name"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const feedData = await Promise.all(
+            businesses.map(async (business) => {
+                const averageRating = business.Reviews.reduce(
+                    (acc, review) => acc + review.rating,
+                    0
+                ) / business.Reviews.length;
+
+                let reviewsWithMetrics = await Promise.all(
+                    business.Reviews.map(async (review) => {
+                        const likesCount = await ReviewLikes.count({
+                            where: { _id_review: review._id_review },
+                        });
+                        const commentsCount = await Comment.count({ 
+                            where: { _id_review: review._id_review },
+                        });
+
+                        return { ...review.dataValues, likes: likesCount, comments: commentsCount };
+                    })
+                );
+
+                reviewsWithMetrics.sort((a, b) => b.likes - a.likes || b.comments - a.comments);
+
+                const mostRelevantReview = reviewsWithMetrics[0] || {};
+
+                return {
+                    Business: {
+                        name: business.name,
+                        is_followed: true,
+                        average_rating: averageRating
+                    },
+                    Review: mostRelevantReview,
+                };
+            })
+        );
+
+        feedData.sort((a, b) => b.Review.likes - a.Review.likes || b.Review.comments - a.Review.comments);
+
+        res.status(200).json({ feed: feedData });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+//Get Non Followed Business Feed
+export const getNonFollowedBusinessFeed = async (req, res) => {
+    const _id_user = req.user._id_user;
+
+    try {
+        const followedBusinesses = await BusinessFollowers.findAll({
+            where: { _id_user },
+            attributes: ["_id_business"],
+        });
+
+        const followedBusinessesIds = followedBusinesses.map(business => business._id_business);
+
+        const nonFollowedBusinesses = await Business.findAll({
+            where: {
+                _id_business: { [Op.notIn]: followedBusinessesIds } 
+            },
+            include: [
+                {
+                    model: Review,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["name", "last_name"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const feedData = await Promise.all(
+            nonFollowedBusinesses.map(async (business) => {
+                const averageRating = business.Reviews.reduce(
+                    (acc, review) => acc + review.rating,
+                    0
+                ) / business.Reviews.length;
+
+                let reviewsWithMetrics = await Promise.all(
+                    business.Reviews.map(async (review) => {
+                        const likesCount = await ReviewLikes.count({
+                            where: { _id_review: review._id_review },
+                        });
+                        const commentsCount = await Comment.count({ 
+                            where: { _id_review: review._id_review },
+                        });
+
+                        return { ...review.dataValues, likes: likesCount, comments: commentsCount };
+                    })
+                );
+
+                reviewsWithMetrics.sort((a, b) => b.likes - a.likes || b.comments - a.comments);
+
+                const mostRelevantReview = reviewsWithMetrics[0] || {};
+
+                return {
+                    Business: {
+                        name: business.name,
+                        is_followed: false, 
+                        average_rating: averageRating
+                    },
+                    Review: mostRelevantReview,
+                };
+            })
+        );
+
+        feedData.sort((a, b) => b.Review.likes - a.Review.likes || b.Review.comments - a.Review.comments);
+
+        res.status(200).json({ feed: feedData });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+
 //Get Business Details
 export const getBusinessDetails = async (req, res) => {
     const { _id_business } = req.query;
@@ -199,6 +345,7 @@ export const getBusinessDetails = async (req, res) => {
         });
     }
 };
+
 
 // Get Business List
 export const listAllBusinesses = async (req, res) => {

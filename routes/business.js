@@ -8,7 +8,9 @@ import {
     updateBusiness,
     deleteBusiness,
     searchBusiness,
-    getBusinessFeed
+    getBusinessFeed,
+    getFollowedBusinessFeed,
+    getNonFollowedBusinessFeed
 } from "../controllers/business.js";
 
 const router = Router();
@@ -36,7 +38,13 @@ router.patch("/", validateToken, deleteBusiness);
 //Search Business
 router.get("/search", validateToken, searchBusiness);
 
-//Search Business
+//Business Feed
 router.get("/feed", validateToken, getBusinessFeed);
+
+//Followed Business Feed
+router.get("/followed/feed", validateToken, getFollowedBusinessFeed);
+
+//Non Followed Business Feed
+router.get("/non-followed/feed", validateToken, getNonFollowedBusinessFeed);
 
 export default router;
