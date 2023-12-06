@@ -13,7 +13,7 @@ export const FeedItems = sequelize.define(
             type: DataTypes.UUID,
             allowNull: false,
         },
-        list_id_target: {
+        _id_target: {
             type: DataTypes.UUID,
         },
         score: {
