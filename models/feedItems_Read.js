@@ -12,12 +12,8 @@ export const FeedItems = sequelize.define(
         _id_user: {
             type: DataTypes.UUID,
             allowNull: false,
-            references: {
-                model: 'users', 
-                key: '_id_user'
-            }
         },
-        list_id_target: {
+        _id_target: {
             type: DataTypes.UUID,
         },
         score: {
