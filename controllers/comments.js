@@ -5,6 +5,7 @@ import { Comment } from "../models/comments.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
 
+//Get Comment Children
 export const getCommentChildren = async (req, res) => {
     const _id_user = req.user._id_user;
     const _id_comment = req.query._id_comment;
@@ -176,7 +177,6 @@ export const getCommentChildren = async (req, res) => {
 export const createComment = async (req, res) => {
     try {
         const { content, _id_review, _id_parent } = req.body;
-
         const _id_user = req.user._id_user;
 
         if (!content || !content.trim()) {
@@ -194,15 +194,47 @@ export const createComment = async (req, res) => {
             _id_parent: _id_parent || null,
         });
 
+        const userCreatingComment = await User.findByPk(_id_user);
+        const relatedReview = await Review.findByPk(_id_review);
+
+        if (!relatedReview) {
+            return res.status(404).json({ message: "Review not found" });
+        }
+
+        const commentData = {
+            _id_comment: createdComment._id_comment,
+            content: createdComment.content,
+            is_valid: createdComment.is_valid,
+            createdAt: createdComment.createdAt,
+            updatedAt: createdComment.updatedAt,
+            _id_review: createdComment._id_review,
+            _id_parent: createdComment._id_parent,
+            is_liked: false,
+            likes: "0",
+            comments: "0",
+            User: {
+                _id_user: userCreatingComment._id_user,
+                name: userCreatingComment.name,
+                last_name: userCreatingComment.last_name,
+                is_followed: false, 
+            },
+            Review: {
+                _id_review: relatedReview._id_review,
+                content: relatedReview.content,
+                rating: relatedReview.rating,
+            },
+        };
+
         return res.status(201).json({
             message: "Comment created successfully",
-            comment: createdComment,
+            comment: commentData,
         });
     } catch (error) {
         console.error("Error creating comment:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 // Update Comment
 export const updateComment = async (req, res) => {

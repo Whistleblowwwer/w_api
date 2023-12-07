@@ -52,7 +52,7 @@ export const createReview = async (req, res) => {
             _id_business: createdReview._id_business,
             _id_user: createdReview._id_user,
             is_liked: false,
-            likes: 0,
+            likes: "0",
             comments: "0",
             User: {
                 _id_user: userCreatingReview._id_user,
