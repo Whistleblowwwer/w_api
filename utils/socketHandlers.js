@@ -111,4 +111,31 @@ export const userTyping = (socket, messageData) => {
   socket.to(_id_room).emit('userTyping', { _id_user_typing: _id_sender});
 };
 
+// Handle joining a conversation
+export const joinConversation = (socket, conversationData) => {
+  try {
+    const { _id_sender, _id_receiver } = conversationData;
+
+    if (!_id_sender) {
+      return socket.emit("error", "Sender ID not provided");
+    }
+    if (_id_sender !== socket.user._id_user) {
+      return socket.emit("error", "Sender ID does not match authenticated user");
+    }
+    if (!_id_receiver) {
+      return socket.emit("error", "Receiver ID not provided");
+    }
+
+    const _id_room = getRoomId(_id_sender, _id_receiver);
+
+    if (!socket.roomsSet.has(_id_room)) {
+      socket.join(_id_room);
+      socket.roomsSet.add(_id_room);
+      console.log(`User ${socket.user._id_user} joined room ${_id_room}`);
+    }
+  } catch (error) {
+    console.error("An error occurred", error);
+    socket.emit("error", "An unexpected error occurred");
+  }
+};
 
