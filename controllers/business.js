@@ -310,33 +310,54 @@ export const getNonFollowedBusinessFeed = async (req, res) => {
     }
 };
 
-
 //Get Business Details
 export const getBusinessDetails = async (req, res) => {
     const { _id_business } = req.query;
     const _id_user = req.user._id_user;
 
     try {
-        let business = await Business.findByPk(_id_business);
+        const business = await Business.findByPk(_id_business);
 
         if (!business) {
             return res.status(404).send({ message: "Business not found" });
         }
 
-        business = business.get({ plain: true });
+        const reviews = await Review.findAll({
+            where: { _id_business: _id_business },
+            attributes: ['rating']
+        });
+        const averageRating = reviews.length > 0
+            ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
+            : 0;
 
-        const businessFollowStatus = await BusinessFollowers.findOne({
-            where: {
-                _id_business: _id_business,
-                _id_user: _id_user,
-            },
+        const followers = await BusinessFollowers.findAll({
+            where: { _id_business: _id_business }
+        });
+        const followerCount = followers.length;
+        const businessFollowStatus = followers.some(follower => follower._id_user === _id_user);
+
+        const businessCreator = await User.findByPk(business._id_user, {
+            attributes: ['_id_user', 'name', 'last_name']
         });
 
-        business.is_followed = !!businessFollowStatus;
+        const businessCategory = await Category.findByPk(business._id_category, {
+            attributes: ['_id_category', 'name']
+        });
+
+        const { _id_user: _, _id_category: __, ...restBusinessDetails } = business.get({ plain: true });
+
+        const businessDetails = {
+            ...restBusinessDetails,
+            average_rating: averageRating,
+            followers: followerCount,
+            is_followed: businessFollowStatus,
+            User: businessCreator ? businessCreator.get({ plain: true }) : null,
+            Category: businessCategory ? businessCategory.get({ plain: true }) : null
+        };
 
         return res.status(200).send({
             message: "Business retrieved successfully",
-            business,
+            business: businessDetails,
         });
     } catch (error) {
         return res.status(500).send({
@@ -345,7 +366,6 @@ export const getBusinessDetails = async (req, res) => {
         });
     }
 };
-
 
 // Get Business List
 export const listAllBusinesses = async (req, res) => {
