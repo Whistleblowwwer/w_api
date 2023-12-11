@@ -72,6 +72,10 @@ export const sendMessage = async (io, socket, messageData) => {
     };
 
     io.to(_id_room).emit('newMessage', messageToSend);
+
+    io.to(`user-${_id_sender}`).emit('updateConversations');
+    io.to(`user-${_id_receiver}`).emit('updateConversations');
+    
   } catch (error) {
     console.error("An error occurred", error);
     if (error instanceof Sequelize.ValidationError) {
