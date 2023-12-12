@@ -15,6 +15,7 @@ import {
     sendSMS,
     searchUser,
     verifyToken,
+    getUserFeed,
 } from "../controllers/users.js";
 import { getUserReviews } from "../controllers/reviews.js";
 
@@ -66,5 +67,8 @@ router.get("/verifysms", VerifySMS);
 
 // Validate token
 router.get("/token", validateToken, verifyToken);
+
+// Get feed
+router.get("/feed", validateToken, getUserFeed);
 
 export default router;

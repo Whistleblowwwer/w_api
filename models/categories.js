@@ -13,7 +13,7 @@ export const Category = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
-        _id_parent: {
+        parent_id: {
             type: DataTypes.UUID,
             allowNull: true,
             references: {

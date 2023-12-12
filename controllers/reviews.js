@@ -741,6 +741,9 @@ export const getAllReviews = async (req, res) => {
 
     try {
         const allReviews = await Review.findAll({
+            where: {
+                is_valid: true,
+            },
             limit: 20,
             order: [["createdAt", "DESC"]],
             attributes: {
@@ -894,19 +897,18 @@ export const deleteReview = async (req, res) => {
     const _id_user = req.user._id_user;
 
     try {
-        const deletedReview = await Review.findOne({ where: { _id_review } });
+        const deletedReview = await Review.findOne({
+            where: { _id_review, _id_user, is_valid: true },
+        });
+
         if (!deletedReview) {
-            return res.status(404).send({ message: "Review not found" });
+            return res
+                .status(404)
+                .send({ message: "Review not found or already deleted" });
         }
 
-        if (deletedReview._id_user !== _id_user) {
-            return res.status(403).send({
-                message: "You are not authorized to delete this review",
-            });
-        }
-
-        deletedReview.is_valid = false;
-        await deletedReview.save();
+        // Mark the review as invalid (soft delete)
+        await deletedReview.update({ is_valid: false });
 
         return res.status(200).send({ message: "Review deleted successfully" });
     } catch (error) {
@@ -916,6 +918,7 @@ export const deleteReview = async (req, res) => {
                 errors: error.errors,
             });
         } else {
+            console.error("Error deleting review:", error);
             return res.status(500).send({ message: "Internal Server Error" });
         }
     }

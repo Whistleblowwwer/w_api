@@ -3,14 +3,13 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Op, Sequelize } from "sequelize";
-import { promisify } from "util";
 import { User } from "../models/users.js";
-import { Business } from "../models/business.js"
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
-import { Message } from "../models/messages.js"
+import { Message } from "../models/messages.js";
+import { Business } from "../models/business.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
-import { ReviewImages } from "../models/reviewImages.js"
+import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { sendOTP, verifyOTP } from "../middlewares/sms.js";
 import { UserFollowers } from "../models/userFollowers.js";
@@ -27,7 +26,8 @@ export const createUser = async (req, res) => {
             birth_date,
             gender,
             password,
-            role
+            role,
+            nick_name,
         } = req.body;
 
         // Check for empty fields
@@ -35,7 +35,6 @@ export const createUser = async (req, res) => {
             "name",
             "last_name",
             "email",
-            "phone_number",
             "birth_date",
             "gender",
             "password",
@@ -61,6 +60,14 @@ export const createUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Generate default nick_name if not provided
+        const defaultNickName =
+            nick_name ||
+            `${name.replace(/\s+/g, "")}${last_name.replace(
+                /\s+/g,
+                ""
+            )}${Math.floor(1000 + Math.random() * 9000)}`;
+
         const [userCreated, created] = await User.findOrCreate({
             where: { email },
             defaults: {
@@ -70,7 +77,8 @@ export const createUser = async (req, res) => {
                 birth_date,
                 gender,
                 password_token: hashedPassword,
-                role: role ? "admin" : "consumer"
+                role: role ? "admin" : "consumer",
+                nick_name: defaultNickName,
             },
         });
 
@@ -88,7 +96,7 @@ export const createUser = async (req, res) => {
             { expiresIn: "3d" }
         );
 
-        //TODO: Add email distribution
+        // TODO: Add email distribution
 
         res.status(200).send({
             message: "User created successfully",
@@ -152,10 +160,17 @@ export const logIn = async (req, res) => {
 
 //Update User
 export const updateUser = async (req, res) => {
-
     const _id_user = req.user._id_user;
 
-    const { name, last_name, email, phone_number, birth_date, gender } = req.body;
+    const {
+        name,
+        last_name,
+        email,
+        phone_number,
+        birth_date,
+        gender,
+        nick_name,
+    } = req.body;
     try {
         const user = await User.findOne({ where: { _id_user } });
 
@@ -163,8 +178,14 @@ export const updateUser = async (req, res) => {
             return res.status(400).send({ message: "User not found" });
         }
 
-        if (email && email !== user.email && !(await isValidEmail(email, _id_user))) {
-            return res.status(400).send({ message: "Invalid or already in use email address" });
+        if (
+            email &&
+            email !== user.email &&
+            !(await isValidEmail(email, _id_user))
+        ) {
+            return res
+                .status(400)
+                .send({ message: "Invalid or already in use email address" });
         }
 
         if (phone_number && !isValidPhoneNumber(phone_number)) {
@@ -178,6 +199,7 @@ export const updateUser = async (req, res) => {
             ...(phone_number !== undefined && { phone_number }),
             ...(birth_date !== undefined && { birth_date }),
             ...(gender !== undefined && { gender }),
+            ...(nick_name !== undefined && { nick_name }),
         };
 
         await User.update(updateData, { where: { _id_user } });
@@ -187,10 +209,15 @@ export const updateUser = async (req, res) => {
             attributes: { exclude: ["password_token"] },
         });
 
-        res.status(200).send({ message: "User updated successfully", user: updatedUser });
+        res.status(200).send({
+            message: "User updated successfully",
+            user: updatedUser,
+        });
     } catch (error) {
         console.error(`Error updating user: ${error.message}`);
-        res.status(500).send({ error: "An error occurred while updating the user" });
+        res.status(500).send({
+            error: "An error occurred while updating the user",
+        });
     }
 };
 
@@ -203,26 +230,26 @@ export const getUserDetails = async (req, res) => {
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
         });
-
+        console.log(user);
         if (!user) {
             return res.status(400).send({ message: "User not found" });
         }
 
         const followingsCount = await UserFollowers.count({
-            where: { _id_follower: _id_user }
+            where: { _id_follower: _id_user },
         });
 
         const followersCount = await UserFollowers.count({
-            where: { _id_followed: _id_user }
+            where: { _id_followed: _id_user },
         });
 
         user = user.toJSON();
         user.followings = followingsCount;
         user.followers = followersCount;
 
-        res.status(200).send({ 
-            message: "User found", 
-            user 
+        res.status(200).send({
+            message: "User found",
+            user,
         });
     } catch (error) {
         res.status(500).send({ error: error.message });
@@ -392,53 +419,54 @@ export const deactivateUser = async (req, res) => {
 
 //Nuke User (Cascade Deleting all user appearences)
 export const nukeUser = async (req, res) => {
-  const _id_user = req.user._id_user;
-  const user = await User.findByPk(_id_user);
-  try {
-    if (user.role !== "admin") {
+    const _id_user = req.user._id_user;
+    const user = await User.findByPk(_id_user);
+    try {
+        if (user.role !== "admin") {
             return res.status(403).json({
                 message: "Permission denied. Only admins can nuke users.",
             });
         }
 
-    const reviews = await Review.findAll({
-      where: { _id_user },
-    });
+        const reviews = await Review.findAll({
+            where: { _id_user },
+        });
 
-    for (const review of reviews) {
-      const imagesToDelete = await ReviewImages.findAll({
-        where: { _id_review: review._id_review },
-      });
+        for (const review of reviews) {
+            const imagesToDelete = await ReviewImages.findAll({
+                where: { _id_review: review._id_review },
+            });
 
-      for (const image of imagesToDelete) {
-        await image.destroy();
-      }
+            for (const image of imagesToDelete) {
+                await image.destroy();
+            }
+        }
+
+        await ReviewLikes.destroy({ where: { _id_user } });
+        await CommentLikes.destroy({ where: { _id_user } });
+        await BusinessFollowers.destroy({ where: { _id_user } });
+        await UserFollowers.destroy({
+            where: {
+                [Op.or]: [
+                    { _id_follower: _id_user },
+                    { _id_followed: _id_user },
+                ],
+            },
+        });
+        await Message.destroy({
+            where: {
+                [Op.or]: [{ _id_sender: _id_user }, { _id_receiver: _id_user }],
+            },
+        });
+        await Comment.destroy({ where: { _id_user } });
+        await Review.destroy({ where: { _id_user } });
+        await Business.destroy({ where: { _id_user } });
+        await User.destroy({ where: { _id_user } });
+
+        return res.status(200).send({ message: "User deleted successfully" });
+    } catch (error) {
+        return res.status(500).send({ error: error.message });
     }
-
-    await ReviewLikes.destroy({ where: { _id_user } });
-    await CommentLikes.destroy({ where: { _id_user } });
-    await BusinessFollowers.destroy({ where: { _id_user } });
-    await UserFollowers.destroy({
-      where: {
-        [Op.or]: [{ _id_follower: _id_user }, { _id_followed: _id_user }],
-      },
-    });
-    await Message.destroy({
-      where: {
-        [Op.or]: [{ _id_sender: _id_user }, { _id_receiver: _id_user }],
-      },
-    });
-    await Comment.destroy({ where: { _id_user } });
-    await Review.destroy({ where: { _id_user } });
-    await Business.destroy({ where: { _id_user }})
-    await User.destroy({ where: { _id_user }})
-    
-    return res
-      .status(200)
-      .send({ message: "User deleted successfully" });
-  } catch (error) {
-    return res.status(500).send({ error: error.message });
-  }
 };
 
 // Send OTP
@@ -563,10 +591,144 @@ export const searchUser = async (req, res) => {
     }
 };
 
+// Verify Token
 export const verifyToken = (req, res) => {
     // If the execution reaches here, the token is valid.
     res.status(200).json({
         success: true,
         message: "Token is valid",
     });
+};
+
+// Get User Feed with Pagination
+export const getUserFeed = async (req, res) => {
+    const _id_user = req.user._id_user;
+    const { size = 10, currentDate, nextPage } = req.query;
+
+    try {
+        // Step 1: Get user details
+        let user = await User.findOne({
+            where: { _id_user },
+            attributes: { exclude: ["password_token"] },
+        });
+
+        if (!user) {
+            return res.status(400).send({ message: "User not found" });
+        }
+
+        // Step 2: Get all businesses the user follows
+        const userBusinesses = await BusinessFollowers.findAll({
+            where: { _id_user },
+        });
+
+        // Step 3: Iterate through each business and get the most liked review
+        const feedPromises = userBusinesses.map(async (businessFollower) => {
+            const businessId = businessFollower._id_business;
+
+            // Step 3.1: Get all reviews for the current business
+            const businessReviews = await Review.findAll({
+                where: { _id_business: businessId },
+                order: [["createdAt", "DESC"]],
+            });
+
+            // Step 3.2: Get the most liked review for each business
+            const reviewsWithLikes = await Promise.all(
+                businessReviews.map(async (review) => {
+                    const likes = await ReviewLikes.count({
+                        where: { _id_review: review._id_review },
+                    });
+
+                    // Get user information for the current review
+                    const userForReview = await User.findOne({
+                        where: { _id_user: review._id_user },
+                        attributes: ["_id_user", "name", "last_name"],
+                    });
+
+                    // Get business information for the current review
+                    const businessForReview = await Business.findOne({
+                        where: { _id_business: review._id_business },
+                        attributes: ["_id_business", "name", "entity"],
+                    });
+
+                    // Step 3.3: Get the number of comments for the current review
+                    const comments = await Comment.count({
+                        where: { _id_review: review._id_review },
+                    });
+
+                    return {
+                        ...review.toJSON(),
+                        likes,
+                        comments,
+                        User: {
+                            _id_user: userForReview._id_user,
+                            name: userForReview.name,
+                            last_name: userForReview.last_name,
+                        },
+                        Business: {
+                            _id_business: businessForReview._id_business,
+                            name: businessForReview.name,
+                            entity: businessForReview.entity,
+                            is_followed: true,
+                        },
+                    };
+                })
+            );
+
+            // Find the most liked review based on like count and timestamp
+            const mostLikedReview = reviewsWithLikes.reduce((prev, current) => {
+                if (
+                    !prev ||
+                    current.likeCount > prev.likeCount ||
+                    (current.likeCount === prev.likeCount &&
+                        current.createdAt > prev.createdAt)
+                ) {
+                    return current;
+                } else {
+                    return prev;
+                }
+            }, null);
+
+            // Only add the object if mostLikedReview is truthy
+            if (mostLikedReview) {
+                return mostLikedReview;
+            } else {
+                return null;
+            }
+        });
+
+        // Step 4: Execute all promises concurrently
+        const feed = await Promise.all(feedPromises);
+
+        // Filter out null objects
+        const filteredFeed = feed.filter((item) => item !== null);
+
+        // Pagination logic
+        const startIndex = nextPage
+            ? filteredFeed.findIndex((item) => item.createdAt < nextPage)
+            : 0;
+        const endIndex = startIndex + size;
+        const paginatedFeed = filteredFeed.slice(startIndex, endIndex);
+
+        // Calculate next date for the next batch
+        const nextBatchFirstReviewDate =
+            paginatedFeed.length > 0
+                ? paginatedFeed[paginatedFeed.length - 1].createdAt
+                : null;
+
+        // Calculate total pages
+        const totalPages = Math.ceil(filteredFeed.length / size);
+
+        res.status(200).send({
+            message: "User found",
+            businessReviews: paginatedFeed,
+            size: paginatedFeed.length,
+            currentDate: nextBatchFirstReviewDate
+                ? nextBatchFirstReviewDate
+                : currentDate,
+            nextDate: nextBatchFirstReviewDate,
+            totalPages,
+        });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
 };

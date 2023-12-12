@@ -52,6 +52,10 @@ export const User = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        nick_name: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
     },
     {
         tableName: "users",
