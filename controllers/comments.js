@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize";
+import { Sequelize, where } from "sequelize";
 import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
@@ -187,6 +187,16 @@ export const createComment = async (req, res) => {
             return res.status(400).json({ message: "Review ID is required" });
         }
 
+        const parentReview = await Review.findByPk(_id_review);
+
+        if (!parentReview || !parentReview.is_valid) {
+            return res.status(404).json({ message: "Review not found" });
+        }
+
+        // if (!parentReview.is_valid) {
+        //     return res.status(400).json({ message: "Invalid review" });
+        // }
+
         const createdComment = await Comment.create({
             content,
             _id_review,
@@ -195,11 +205,6 @@ export const createComment = async (req, res) => {
         });
 
         const userCreatingComment = await User.findByPk(_id_user);
-        const relatedReview = await Review.findByPk(_id_review);
-
-        if (!relatedReview) {
-            return res.status(404).json({ message: "Review not found" });
-        }
 
         const commentData = {
             _id_comment: createdComment._id_comment,
@@ -216,12 +221,12 @@ export const createComment = async (req, res) => {
                 _id_user: userCreatingComment._id_user,
                 name: userCreatingComment.name,
                 last_name: userCreatingComment.last_name,
-                is_followed: false, 
+                is_followed: false,
             },
             Review: {
-                _id_review: relatedReview._id_review,
-                content: relatedReview.content,
-                rating: relatedReview.rating,
+                _id_review: parentReview._id_review,
+                content: parentReview.content,
+                rating: parentReview.rating,
             },
         };
 
@@ -234,7 +239,6 @@ export const createComment = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-
 
 // Update Comment
 export const updateComment = async (req, res) => {

@@ -263,8 +263,8 @@ export const likeReview = async (req, res) => {
 
     try {
         // Check if the review exists
-        const review = await Review.findOne({ where: { _id_review } });
-        if (!review) {
+        const review = await Review.findByPk(_id_review);
+        if (!review || !review.is_valid) {
             return res.status(404).send({ message: "Review not found" });
         }
 

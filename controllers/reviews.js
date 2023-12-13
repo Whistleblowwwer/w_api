@@ -500,7 +500,7 @@ export const getReviewsForBusiness = async (req, res) => {
 
     try {
         const reviewsOfBusiness = await Review.findAll({
-            where: { _id_business },
+            where: { _id_business, is_valid: true },
             limit: 20,
             order: [["createdAt", "DESC"]],
             attributes: {
@@ -754,7 +754,7 @@ export const getAllReviews = async (req, res) => {
                             SELECT COUNT(*)
                             FROM "reviewLikes"
                             WHERE
-                            "reviewLikes"."_id_review" = "Review"."_id_review"
+                            "reviewLikes"."_id_review" = "Review"."_id_review" AND "is_valid" = true
                         )`),
                         "likes",
                     ],
@@ -763,8 +763,8 @@ export const getAllReviews = async (req, res) => {
                             SELECT COUNT(*)
                             FROM "comments" as Comments
                             WHERE
-                            Comments._id_review = "Review"."_id_review"
-                        )`),
+                            Comments._id_review = "Review"."_id_review" AND "is_valid" = true
+                            )`),
                         "comments",
                     ],
                 ],
@@ -905,7 +905,7 @@ export const deleteReview = async (req, res) => {
         if (!deletedReview) {
             return res
                 .status(404)
-                .send({ message: "Review not found or already deleted" });
+                .send({ message: "You cannot delete other user's reviews" });
         }
 
         // Mark the review as invalid (soft delete)
