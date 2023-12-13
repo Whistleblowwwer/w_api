@@ -64,10 +64,6 @@ Review.belongsToMany(User, {
     otherKey: "_id_user",
 });
 
-// // In your ReviewLikes model file
-// ReviewLikes.belongsTo(Review, { foreignKey: "_id_review" });
-// Review.hasMany(ReviewLikes, { foreignKey: "_id_review" });
-
 // 8. Un user puede likear un comment
 User.belongsToMany(Comment, {
     as: "LikedComments",
@@ -80,6 +76,18 @@ Comment.belongsToMany(User, {
     through: CommentLikes,
     foreignKey: "_id_comment",
     otherKey: "_id_user",
+});
+
+// CommentLikes model file
+CommentLikes.belongsTo(Comment, {
+    foreignKey: "_id_comment",
+    as: "comment",
+});
+
+// Comment model file
+Comment.hasMany(CommentLikes, {
+    foreignKey: "_id_comment",
+    as: "likes", // This alias is used in the include option of the findAll method
 });
 
 // 9. Un review puede tener varias imágenes

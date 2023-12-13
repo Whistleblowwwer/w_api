@@ -553,12 +553,16 @@ export const searchUser = async (req, res) => {
     try {
         const similarUsersByName = await User.findAll({
             where: nameSearchCriteria,
-            attributes: { exclude: ["phone_number", "password_token"] },
+            attributes: {
+                exclude: ["admin", "email", "phone_number", "password_token"],
+            },
         });
 
         const similarUsersByLastName = await User.findAll({
             where: lastNameSearchCriteria,
-            attributes: { exclude: ["phone_number", "password_token"] },
+            attributes: {
+                exclude: ["admin", "email", "phone_number", "password_token"],
+            },
         });
 
         const uniqueUsersMap = {};
@@ -730,5 +734,103 @@ export const getUserFeed = async (req, res) => {
         });
     } catch (error) {
         res.status(500).send({ error: error.message });
+    }
+};
+
+// Get Liked Reviews By User
+export const getUserLikes = async (req, res) => {
+    const _id_user_requesting = req.user._id_user;
+
+    try {
+        // Get liked reviews
+        const likedReviews = await ReviewLikes.findAll({
+            where: { _id_user: _id_user_requesting },
+            include,
+        });
+
+        // Get liked comments
+        const likedComments = await CommentLikes.findAll({
+            where: { _id_user: _id_user_requesting },
+            include: [
+                {
+                    model: Comment,
+                    attributes: [
+                        "_id_comment",
+                        "content",
+                        "is_valid",
+                        "createdAt",
+                        "updatedAt",
+                        "_id_user",
+                        "_id_review",
+                    ],
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["_id_user", "name", "last_name"],
+                        },
+                    ],
+                    as: "comment",
+                },
+            ],
+        });
+
+        // Structure the response
+        const likedReviewsResponse = likedReviews.map(({ review }) => ({
+            _id_review: review._id_review,
+            content: review.content,
+            rating: review.rating,
+            is_valid: review.is_valid,
+            createdAt: review.createdAt,
+            updatedAt: review.updatedAt,
+            _id_business: review._id_business,
+            _id_user: review._id_user,
+            is_liked: true,
+            likes: 1, // Assuming each record in ReviewLikes represents one like
+            comments: 0, // No comments in the liked review
+            User: {
+                _id_user: review.User._id_user,
+                name: review.User.name,
+                last_name: review.User.last_name,
+                is_followed: false,
+            },
+            Business: {
+                _id_business: review.Business._id_business,
+                name: review.Business.name,
+                entity: review.Business.entity,
+                is_followed: false,
+            },
+        }));
+
+        const likedCommentsResponse = likedComments.map(({ comment }) => ({
+            _id_comment: comment._id_comment,
+            content: comment.content,
+            is_valid: comment.is_valid,
+            createdAt: comment.createdAt,
+            updatedAt: comment.updatedAt,
+            _id_user: comment._id_user,
+            _id_review: comment._id_review,
+            is_liked: true,
+            likes: 1, // Assuming each record in CommentLikes represents one like
+            comments: 0, // No nested comments in the liked comment
+            User: {
+                _id_user: comment.User._id_user,
+                name: comment.User.name,
+                last_name: comment.User.last_name,
+                is_followed: false,
+            },
+        }));
+
+        const allLikedItems = [
+            ...likedReviewsResponse,
+            ...likedCommentsResponse,
+        ];
+
+        res.status(200).send({
+            message: "Liked items retrieved successfully",
+            likedItems: allLikedItems,
+        });
+    } catch (error) {
+        console.error("Error retrieving liked items:", error);
+        res.status(500).send({ message: "Internal server error" });
     }
 };

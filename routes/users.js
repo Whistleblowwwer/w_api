@@ -16,6 +16,7 @@ import {
     searchUser,
     verifyToken,
     getUserFeed,
+    getUserLikes,
 } from "../controllers/users.js";
 import { getUserReviews } from "../controllers/reviews.js";
 
@@ -70,5 +71,8 @@ router.get("/token", validateToken, verifyToken);
 
 // Get feed
 router.get("/feed", validateToken, getUserFeed);
+
+// Get Liked Reviews by User
+router.get("/likes", validateToken, getUserLikes);
 
 export default router;
