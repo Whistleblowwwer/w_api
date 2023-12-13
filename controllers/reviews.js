@@ -625,7 +625,7 @@ export const getUserReviews = async (req, res) => {
 
     try {
         const reviewsOfUser = await Review.findAll({
-            where: { _id_user },
+            where: { _id_user, is_valid: true },
             limit: 20,
             order: [["createdAt", "DESC"]],
             attributes: {
