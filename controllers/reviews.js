@@ -754,7 +754,7 @@ export const getAllReviews = async (req, res) => {
                             SELECT COUNT(*)
                             FROM "reviewLikes"
                             WHERE
-                            "reviewLikes"."_id_review" = "Review"."_id_review" AND "is_valid" = true
+                            "reviewLikes"."_id_review" = "Review"."_id_review"
                         )`),
                         "likes",
                     ],

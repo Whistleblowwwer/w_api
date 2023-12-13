@@ -528,6 +528,7 @@ export const VerifySMS = async (req, res) => {
 // Search User
 export const searchUser = async (req, res) => {
     const searchTerm = req.query.searchTerm;
+    const _id_user_requesting = req.user._id_user;
 
     let nameSearchCriteria = {};
     let lastNameSearchCriteria = {};
@@ -577,9 +578,25 @@ export const searchUser = async (req, res) => {
                 .send({ message: "No users found matching the criteria" });
         }
 
+        // Check if each user is followed by the requesting user
+        const usersWithFollowStatus = await Promise.all(
+            combinedUsers.map(async (user) => {
+                const isFollower = await UserFollowers.findOne({
+                    where: {
+                        _id_follower: _id_user_requesting,
+                        _id_followed: user._id_user,
+                    },
+                });
+                return {
+                    ...user.get({ plain: true }),
+                    is_follower: Boolean(isFollower),
+                };
+            })
+        );
+
         return res.status(200).send({
             message: "Successfully found users",
-            users: combinedUsers,
+            users: usersWithFollowStatus,
         });
     } catch (error) {
         if (error instanceof Sequelize.ValidationError) {
