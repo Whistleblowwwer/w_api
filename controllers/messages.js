@@ -9,39 +9,24 @@ export const getMessages = async (req, res) => {
   const _id_receiver = req.query._id_receiver;
 
   try {
-    const conversation = await Message.findAll({
+    const messages = await Message.findAll({
       where: {
         [Op.or]: [
-          { _id_sender: _id_user, _id_receiver: _id_receiver }, 
-          { _id_sender: _id_receiver, _id_receiver: _id_user } 
+          { _id_sender: _id_user, _id_receiver: _id_receiver },
+          { _id_sender: _id_receiver, _id_receiver: _id_user }
         ]
       },
-      attributes: {
-        include: ['_id_message', 'content', 'is_valid', 'createdAt', 'updatedAt'],
-        exclude: ['_id_sender', '_id_receiver'] 
-      },
-      include: [
-        { 
-          model: User, 
-          as: 'Sender',
-          attributes: ['_id_user', 'name', 'last_name']
-        },
-        { 
-          model: User, 
-          as: 'Receiver',
-          attributes: ['_id_user', 'name', 'last_name']
-        }
-      ],
+      attributes: ['content', '_id_sender', '_id_receiver', 'createdAt'],
       order: [['createdAt', 'DESC']]
     });
 
-    if (conversation.length === 0) {
+    if (messages.length === 0) {
       return res.status(404).send({ message: "No messages found in this conversation." });
     }
 
     res.status(200).json({
       message: "Messages retrieved successfully.",
-      messages: conversation
+      messages: messages
     });
   } catch (error) {
     console.error("Error retrieving messages:", error);
@@ -52,7 +37,6 @@ export const getMessages = async (req, res) => {
     }
   }
 };
-
 
 //Get All Conversations of a user
 export const getAllConversations = async (req, res) => {
