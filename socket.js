@@ -5,7 +5,8 @@ import {
     authenticateSocket,
     sendMessage, 
     userTyping,
-    joinConversation
+    joinConversation,
+    leaveConversation
 } from "./utils/socketHandlers.js";
 
 
@@ -24,6 +25,7 @@ const handleConnection = (io) => (socket) => {
   socket.on('sendMessage', (messageData) => sendMessage(io, socket, messageData));
   socket.on('userTyping', (messageData) => userTyping(socket, messageData));
   socket.on('joinConversation', (conversationData) => joinConversation(socket, conversationData));
+  socket.on('leaveConversation', (conversationData) => leaveConversation(socket, conversationData));
   socket.on('disconnect', () => disconnection(socket));
   // socket.on('messageRead', (data) => messageRead(io, socket, messageData));
 };

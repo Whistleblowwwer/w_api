@@ -143,3 +143,33 @@ export const joinConversation = (socket, conversationData) => {
   }
 };
 
+// Handling leaving a conversation
+export const leaveConversation = (socket, conversationData) => {
+  try {
+    const { _id_sender, _id_receiver } = conversationData;
+
+    if (!_id_sender) {
+      return socket.emit("error", "Sender ID not provided");
+    }
+    if (_id_sender !== socket.user._id_user) {
+      return socket.emit("error", "Sender ID does not match authenticated user");
+    }
+
+    if (!_id_receiver) {
+      return socket.emit("error", "Receiver ID not provided");
+    }
+
+    const _id_room = getRoomId(_id_sender, _id_receiver);
+
+    if (socket.roomsSet.has(_id_room)) {
+      socket.leave(_id_room);
+      socket.roomsSet.delete(_id_room);
+      console.log(`User ${socket.user._id_user} left room ${_id_room}`);
+    } else {
+      console.log(`User ${socket.user._id_user} is not in room ${_id_room}, so cannot leave it`);
+    }
+  } catch (error) {
+    console.error("An error occurred while trying to leave the conversation", error);
+    socket.emit("error", "An unexpected error occurred while leaving the conversation");
+  }
+};
