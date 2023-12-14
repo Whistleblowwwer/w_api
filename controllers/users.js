@@ -766,30 +766,30 @@ export const getUserLikes = async (req, res) => {
         });
 
         // Get liked comments
-        const likedComments = await CommentLikes.findAll({
-            where: { _id_user: _id_user_requesting },
-            include: [
-                {
-                    model: Comment,
-                    attributes: [
-                        "_id_comment",
-                        "content",
-                        "is_valid",
-                        "createdAt",
-                        "updatedAt",
-                        "_id_user",
-                        "_id_review",
-                    ],
-                    include: [
-                        {
-                            model: User,
-                            attributes: ["_id_user", "name", "last_name"],
-                        },
-                    ],
-                    as: "comment",
-                },
-            ],
-        });
+        // const likedComments = await CommentLikes.findAll({
+        //     where: { _id_user: _id_user_requesting },
+        //     include: [
+        //         {
+        //             model: Comment,
+        //             attributes: [
+        //                 "_id_comment",
+        //                 "content",
+        //                 "is_valid",
+        //                 "createdAt",
+        //                 "updatedAt",
+        //                 "_id_user",
+        //                 "_id_review",
+        //             ],
+        //             include: [
+        //                 {
+        //                     model: User,
+        //                     attributes: ["_id_user", "name", "last_name"],
+        //                 },
+        //             ],
+        //             as: "comment",
+        //         },
+        //     ],
+        // });
 
         // Structure the response
         const likedReviewsResponse = likedReviews.map(({ review }) => ({
@@ -818,28 +818,28 @@ export const getUserLikes = async (req, res) => {
             },
         }));
 
-        const likedCommentsResponse = likedComments.map(({ comment }) => ({
-            _id_comment: comment._id_comment,
-            content: comment.content,
-            is_valid: comment.is_valid,
-            createdAt: comment.createdAt,
-            updatedAt: comment.updatedAt,
-            _id_user: comment._id_user,
-            _id_review: comment._id_review,
-            is_liked: true,
-            likes: 1, // Assuming each record in CommentLikes represents one like
-            comments: 0, // No nested comments in the liked comment
-            User: {
-                _id_user: comment.User._id_user,
-                name: comment.User.name,
-                last_name: comment.User.last_name,
-                is_followed: false,
-            },
-        }));
+        // const likedCommentsResponse = likedComments.map(({ comment }) => ({
+        //     _id_comment: comment._id_comment,
+        //     content: comment.content,
+        //     is_valid: comment.is_valid,
+        //     createdAt: comment.createdAt,
+        //     updatedAt: comment.updatedAt,
+        //     _id_user: comment._id_user,
+        //     _id_review: comment._id_review,
+        //     is_liked: true,
+        //     likes: 1, // Assuming each record in CommentLikes represents one like
+        //     comments: 0, // No nested comments in the liked comment
+        //     User: {
+        //         _id_user: comment.User._id_user,
+        //         name: comment.User.name,
+        //         last_name: comment.User.last_name,
+        //         is_followed: false,
+        //     },
+        // }));
 
         const allLikedItems = [
             ...likedReviewsResponse,
-            ...likedCommentsResponse,
+            // ...likedCommentsResponse,
         ];
 
         res.status(200).send({
