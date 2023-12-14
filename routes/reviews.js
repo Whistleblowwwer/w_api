@@ -6,6 +6,7 @@ import {
     getReviewParent,
     getReviewChildren,
     getReviewsForBusiness,
+    getUserReviews,
     updateReview,
     deleteReview,
 } from "../controllers/reviews.js";
@@ -28,6 +29,9 @@ router.get("/info/thread", validateToken, getReviewChildren);
 
 // Get Reviews of a Business
 router.get("/business", validateToken, getReviewsForBusiness);
+
+//Get Reviews of a User
+router.get("/my-reviews", validateToken, getUserReviews);
 
 // Update Review
 router.put("/", validateToken, updateReview);
