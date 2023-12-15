@@ -219,6 +219,7 @@ export const getReviewParent = async (req, res) => {
             _id_business: comment._id_business,
             _id_user: comment._id_user,
             _id_review: comment._id_review,
+            _id_parent: comment._id_parent,
             is_liked: likedCommentsSet.has(comment._id_comment),
             likes: comment.getDataValue("likes"),
             comments: comment.getDataValue("childrenCommentCount"),
