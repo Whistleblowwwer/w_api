@@ -1,18 +1,29 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db.js";
+import { User } from "./users.js";
 
 export const UserFollowers = sequelize.define(
     "UserFollowers",
     {
-        _id_user_followers: {
+        _id_user_follower: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            primaryKey: true,
+            allowNull: false,
+            references: {
+                model: User,
+                key: '_id_user'
+            }
         },
+        _id_user_followed: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: User,
+                key: '_id_user'
+            }
+        }
     },
     {
         tableName: "userFollowers",
         timestamps: true,
     }
 );
-

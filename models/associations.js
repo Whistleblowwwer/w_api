@@ -14,20 +14,22 @@ import { User } from "./users.js";
 
 // 1. Un user puede seguir a otro usuario
 User.belongsToMany(User, {
-    as: "Followers",
+    as: 'Followed',
     through: UserFollowers,
-    foreignKey: "_id_follower",
-    otherKey: "_id_followed",
+    foreignKey: '_id_user_follower',
+    otherKey: '_id_user_followed'
+});
+
+User.belongsToMany(User, {
+    as: 'Followers',
+    through: UserFollowers,
+    foreignKey: '_id_user_followed',
+    otherKey: '_id_user_follower'
 });
 
 // 2. Un user puede crear y seguir a una empresa
-User.hasMany(Business, { foreignKey: "_id_user" });
-User.belongsToMany(Business, {
-    as: "FollowedBusinesses",
-    through: BusinessFollowers,
-    foreignKey: "_id_user",
-    otherKey: "_id_business",
-});
+Business.belongsToMany(User, { through: BusinessFollowers });
+User.belongsToMany(Business, { through: BusinessFollowers });
 
 // 3. Una empresa puede tener 0 o varios reviews
 Business.hasMany(Review, { foreignKey: "_id_business" });
