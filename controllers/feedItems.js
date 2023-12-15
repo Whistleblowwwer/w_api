@@ -27,6 +27,7 @@ export const CreateFeedItem = async (req, res) => {
             return res.status(400).send({ message: "User has no followers"});
         }
 
+        
         //Create Feed Item
         addtoBatch(async () => {
             const createdFeedItem = await FeedItems_Write.create({
@@ -37,6 +38,19 @@ export const CreateFeedItem = async (req, res) => {
                 is_valid,
             });
         });
+
+        for (const follower in followerIds){
+            addtoBatch(async () => {
+                const createdFeedItem = await FeedItems_Read.create({
+                    _id_user,
+                    list_id_target: follower,
+                    score,
+                    interaction,
+                    is_valid,
+                });
+            });
+        }
+
 
         return res.status(201).json({
             message: "FeedItem created successfully",
