@@ -521,7 +521,10 @@ export const getReviewsForBusiness = async (req, res) => {
         });
 
         const commentsDTO = await commentsMetaData(businessReviews);
-        const likesDTO = await likesMetaData(businessReviews, _id_user_requesting);
+        const likesDTO = await likesMetaData(
+            businessReviews,
+            _id_user_requesting
+        );
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
         });
@@ -534,79 +537,6 @@ export const getReviewsForBusiness = async (req, res) => {
         );
 
         const reviewsWithLikesAndFollowInfo = businessReviews.map(
-            (review, index) => {
-                const reviewLike = likesMap.get(review._id_review);
-
-                const reviewDTO = new ReviewDTO(
-                    review.dataValues,
-                    reviewLike?.dataValues?.userLiked === "1",
-                    userFollowings,
-                    businessFollowings,
-                    _id_user_requesting
-                );
-
-                reviewDTO.setMetaData(
-                    commentsDTO[index],
-                    reviewLike,
-                    userFollowings,
-                    businessFollowings
-                );
-
-                return reviewDTO.getReviewData();
-            }
-        );
-
-        res.status(200).send({
-            message: "Reviews retrieved successfully",
-            reviews: reviewsWithLikesAndFollowInfo,
-        });
-    } catch (error) {
-        console.error("Error retrieving reviews:", error);
-        res.status(500).send({ message: "Internal server error" });
-    }
-};
-
-// Get Reviews for User
-export const getUserReviews = async (req, res) => {
-    let _id_user = req.query._id_user;
-
-    if (!_id_user) {
-        _id_user = req.user._id_user;
-    }
-
-    const _id_user_requesting = req.user._id_user;
-
-    try {
-        const userReviews = await Review.findAll({
-            where: { _id_user: _id_user_requesting, is_valid: true },
-            limit: 20,
-            order: [["createdAt", "DESC"]],
-            include: [
-                {
-                    model: Business,
-                    attributes: ["_id_business", "name", "entity"],
-                },
-                {
-                    model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
-                },
-            ],
-        });
-
-        const commentsDTO = await commentsMetaData(userReviews);
-        const likesDTO = await likesMetaData(userReviews, _id_user_requesting);
-        const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting },
-        });
-        const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user_requesting },
-        });
-
-        const likesMap = new Map(
-            likesDTO.map((like) => [like.dataValues._id_review, like])
-        );
-
-        const reviewsWithLikesAndFollowInfo = userReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
@@ -652,15 +582,15 @@ export const getUserLikedReviews = async (req, res) => {
     try {
         const likedReviewIds = await ReviewLikes.findAll({
             where: { _id_user: _id_user_requesting },
-            attributes: ['_id_review'],
+            attributes: ["_id_review"],
         });
 
-        const reviewIds = likedReviewIds.map(like => like._id_review);
+        const reviewIds = likedReviewIds.map((like) => like._id_review);
 
         const likedReviews = await Review.findAll({
-            where: { 
+            where: {
                 _id_review: { [Sequelize.Op.in]: reviewIds },
-                is_valid: true 
+                is_valid: true,
             },
             limit: 20,
             order: [["createdAt", "DESC"]],

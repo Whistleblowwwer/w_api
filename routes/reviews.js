@@ -6,10 +6,9 @@ import {
     getReviewParent,
     getReviewChildren,
     getReviewsForBusiness,
-    getUserReviews,
     updateReview,
     deleteReview,
-    getUserLikedReviews
+    getUserLikedReviews,
 } from "../controllers/reviews.js";
 
 const router = Router();
@@ -30,9 +29,6 @@ router.get("/info/thread", validateToken, getReviewChildren);
 
 // Get Reviews of a Business
 router.get("/business", validateToken, getReviewsForBusiness);
-
-//Get Reviews of a User
-router.get("/my-reviews", validateToken, getUserReviews);
 
 //Get Reviews Liked by a User
 router.get("/liked", validateToken, getUserLikedReviews);

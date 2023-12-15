@@ -230,7 +230,7 @@ export const getUserDetails = async (req, res) => {
             where: { _id_user },
             attributes: { exclude: ["password_token"] },
         });
-        console.log(user);
+
         if (!user) {
             return res.status(400).send({ message: "User not found" });
         }
@@ -848,6 +848,79 @@ export const getUserLikes = async (req, res) => {
         });
     } catch (error) {
         console.error("Error retrieving liked items:", error);
+        res.status(500).send({ message: "Internal server error" });
+    }
+};
+
+// Get Reviews for User
+export const getUserReviews = async (req, res) => {
+    let _id_user = req.query._id_user;
+
+    if (!_id_user) {
+        _id_user = req.user._id_user;
+    }
+
+    const _id_user_requesting = req.user._id_user;
+
+    try {
+        const userReviews = await Review.findAll({
+            where: { _id_user: _id_user_requesting, is_valid: true },
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                },
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+            ],
+        });
+
+        const commentsDTO = await commentsMetaData(userReviews);
+        const likesDTO = await likesMetaData(userReviews, _id_user_requesting);
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        });
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user_requesting },
+        });
+
+        const likesMap = new Map(
+            likesDTO.map((like) => [like.dataValues._id_review, like])
+        );
+
+        const reviewsWithLikesAndFollowInfo = userReviews.map(
+            (review, index) => {
+                const reviewLike = likesMap.get(review._id_review);
+
+                const reviewDTO = new ReviewDTO(
+                    review.dataValues,
+                    reviewLike?.dataValues?.userLiked === "1",
+                    userFollowings,
+                    businessFollowings,
+                    _id_user_requesting
+                );
+
+                reviewDTO.setMetaData(
+                    commentsDTO[index],
+                    reviewLike,
+                    userFollowings,
+                    businessFollowings
+                );
+
+                return reviewDTO.getReviewData();
+            }
+        );
+
+        res.status(200).send({
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithLikesAndFollowInfo,
+        });
+    } catch (error) {
+        console.error("Error retrieving reviews:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 };
