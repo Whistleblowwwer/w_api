@@ -36,7 +36,7 @@ router.put("/", validateToken, updateUser);
 router.get("/", validateToken, getUserDetails);
 
 //Get User Reviews
-router.get("/reviews", validateToken, getUserReviews);
+router.get("/feed", validateToken, getUserReviews);
 
 //Like Review
 router.post("/reviews/like", validateToken, likeReview);
