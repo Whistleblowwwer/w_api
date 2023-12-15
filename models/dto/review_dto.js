@@ -32,6 +32,7 @@ export default class ReviewDTO {
             _id_user: review.User._id_user,
             name: review.User.name,
             last_name: review.User.last_name,
+            nick_name: review.User.nick_name,
             is_followed: false,
         };
 
@@ -81,6 +82,7 @@ export default class ReviewDTO {
                 _id_user: this.User._id_user,
                 name: this.User.name,
                 last_name: this.User.last_name,
+                nick_name: this.User.nick_name,
                 is_followed: this.User.is_followed,
             },
             Business: {
