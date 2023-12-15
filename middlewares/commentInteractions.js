@@ -31,9 +31,18 @@ export const commentMetaData = async (comments, userID) => {
         group: ["_id_parent"],
     });
 
-    return { likesMetaDataForComments, repliesCountForComments };
-};
+    const likesMetaDataObject = likesMetaDataForComments.reduce((acc, like) => {
+        acc[like.dataValues._id_comment] = like.dataValues;
+        return acc;
+    }, {});
 
+    const repliesMetaDataObject = repliesCountForComments.reduce((acc, reply) => {
+        acc[reply.dataValues._id_parent] = reply.dataValues;
+        return acc;
+    }, {});
+
+    return { likesMetaDataObject, repliesMetaDataObject };
+};
 
 export const createCommentInteractionsDTO = async (comments, userID) => {
     const interactionsDTO = new InteractionsDTO();

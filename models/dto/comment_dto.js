@@ -24,18 +24,17 @@ export default class CommentDTO {
         };
     }
 
-    setMetaData(likeMetaData, commentMetaData, userFollowingsSet) {
-        
-        const likeData = likeMetaData.find(like => like._id_comment === this._id_comment);
-        const replyData = commentMetaData.find(reply => reply._id_parent === this._id_comment);
+    setMetaData(likesMetaData, repliesMetaData, userFollowingsSet) {
+       const likeData = likesMetaData[this._id_comment];
+        const replyData = repliesMetaData[this._id_comment]; 
 
         this.likesCount = likeData ? parseInt(likeData.likeCount) || 0 : 0;
         this.commentsCount = replyData ? parseInt(replyData.repliesCount) || 0 : 0;
         this.is_liked = likeData ? likeData.userLiked === "1" : false;
 
         const targetUserId = this._id_user;
-            this.User.is_followed = userFollowingsSet.has(targetUserId);
-        }
+        this.User.is_followed = userFollowingsSet.has(targetUserId);
+    }
 
     getCommentData() {
         return {

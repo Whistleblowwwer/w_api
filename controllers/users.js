@@ -949,7 +949,7 @@ export const getUserComments = async (req, res) => {
             }],
         });
 
-        const metaData = await commentMetaData(userComments, _id_user_requesting);
+        const { likesMetaDataObject, repliesMetaDataObject } = await commentMetaData(userComments, _id_user_requesting);
 
         const userFollowingsSet = new Set((await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
@@ -958,8 +958,8 @@ export const getUserComments = async (req, res) => {
         const transformedComments = userComments.map(comment => {
             const commentDTO = new CommentDTO(comment, _id_user_requesting);
             commentDTO.setMetaData(
-                metaData.likesMetaDataForComments, 
-                metaData.repliesCountForComments, 
+                likesMetaDataObject, 
+                repliesMetaDataObject, 
                 userFollowingsSet
             );
             return commentDTO.getCommentData();
