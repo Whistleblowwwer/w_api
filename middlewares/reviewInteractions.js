@@ -69,7 +69,7 @@ export const likesMetaData = async (reviews, userID) => {
 export const createInteractionsDTO = async (reviews, userID) => {
     const interactionsDTO = new InteractionsDTO();
 
-    const commentsMetaData = await commentsMetaData(reviews);
+    const commentsForReviews = await commentsMetaData(reviews);
     const likesForReviews = await likesMetaData(reviews, userID);
 
     interactionsDTO.setComments(commentsForReviews);
