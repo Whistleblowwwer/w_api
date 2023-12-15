@@ -5,7 +5,7 @@ import { User } from "./users.js";
 export const UserFollowers = sequelize.define(
     "UserFollowers",
     {
-        _id_user_follower: {
+        _id_follower: {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
@@ -13,7 +13,7 @@ export const UserFollowers = sequelize.define(
                 key: '_id_user'
             }
         },
-        _id_user_followed: {
+        _id_followed: {
             type: DataTypes.UUID,
             allowNull: false,
             references: {
