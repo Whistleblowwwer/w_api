@@ -1,5 +1,5 @@
 import { User } from "../models/users.js";
-import { Buisness } from "../models/business.js";
+import { Business } from "../models/business.js";
 
 class InMemoryCache {
     constructor() {
@@ -47,4 +47,5 @@ export const UpdateCache = async () => {
       BuisnessCache.set(BusinessInstance._id_business, true);
   }
 
+  console.log("Cache Updated")
 }

@@ -5,6 +5,7 @@ import articleRoute from "./articles.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
+import FeedItemsRoute from "./feedItems.js";
 import { Router } from "express";
 
 const router = Router();
@@ -17,5 +18,6 @@ router.use("/articles", articleRoute);
 router.use("/reviews", reviewRoute);
 router.use("/bucket", bucketRoute);
 router.use("/users", userRoute);
+router.use("/feeditems", FeedItemsRoute);
 
 export default router;

@@ -1,21 +1,48 @@
-const EventEmitter = require('events');
+import { EventEmitter } from 'events';
 
-class EventBus extends EventEmitter {}
 
-// Create an instance of the event bus
-const eventBus = new EventBus();
+class EventBus extends EventEmitter {
+    constructor(size, interval) {
+        super();
+        this.size = size;
+        this.interval = interval;
+        this.operations = [];
+    }
+}
 
-// Example: Emitting an event when a review is created
-eventBus.on('reviewCreated', (review) => {
-    console.log('Review created:', review);
-    // Update the read database or perform other actions
-});
+export const eventBus = new EventBus(15, 15000);
 
-// Example: Emitting an event after a certain time period
+async function executeOperations() {
+    console.log('Executing operations:', eventBus.operations);
+    for (const operation of eventBus.operations) {
+        try {
+            console.log(operation.model)
+            console.log(operation.method)
+            console.log(operation.data)
+        } catch (error) {
+            console.error('Error executing operation:', error);
+        }
+    }
+    eventBus.operations = []
+}
+
+
 setTimeout(() => {
     eventBus.emit('timeEvent', 'Some time has passed');
-}, 15000); // Emit the event after 15 seconds
+}, eventBus.interval);
 
-// Example: Triggering the event when a review is created
-const createdReview = { /* Review data */ };
-eventBus.emit('reviewCreated', createdReview);
+eventBus.on('batchProcessed', async (batch) => {
+    eventBus.operations = eventBus.operations.concat(batch);
+    if(eventBus.size <= eventBus.operations.length){
+        await executeOperations();
+    }
+});
+
+eventBus.on('timeEvent', async () => {
+
+    await executeOperations();
+
+    setTimeout(() => {
+        eventBus.emit('timeEvent', 'Some time has passed');
+    }, eventBus.interval);
+});
