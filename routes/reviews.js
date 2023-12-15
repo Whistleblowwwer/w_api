@@ -9,6 +9,7 @@ import {
     getUserReviews,
     updateReview,
     deleteReview,
+    getUserLikedReviews
 } from "../controllers/reviews.js";
 
 const router = Router();
@@ -32,6 +33,9 @@ router.get("/business", validateToken, getReviewsForBusiness);
 
 //Get Reviews of a User
 router.get("/my-reviews", validateToken, getUserReviews);
+
+//Get Reviews Liked by a User
+router.get("/liked", validateToken, getUserLikedReviews);
 
 // Update Review
 router.put("/", validateToken, updateReview);
