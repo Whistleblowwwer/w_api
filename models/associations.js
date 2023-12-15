@@ -16,15 +16,15 @@ import { User } from "./users.js";
 User.belongsToMany(User, {
     as: 'Followed',
     through: UserFollowers,
-    foreignKey: '_id_user_follower',
-    otherKey: '_id_user_followed'
+    foreignKey: '_id_follower',
+    otherKey: '_id_followed'
 });
 
 User.belongsToMany(User, {
     as: 'Followers',
     through: UserFollowers,
-    foreignKey: '_id_user_followed',
-    otherKey: '_id_user_follower'
+    foreignKey: '_id_followed',
+    otherKey: '_id_follower'
 });
 
 // 2. Un user puede crear y seguir a una empresa
