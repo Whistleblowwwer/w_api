@@ -47,13 +47,23 @@ Business.belongsToMany(User, {
     otherKey: "_id_user",
 });
 
-// 6. Un user puede hacer un review
+//6. Un user puede hacer un review
 User.hasMany(Review, { foreignKey: "_id_user" });
 Review.belongsTo(User, { foreignKey: "_id_user" });
 
 // 7. Un user puede likear un review
-Review.belongsToMany(User, { through: ReviewLikes });
-User.belongsToMany(Review, { through: ReviewLikes });
+Review.belongsToMany(User, {
+    through: ReviewLikes,
+    foreignKey: '_id_review',
+    otherKey: '_id_user'
+});
+
+// User to Review association
+User.belongsToMany(Review, {
+    through: ReviewLikes,
+    foreignKey: '_id_user',
+    otherKey: '_id_review'
+});
 
 // 8. Un user puede likear un comment
 User.belongsToMany(Comment, {
