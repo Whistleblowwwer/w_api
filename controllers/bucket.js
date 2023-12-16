@@ -23,18 +23,19 @@ export const uploadFile = async (req, res) => {
     
                 //Prepare file for bucket and send file.
                 const file = req.file.buffer;
+                var fileName
                 if(photo_type === "users_profile_img"){
-                    const fileName = `${photo_type}/${id}`;
+                    fileName = `${photo_type}/${id}`;
                 }
                 else if(photo_type === "business_header_img"){
-                    const fileName = `${photo_type}/${id}`;
+                    fileName = `${photo_type}/${id}`;
                 }
                 else if(photo_type === "reviews_img"){
                     
                     const review = await Review.findByPk(id)
                     const business = await Business.findByPk(review._id_business)
 
-                    const fileName = `reviews_img/${business.name}/${id}`;
+                    fileName = `${photo_type}/${business.name}/${id}`;
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
@@ -98,12 +99,13 @@ export const uploadFile = async (req, res) => {
                         return res.status(400).send({ message: "Review not found" });
                     }
 
-                    await ReviewImages.create({
+                    const aaa = await ReviewImages.create({
                         image_url,
-                        createdAt,
-                        updatedAt,
                         _id_review
                     });
+
+                    await s3.send(command);
+                    return res.status(200).send({ message: "File Uploaded Successfully  ", b: aaa})
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
