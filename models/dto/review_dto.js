@@ -31,7 +31,7 @@ export default class ReviewDTO {
         };
 
         this.User = {
-            _id_user: review.User?.hasOwnProperty("_id_user")
+            _id_user: review._id_user
                 ? review.User._id_user
                 : _id_user_requesting,
             name: review.User?.name || null,
