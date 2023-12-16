@@ -1,4 +1,4 @@
-import { eventBus } from "./eventBus.js";
+//import { eventBus } from "./eventBus.js";
 
 export class WriteOperationBatcher {
   constructor(batchSize, interval) {
@@ -31,7 +31,7 @@ export class WriteOperationBatcher {
     // Execute each asynchronous operation in the batch
     const results = await Promise.all(this.batch.map(op => op()));
 
-    eventBus.emit('batchProcessed', this.batch);
+    //eventBus.emit('batchProcessed', this.batch);
     
     // Reset batch and timer
     this.batch = [];

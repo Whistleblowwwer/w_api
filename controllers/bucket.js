@@ -8,10 +8,11 @@ import { User } from "../models/users.js";
 import { Business } from "../models/business.js"
 import { Review } from "../models/reviews.js"
 import { ReviewImages } from "../models/reviewImages.js";
+import { BuisnessCache } from "../middlewares/cache.js";
 
 export const uploadFile = async (req, res) => {
     try{
-        const { id, photo_type, buisnessname } = req.query;
+        const { id, photo_type} = req.query;
         upload.single('fileN')(req, res, async (err) => {
             
             if (err) {
@@ -29,7 +30,11 @@ export const uploadFile = async (req, res) => {
                     const fileName = `${photo_type}/${id}`;
                 }
                 else if(photo_type === "reviews_img"){
-                    const fileName = `reviews_img/${buisnessname}/${id}`;
+                    
+                    const review = await Review.findByPk(id)
+                    const business = await Business.findByPk(review._id_business)
+
+                    const fileName = `reviews_img/${business.name}/${id}`;
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });

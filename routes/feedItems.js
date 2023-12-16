@@ -7,15 +7,15 @@ const router = Router();
 //----------FeedItems Routes-------------
 
 //Create FeedItem
-router.post('/', CreateFeedItem)
+router.post('/',validateToken, CreateFeedItem)
 
 //Read FeedItem
-router.get('/', ReadFeedItem);
+router.get('/',validateToken, ReadFeedItem);
 
 //Update FeedItem
-router.put('/', UpdateFeedItem);
+router.put('/',validateToken, UpdateFeedItem);
 
 //Delete FeedItem
-router.delete('/', DeleteFeedItem);
+router.delete('/',validateToken, DeleteFeedItem);
 
 export default router;
