@@ -762,38 +762,8 @@ export const getUserFeed = async (req, res) => {
 };
 
 // Get Liked Reviews By User
-export const getUserLikedReviews = async (req, res) => {
-export const getUserLikedReviews = async (req, res) => {
+export const getUserLikes = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
-    try {
-        const allReviews = await Review.findAll({
-            where: { is_valid: true },
-            limit: 20,
-            order: [["createdAt", "DESC"]],
-            include: [
-                {
-                    model: Business,
-                    attributes: ["_id_business", "name", "entity"],
-                    as: "businessFollowers", // This alias should match the alias used in User.belongsToMany
-                    through: {
-                        model: BusinessFollowers,
-                        attributes: [], // Exclude any additional attributes from BusinessFollowers
-                    },
-                    required: false, // Change to true if you only want reviews where the user is following at least one business
-                },
-                {
-                    model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
-                },
-            ],
-        });
-
-        const commentsDTO = await commentsMetaData(allReviews);
-        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
-        const userFollowings = await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting },
-        });
-        const businessFollowings = await BusinessFollowers.findAll({
     try {
         const allReviews = await Review.findAll({
             where: { is_valid: true },
@@ -961,24 +931,31 @@ export const getUserComments = async (req, res) => {
             where: { _id_user: _id_user, is_valid: true },
             limit: 20,
             order: [["createdAt", "DESC"]],
-            include: [{
-                model: User,
-                as: 'User',
-                attributes: ["_id_user", "name", "last_name", "nick_name"],
-            }],
+            include: [
+                {
+                    model: User,
+                    as: "User",
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+            ],
         });
 
-        const { likesMetaDataObject, repliesMetaDataObject } = await commentMetaData(userComments, _id_user_requesting);
+        const { likesMetaDataObject, repliesMetaDataObject } =
+            await commentMetaData(userComments, _id_user_requesting);
 
-        const userFollowingsSet = new Set((await UserFollowers.findAll({
-            where: { _id_follower: _id_user_requesting },
-        })).map(following => following._id_followed));
+        const userFollowingsSet = new Set(
+            (
+                await UserFollowers.findAll({
+                    where: { _id_follower: _id_user_requesting },
+                })
+            ).map((following) => following._id_followed)
+        );
 
-        const transformedComments = userComments.map(comment => {
+        const transformedComments = userComments.map((comment) => {
             const commentDTO = new CommentDTO(comment, _id_user_requesting);
             commentDTO.setMetaData(
-                likesMetaDataObject, 
-                repliesMetaDataObject, 
+                likesMetaDataObject,
+                repliesMetaDataObject,
                 userFollowingsSet
             );
             return commentDTO.getCommentData();

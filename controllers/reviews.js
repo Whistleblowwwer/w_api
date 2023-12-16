@@ -40,11 +40,15 @@ export const createReview = async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
 
-        const createReview = await Review.create({
+        const createdReview = await Review.create({
             content,
             _id_business,
             _id_user,
             rating,
+        });
+
+        // Fetch the newly created review with associated User
+        const reviewWithUser = await Review.findByPk(createdReview._id_review, {
             include: [
                 {
                     model: User,
@@ -53,28 +57,18 @@ export const createReview = async (req, res) => {
             ],
         });
 
-        const createdReview = await Review.findAll({
-            where: { _id_review: createReview._id_review },
-        });
-
-        // console.log("\n-- CREATED REVIEW: ", createdReview);
-        const reviewDTO = new ReviewDTO(createdReview);
-
         const businessFollowings = await BusinessFollowers.findAll({
-            where: { _id_user: _id_user },
+            where: { _id_user },
         });
 
-        reviewDTO.setUserName(JSON.stringify(userCreatingReview, null, 2));
-        reviewDTO.setBusiness(
-            JSON.stringify(userCreatingReview, null, 2),
-            businessFollowings
-        );
-
-        const reviewData = reviewDTO.getReviewData();
+        console.log("\n -- REVIEW & USER: ", reviewWithUser);
+        // Now you can use reviewWithUser in your DTO
+        const reviewDTO = new ReviewDTO(reviewWithUser.dataValues, _id_user);
+        reviewDTO.setBusiness(businessFollowings);
 
         return res.status(201).send({
             message: "Review created successfully",
-            review: reviewData,
+            review: reviewDTO.getReviewData(),
         });
     } catch (error) {
         if (error instanceof Sequelize.ValidationError) {

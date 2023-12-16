@@ -79,12 +79,7 @@ export default class ReviewDTO {
         this.User.nick_name = user.nick_name;
     }
 
-    setBusiness(business, businessFollowings) {
-        console.log("\n-- BUSINESS FOLLOWINGS", businessFollowings);
-        this.Business._id_business = business._id_business;
-        this.Business.name = business.name;
-        this.Business.entity = business.entity;
-
+    setBusiness(businessFollowings) {
         const targetBusinessId = this._id_business;
         this.Business.is_followed = businessFollowings.some(
             (businessFollowing) =>
