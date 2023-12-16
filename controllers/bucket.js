@@ -46,6 +46,8 @@ export const uploadFile = async (req, res) => {
 
                     _id_review_image = reviewimage._id_review_image
 
+                    console.log(review._id_business)
+
                     fileName = `${photo_type}/${review._id_business}/${id}/${_id_review_image}`;
                 }
                 else{
