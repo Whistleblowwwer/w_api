@@ -7,10 +7,12 @@ import { upload } from "../middlewares/multer.js";
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js"
 import { Review } from "../models/reviews.js"
+import { ReviewImages } from "../models/reviewImages.js";
+import { BuisnessCache } from "../middlewares/cache.js";
 
 export const uploadFile = async (req, res) => {
     try{
-        const { id, photo_type } = req.query;
+        const { id, photo_type} = req.query;
         upload.single('fileN')(req, res, async (err) => {
             
             if (err) {
@@ -18,13 +20,26 @@ export const uploadFile = async (req, res) => {
             } else {
                 //Get image and check it is an image type file.
                 const contentType = req.file.mimetype;
-                // if (contentType !== "image/jpeg") {
-                //     return res.status(400).send({ message: "Unsupported Media Type" });
-                // }
     
                 //Prepare file for bucket and send file.
                 const file = req.file.buffer;
-                const fileName = `${photo_type}/${id}`;
+                var fileName
+                if(photo_type === "users_profile_img"){
+                    fileName = `${photo_type}/${id}`;
+                }
+                else if(photo_type === "business_header_img"){
+                    fileName = `${photo_type}/${id}`;
+                }
+                else if(photo_type === "reviews_img"){
+                    
+                    const review = await Review.findByPk(id)
+
+                    fileName = `${photo_type}/${review._id_business}/${id}`;
+                }
+                else{
+                    return res.status(400).send({ message: "No photo type specified" });
+                }
+                
                 const params = {
                     Bucket: bucketName,
                     Key: fileName,
@@ -83,12 +98,11 @@ export const uploadFile = async (req, res) => {
                         return res.status(400).send({ message: "Review not found" });
                     }
 
-                    await Review.update(
-                        {
-                            image_url,
-                        },
-                        { where: { _id_review } }
-                    );
+                    const aaa = await ReviewImages.create({
+                        image_url,
+                        _id_review
+                    });
+
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
@@ -100,6 +114,22 @@ export const uploadFile = async (req, res) => {
     }
     catch(error){
         return res.status(500).send({ error: error.message });
+    }   
+}
+
+export const getUrl = async (req, res) => {
+    try{
+        const {filepath} = req.query;
+        const getObjectParams = {
+            Bucket: bucketName,
+            Key: filepath
+        }
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        return res.status(201).send({fileName: filepath, url: url});
+
     }
-    
+    catch(error){
+        return res.status(500).send({ error: error.message });
+    }
 }

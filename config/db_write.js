@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const sequelize = new Sequelize(
+export const sequelize_write = new Sequelize(
     process.env.DB_NAME_WRITE,
     process.env.DB_USER_WRITE,
     process.env.DB_PASSWORD_WRITE,
