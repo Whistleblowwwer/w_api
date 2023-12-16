@@ -119,8 +119,6 @@ export const uploadFile = async (req, res) => {
                         return res.status(400).send({ message: "Review not found" });
                     }
 
-                    console.log(image_url)
-
                     await ReviewImages.update(
                         {image_url},
                         { where: { _id_review_image}});
