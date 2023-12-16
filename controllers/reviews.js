@@ -8,6 +8,7 @@ import { ReviewLikes } from "../models/reviewLikes.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
+import { ReviewImages } from "../models/reviewImages.js";
 import {
     commentsMetaData,
     likesMetaData,
@@ -696,6 +697,13 @@ export const getAllReviews = async (req, res) => {
                     userFollowings,
                     businessFollowings
                 );
+
+                const Images = ReviewImages.getAll({
+                    where: {_id_review: reviewDTO._id_review},
+                    attributes: ['image_url']
+                })
+                console.log(Images)
+                reviewDTO.setImages();
 
                 return reviewDTO.getReviewData();
             }

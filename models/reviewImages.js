@@ -10,7 +10,7 @@ export const ReviewImages = sequelize.define(
             primaryKey: true,
         },
         image_url: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         createdAt: {
