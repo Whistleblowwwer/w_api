@@ -33,9 +33,8 @@ export const uploadFile = async (req, res) => {
                 else if(photo_type === "reviews_img"){
                     
                     const review = await Review.findByPk(id)
-                    const business = await Business.findByPk(review._id_business)
 
-                    fileName = `${photo_type}/${business.name}/${id}`;
+                    fileName = `${photo_type}/${review._id_business}/${id}`;
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
