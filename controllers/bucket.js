@@ -104,8 +104,6 @@ export const uploadFile = async (req, res) => {
                         _id_review
                     });
 
-                    await s3.send(command);
-                    return res.status(200).send({ message: "File Uploaded Successfully  ", b: aaa})
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
