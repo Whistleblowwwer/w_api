@@ -762,99 +762,103 @@ export const getUserFeed = async (req, res) => {
 };
 
 // Get Liked Reviews By User
-export const getUserLikes = async (req, res) => {
+export const getUserLikedReviews = async (req, res) => {
+export const getUserLikedReviews = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
-
     try {
-        // Get liked reviews
-        const likedReviews = await ReviewLikes.findAll({
-            where: { _id_user: _id_user_requesting },
-            include,
+        const allReviews = await Review.findAll({
+            where: { is_valid: true },
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                    as: "businessFollowers", // This alias should match the alias used in User.belongsToMany
+                    through: {
+                        model: BusinessFollowers,
+                        attributes: [], // Exclude any additional attributes from BusinessFollowers
+                    },
+                    required: false, // Change to true if you only want reviews where the user is following at least one business
+                },
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+            ],
         });
 
-        // Get liked comments
-        // const likedComments = await CommentLikes.findAll({
-        //     where: { _id_user: _id_user_requesting },
-        //     include: [
-        //         {
-        //             model: Comment,
-        //             attributes: [
-        //                 "_id_comment",
-        //                 "content",
-        //                 "is_valid",
-        //                 "createdAt",
-        //                 "updatedAt",
-        //                 "_id_user",
-        //                 "_id_review",
-        //             ],
-        //             include: [
-        //                 {
-        //                     model: User,
-        //                     attributes: ["_id_user", "name", "last_name"],
-        //                 },
-        //             ],
-        //             as: "comment",
-        //         },
-        //     ],
-        // });
+        const commentsDTO = await commentsMetaData(allReviews);
+        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        });
+        const businessFollowings = await BusinessFollowers.findAll({
+    try {
+        const allReviews = await Review.findAll({
+            where: { is_valid: true },
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            include: [
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
+                    as: "businessFollowers", // This alias should match the alias used in User.belongsToMany
+                    through: {
+                        model: BusinessFollowers,
+                        attributes: [], // Exclude any additional attributes from BusinessFollowers
+                    },
+                    required: false, // Change to true if you only want reviews where the user is following at least one business
+                },
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+            ],
+        });
 
-        // Structure the response
-        const likedReviewsResponse = likedReviews.map(({ review }) => ({
-            _id_review: review._id_review,
-            content: review.content,
-            rating: review.rating,
-            is_valid: review.is_valid,
-            createdAt: review.createdAt,
-            updatedAt: review.updatedAt,
-            _id_business: review._id_business,
-            _id_user: review._id_user,
-            is_liked: true,
-            likes: 1, // Assuming each record in ReviewLikes represents one like
-            comments: 0, // No comments in the liked review
-            User: {
-                _id_user: review.User._id_user,
-                name: review.User.name,
-                last_name: review.User.last_name,
-                is_followed: false,
-            },
-            Business: {
-                _id_business: review.Business._id_business,
-                name: review.Business.name,
-                entity: review.Business.entity,
-                is_followed: false,
-            },
-        }));
+        const commentsDTO = await commentsMetaData(allReviews);
+        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        });
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user_requesting },
+        });
 
-        // const likedCommentsResponse = likedComments.map(({ comment }) => ({
-        //     _id_comment: comment._id_comment,
-        //     content: comment.content,
-        //     is_valid: comment.is_valid,
-        //     createdAt: comment.createdAt,
-        //     updatedAt: comment.updatedAt,
-        //     _id_user: comment._id_user,
-        //     _id_review: comment._id_review,
-        //     is_liked: true,
-        //     likes: 1, // Assuming each record in CommentLikes represents one like
-        //     comments: 0, // No nested comments in the liked comment
-        //     User: {
-        //         _id_user: comment.User._id_user,
-        //         name: comment.User.name,
-        //         last_name: comment.User.last_name,
-        //         is_followed: false,
-        //     },
-        // }));
+        const likesMap = new Map(
+            likesDTO.map((like) => [like.dataValues._id_review, like])
+        );
 
-        const allLikedItems = [
-            ...likedReviewsResponse,
-            // ...likedCommentsResponse,
-        ];
+        const reviewsWithLikesAndFollowInfo = allReviews.map(
+            (review, index) => {
+                const reviewLike = likesMap.get(review._id_review);
+
+                const reviewDTO = new ReviewDTO(
+                    review.dataValues,
+                    reviewLike?.dataValues?.userLiked === "1",
+                    userFollowings,
+                    businessFollowings,
+                    _id_user_requesting
+                );
+
+                reviewDTO.setMetaData(
+                    commentsDTO[index],
+                    reviewLike,
+                    userFollowings,
+                    businessFollowings
+                );
+
+                return reviewDTO.getReviewData();
+            }
+        );
 
         res.status(200).send({
-            message: "Liked items retrieved successfully",
-            likedItems: allLikedItems,
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithLikesAndFollowInfo,
         });
     } catch (error) {
-        console.error("Error retrieving liked items:", error);
+        console.error("Error retrieving reviews:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 };
@@ -931,6 +935,8 @@ export const getUserReviews = async (req, res) => {
         );
 
         res.status(200).send({
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithLikesAndFollowInfo,
             message: "Reviews retrieved successfully",
             reviews: reviewsWithLikesAndFollowInfo,
         });

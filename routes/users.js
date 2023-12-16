@@ -17,7 +17,7 @@ import {
     verifyToken,
     getUserLikes,
     getUserReviews,
-    getUserComments
+    getUserComments,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -73,6 +73,6 @@ router.get("/token", validateToken, verifyToken);
 router.get("/likes", validateToken, getUserLikes);
 
 //Get User Comments
-router.get("/comments", validateToken, getUserComments)
+router.get("/comments", validateToken, getUserComments);
 
 export default router;

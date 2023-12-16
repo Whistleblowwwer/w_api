@@ -14,17 +14,17 @@ import { User } from "./users.js";
 
 // 1. Un user puede seguir a otro usuario
 User.belongsToMany(User, {
-    as: 'Followed',
+    as: "Followed",
     through: UserFollowers,
-    foreignKey: '_id_follower',
-    otherKey: '_id_followed'
+    foreignKey: "_id_follower",
+    otherKey: "_id_followed",
 });
 
 User.belongsToMany(User, {
-    as: 'Followers',
+    as: "Followers",
     through: UserFollowers,
-    foreignKey: '_id_followed',
-    otherKey: '_id_follower'
+    foreignKey: "_id_followed",
+    otherKey: "_id_follower",
 });
 
 // 2. Un user puede crear y seguir a una empresa
@@ -54,15 +54,15 @@ Review.belongsTo(User, { foreignKey: "_id_user" });
 // 7. Un user puede likear un review
 Review.belongsToMany(User, {
     through: ReviewLikes,
-    foreignKey: '_id_review',
-    otherKey: '_id_user'
+    foreignKey: "_id_review",
+    otherKey: "_id_user",
 });
 
 // User to Review association
 User.belongsToMany(Review, {
     through: ReviewLikes,
-    foreignKey: '_id_user',
-    otherKey: '_id_review'
+    foreignKey: "_id_user",
+    otherKey: "_id_review",
 });
 
 // 8. Un user puede likear un comment
