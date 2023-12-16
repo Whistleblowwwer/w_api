@@ -13,7 +13,6 @@ import {
     likesMetaData,
 } from "../middlewares/reviewInteractions.js";
 
-// Create Review
 export const createReview = async (req, res) => {
     try {
         const { _id_business, content, rating } = req.body;
@@ -41,38 +40,37 @@ export const createReview = async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
 
-        const createdReview = await Review.create({
+        const createReview = await Review.create({
             content,
             _id_business,
             _id_user,
             rating,
+            include: [
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+            ],
         });
 
-        const reviewData = {
-            _id_review: createdReview._id_review,
-            content: createdReview.content,
-            rating: createdReview.rating,
-            is_valid: createdReview.is_valid,
-            createdAt: createdReview.createdAt,
-            updatedAt: createdReview.updatedAt,
-            _id_business: createdReview._id_business,
-            _id_user: createdReview._id_user,
-            is_liked: false,
-            likes: "0",
-            comments: "0",
-            User: {
-                _id_user: userCreatingReview._id_user,
-                name: userCreatingReview.name,
-                last_name: userCreatingReview.last_name,
-                is_followed: false,
-            },
-            Business: {
-                _id_business: businessReviewed._id_business,
-                name: businessReviewed.name,
-                entity: businessReviewed.entity,
-                is_followed: false,
-            },
-        };
+        const createdReview = await Review.findAll({
+            where: { _id_review: createReview._id_review },
+        });
+
+        // console.log("\n-- CREATED REVIEW: ", createdReview);
+        const reviewDTO = new ReviewDTO(createdReview);
+
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user },
+        });
+
+        reviewDTO.setUserName(JSON.stringify(userCreatingReview, null, 2));
+        reviewDTO.setBusiness(
+            JSON.stringify(userCreatingReview, null, 2),
+            businessFollowings
+        );
+
+        const reviewData = reviewDTO.getReviewData();
 
         return res.status(201).send({
             message: "Review created successfully",

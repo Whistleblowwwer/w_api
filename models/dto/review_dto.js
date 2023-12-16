@@ -1,6 +1,8 @@
 export default class ReviewDTO {
     constructor(review, _id_user_requesting) {
         // Data
+
+        console.log("\n -- REVIEW EN CLASE: ", review);
         this._id_review = review._id_review;
         this.content = review.content;
         this.rating = review.rating;
@@ -29,17 +31,21 @@ export default class ReviewDTO {
         };
 
         this.User = {
-            _id_user: review.User._id_user,
-            name: review.User.name,
-            last_name: review.User.last_name,
-            nick_name: review.User.nick_name,
+            _id_user: review.User?.hasOwnProperty("_id_user")
+                ? review.User._id_user
+                : _id_user_requesting,
+            name: review.User?.name || null,
+            last_name: review.User?.last_name || null,
+            nick_name: review.User?.nick_name || null,
             is_followed: false,
         };
 
         this.Business = {
-            _id_business: review.Business._id_business,
-            name: review.Business.name,
-            entity: review.Business.entity,
+            _id_business: review.Business?.hasOwnProperty("_id_business")
+                ? review.Business._id_business
+                : null,
+            name: review.Business?.name || null,
+            entity: review.Business?.entity || null,
             is_followed: false,
         };
     }
@@ -59,6 +65,25 @@ export default class ReviewDTO {
             (userFollowing) =>
                 userFollowing.dataValues._id_followed === targetUserId
         );
+
+        const targetBusinessId = this._id_business;
+        this.Business.is_followed = businessFollowings.some(
+            (businessFollowing) =>
+                businessFollowing.dataValues._id_business === targetBusinessId
+        );
+    }
+
+    setUserName(user) {
+        this.User.name = user.name;
+        this.User.last_name = user.last_name;
+        this.User.nick_name = user.nick_name;
+    }
+
+    setBusiness(business, businessFollowings) {
+        console.log("\n-- BUSINESS FOLLOWINGS", businessFollowings);
+        this.Business._id_business = business._id_business;
+        this.Business.name = business.name;
+        this.Business.entity = business.entity;
 
         const targetBusinessId = this._id_business;
         this.Business.is_followed = businessFollowings.some(

@@ -869,7 +869,7 @@ export const getUserReviews = async (req, res) => {
 
     try {
         const userReviews = await Review.findAll({
-            where: { _id_user: _id_user_requesting, is_valid: true },
+            where: { _id_user, is_valid: true },
             limit: 20,
             order: [["createdAt", "DESC"]],
             include: [
