@@ -7,10 +7,11 @@ import { upload } from "../middlewares/multer.js";
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js"
 import { Review } from "../models/reviews.js"
+import { ReviewImages } from "../models/reviewImages.js";
 
 export const uploadFile = async (req, res) => {
     try{
-        const { id, photo_type } = req.query;
+        const { id, photo_type, buisnessname } = req.query;
         upload.single('fileN')(req, res, async (err) => {
             
             if (err) {
@@ -18,13 +19,22 @@ export const uploadFile = async (req, res) => {
             } else {
                 //Get image and check it is an image type file.
                 const contentType = req.file.mimetype;
-                // if (contentType !== "image/jpeg") {
-                //     return res.status(400).send({ message: "Unsupported Media Type" });
-                // }
     
                 //Prepare file for bucket and send file.
                 const file = req.file.buffer;
-                const fileName = `${photo_type}/${id}`;
+                if(photo_type === "users_profile_img"){
+                    const fileName = `${photo_type}/${id}`;
+                }
+                else if(photo_type === "business_header_img"){
+                    const fileName = `${photo_type}/${id}`;
+                }
+                else if(photo_type === "reviews_img"){
+                    const fileName = `reviews_img/${buisnessname}/${id}`;
+                }
+                else{
+                    return res.status(400).send({ message: "No photo type specified" });
+                }
+                
                 const params = {
                     Bucket: bucketName,
                     Key: fileName,
@@ -83,12 +93,12 @@ export const uploadFile = async (req, res) => {
                         return res.status(400).send({ message: "Review not found" });
                     }
 
-                    await Review.update(
-                        {
-                            image_url,
-                        },
-                        { where: { _id_review } }
-                    );
+                    await ReviewImages.create({
+                        image_url,
+                        createdAt,
+                        updatedAt,
+                        _id_review
+                    });
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
