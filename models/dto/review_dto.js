@@ -41,9 +41,7 @@ export default class ReviewDTO {
         };
 
         this.Business = {
-            _id_business: review.Business?.hasOwnProperty("_id_business")
-                ? review.Business._id_business
-                : null,
+            _id_business: review._id_business,
             name: review.Business?.name || null,
             entity: review.Business?.entity || null,
             is_followed: false,
