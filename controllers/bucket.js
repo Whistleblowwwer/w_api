@@ -115,6 +115,22 @@ export const uploadFile = async (req, res) => {
     }
     catch(error){
         return res.status(500).send({ error: error.message });
+    }   
+}
+
+export const getUrl = async (req, res) => {
+    try{
+        const {filepath} = req.query;
+        const getObjectParams = {
+            Bucket: bucketName,
+            Key: filepath
+        }
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        return res.status(201).send({fileName: filepath, url: url});
+
     }
-    
+    catch(error){
+        return res.status(500).send({ error: error.message });
+    }
 }
