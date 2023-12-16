@@ -884,6 +884,14 @@ export const getUserReviews = async (req, res) => {
             ],
         });
 
+        if (!userReviews.length) {
+            // No reviews found for the user
+            return res.status(200).send({
+                message: "No reviews found for the user",
+                reviews: [],
+            });
+        }
+
         const commentsDTO = await commentsMetaData(userReviews);
         const likesDTO = await likesMetaData(userReviews, _id_user_requesting);
         const userFollowings = await UserFollowers.findAll({
@@ -925,6 +933,11 @@ export const getUserReviews = async (req, res) => {
             reviews: reviewsWithLikesAndFollowInfo,
         });
     } catch (error) {
+        if (error.name === "SequelizeEmptyResultError") {
+            // User not found
+            return res.status(404).send({ message: "User not found" });
+        }
+
         console.error("Error retrieving reviews:", error);
         res.status(500).send({ message: "Internal server error" });
     }
