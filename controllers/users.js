@@ -19,7 +19,9 @@ import {
     commentsMetaData,
     likesMetaData,
 } from "../middlewares/reviewInteractions.js";
+import { commentMetaData } from "../middlewares/commentInteractions.js";
 import ReviewDTO from "../models/dto/review_dto.js";
+import CommentDTO from "../models/dto/comment_dto.js";
 
 export const createUser = async (req, res) => {
     try {
@@ -939,6 +941,49 @@ export const getUserReviews = async (req, res) => {
         }
 
         console.error("Error retrieving reviews:", error);
+        res.status(500).send({ message: "Internal server error" });
+    }
+};
+
+//Get User Comments
+export const getUserComments = async (req, res) => {
+    const _id_user_requesting = req.user._id_user;
+    let _id_user = req.query._id_user || _id_user_requesting;
+
+    try {
+        const userComments = await Comment.findAll({
+            where: { _id_user: _id_user, is_valid: true },
+            limit: 20,
+            order: [["createdAt", "DESC"]],
+            include: [{
+                model: User,
+                as: 'User',
+                attributes: ["_id_user", "name", "last_name", "nick_name"],
+            }],
+        });
+
+        const { likesMetaDataObject, repliesMetaDataObject } = await commentMetaData(userComments, _id_user_requesting);
+
+        const userFollowingsSet = new Set((await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        })).map(following => following._id_followed));
+
+        const transformedComments = userComments.map(comment => {
+            const commentDTO = new CommentDTO(comment, _id_user_requesting);
+            commentDTO.setMetaData(
+                likesMetaDataObject, 
+                repliesMetaDataObject, 
+                userFollowingsSet
+            );
+            return commentDTO.getCommentData();
+        });
+
+        res.status(200).send({
+            message: "Comments retrieved successfully",
+            comments: transformedComments,
+        });
+    } catch (error) {
+        console.error("Error retrieving comments:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 };
