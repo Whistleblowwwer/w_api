@@ -24,6 +24,7 @@ export const uploadFile = async (req, res) => {
                 //Prepare file for bucket and send file.
                 const file = req.file.buffer;
                 var fileName
+                var _id_review_image
                 if(photo_type === "users_profile_img"){
                     fileName = `${photo_type}/${id}`;
                 }
@@ -34,7 +35,20 @@ export const uploadFile = async (req, res) => {
                     
                     const review = await Review.findByPk(id)
 
-                    fileName = `${photo_type}/${review._id_business}/${id}`;
+                    if (!review) {
+                        return res.status(400).send({ message: "Review not found" });
+                    }
+
+                    const reviewimage = await ReviewImages.create({
+                        image_url: "null",
+                        _id_review: review._id_review
+                    });
+
+                    _id_review_image = reviewimage._id_review_image
+
+                    console.log(review._id_business)
+
+                    fileName = `${photo_type}/${review._id_business}/${id}/${_id_review_image}`;
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
@@ -49,10 +63,19 @@ export const uploadFile = async (req, res) => {
     
                 const command = new PutObjectCommand(params);
 
+                await s3.send(command);
+                
+                const getObjectParams = {
+                    Bucket: bucketName,
+                    Key: fileName
+                }
+                const commandurl = new GetObjectCommand(getObjectParams);
+                const url = await getSignedUrl(s3, commandurl);
+
                 //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
                 if(photo_type === "users_profile_img"){
                     const _id_user = id;
-                    const profile_picture_url = fileName;
+                    const profile_picture_url = url;
                     const user = await User.findOne({
                         where: { _id_user },
                         attributes: { exclude: ["password_token"] },
@@ -71,7 +94,7 @@ export const uploadFile = async (req, res) => {
                 }
                 else if(photo_type === "business_header_img"){
                     const _id_business = id;
-                    const profile_picture_url = fileName;
+                    const profile_picture_url = url;
                     const business = await Business.findOne({
                         where: { _id_business },
                     });
@@ -89,7 +112,7 @@ export const uploadFile = async (req, res) => {
                 }
                 else if(photo_type === "reviews_img"){
                     const _id_review = id;
-                    const image_url = fileName;
+                    const image_url = url;
                     const review = await Review.findOne({
                         where: { _id_review },
                     });
@@ -98,16 +121,14 @@ export const uploadFile = async (req, res) => {
                         return res.status(400).send({ message: "Review not found" });
                     }
 
-                    const aaa = await ReviewImages.create({
-                        image_url,
-                        _id_review
-                    });
+                    await ReviewImages.update(
+                        {image_url},
+                        { where: { _id_review_image}});
 
                 }
                 else{
                     return res.status(400).send({ message: "No photo type specified" });
                 }
-                await s3.send(command);
                 return res.status(200).send({ message: "File Uploaded Successfully  "})
             }
         });
@@ -119,13 +140,7 @@ export const uploadFile = async (req, res) => {
 
 export const getUrl = async (req, res) => {
     try{
-        const {filepath} = req.query;
-        const getObjectParams = {
-            Bucket: bucketName,
-            Key: filepath
-        }
-        const command = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        
         return res.status(201).send({fileName: filepath, url: url});
 
     }

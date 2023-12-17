@@ -31,7 +31,7 @@ export const Business = sequelize.define(
             allowNull: true,
         },
         profile_picture_url: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         country: {
