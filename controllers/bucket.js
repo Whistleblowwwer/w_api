@@ -16,6 +16,7 @@ import { ReviewImages } from "../models/reviewImages.js";
 import { BuisnessCache } from "../middlewares/cache.js";
 
 export const uploadFile = async (req, res) => {
+    console.log("\n -- REQ: ", req);
     try {
         const { id, photo_type } = req.query;
         upload.single("fileN")(req, res, async (err) => {
