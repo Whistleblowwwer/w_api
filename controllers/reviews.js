@@ -62,7 +62,7 @@ export const createReview = async (req, res) => {
             where: { _id_user },
         });
 
-        console.log("\n -- REVIEW & USER: ", reviewWithUser);
+        // console.log("\n -- REVIEW & USER: ", reviewWithUser);
         // Now you can use reviewWithUser in your DTO
         const reviewDTO = new ReviewDTO(reviewWithUser.dataValues, _id_user);
         reviewDTO.setBusiness(businessFollowings);
@@ -530,8 +530,8 @@ export const getReviewsForBusiness = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(businessReviews.map(
-            async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = await Promise.all(
+            businessReviews.map(async (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
                 const reviewDTO = new ReviewDTO(
@@ -550,16 +550,16 @@ export const getReviewsForBusiness = async (req, res) => {
                 );
 
                 const Images = await ReviewImages.findAll({
-                    where: {_id_review: reviewDTO._id_review},
-                    attributes: ['image_url']
+                    where: { _id_review: reviewDTO._id_review },
+                    attributes: ["image_url"],
                 });
                 for (const image of Images) {
                     reviewDTO.setImages(image.image_url);
                 }
 
                 return reviewDTO.getReviewData();
-            }
-        ));
+            })
+        );
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
@@ -621,8 +621,8 @@ export const getUserLikedReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(likedReviews.map(
-            async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = await Promise.all(
+            likedReviews.map(async (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
                 const reviewDTO = new ReviewDTO(
@@ -641,16 +641,16 @@ export const getUserLikedReviews = async (req, res) => {
                 );
 
                 const Images = await ReviewImages.findAll({
-                    where: {_id_review: reviewDTO._id_review},
-                    attributes: ['image_url']
+                    where: { _id_review: reviewDTO._id_review },
+                    attributes: ["image_url"],
                 });
                 for (const image of Images) {
                     reviewDTO.setImages(image.image_url);
                 }
 
                 return reviewDTO.getReviewData();
-            }
-        ));
+            })
+        );
 
         res.status(200).send({
             message: "Liked reviews retrieved successfully",
@@ -695,38 +695,39 @@ export const getAllReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(allReviews.map(async (review, index) => {
-            const reviewLike = likesMap.get(review._id_review);
-        
-            const reviewDTO = new ReviewDTO(
-                review.dataValues,
-                reviewLike?.dataValues?.userLiked === "1",
-                userFollowings,
-                businessFollowings,
-                _id_user_requesting
-            );
-        
-            reviewDTO.setMetaData(
-                commentsDTO[index],
-                reviewLike,
-                userFollowings,
-                businessFollowings
-            );
-        
-            const Images = await ReviewImages.findAll({
-                where: {_id_review: reviewDTO._id_review},
-                attributes: ['image_url']
-            });
-            for (const image of Images) {
-                reviewDTO.setImages(image.image_url);
-            }
-            
-            //console.log(Images.dataValues.image_url)
-            //console.log(Images.ReviewImages.dataValues.image_url)
-        
-            return reviewDTO.getReviewData();
-        }));
-        
+        const reviewsWithLikesAndFollowInfo = await Promise.all(
+            allReviews.map(async (review, index) => {
+                const reviewLike = likesMap.get(review._id_review);
+
+                const reviewDTO = new ReviewDTO(
+                    review.dataValues,
+                    reviewLike?.dataValues?.userLiked === "1",
+                    userFollowings,
+                    businessFollowings,
+                    _id_user_requesting
+                );
+
+                reviewDTO.setMetaData(
+                    commentsDTO[index],
+                    reviewLike,
+                    userFollowings,
+                    businessFollowings
+                );
+
+                const Images = await ReviewImages.findAll({
+                    where: { _id_review: reviewDTO._id_review },
+                    attributes: ["image_url"],
+                });
+                for (const image of Images) {
+                    reviewDTO.setImages(image.image_url);
+                }
+
+                //console.log(Images.dataValues.image_url)
+                //console.log(Images.ReviewImages.dataValues.image_url)
+
+                return reviewDTO.getReviewData();
+            })
+        );
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
