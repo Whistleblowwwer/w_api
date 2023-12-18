@@ -511,6 +511,10 @@ export const getReviewsForBusiness = async (req, res) => {
                     model: User,
                     attributes: ["_id_user", "name", "last_name", "nick_name"],
                 },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -549,13 +553,8 @@ export const getReviewsForBusiness = async (req, res) => {
                     businessFollowings
                 );
 
-                const Images = await ReviewImages.findAll({
-                    where: {_id_review: reviewDTO._id_review},
-                    attributes: ['image_url']
-                });
-                for (const image of Images) {
-                    reviewDTO.setImages(image.image_url);
-                }
+                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
             }
@@ -605,6 +604,10 @@ export const getUserLikedReviews = async (req, res) => {
                     model: User,
                     attributes: ["_id_user", "name", "last_name", "nick_name"],
                 },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -621,8 +624,8 @@ export const getUserLikedReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(likedReviews.map(
-            async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = likedReviews.map(
+            (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
                 const reviewDTO = new ReviewDTO(
@@ -640,17 +643,12 @@ export const getUserLikedReviews = async (req, res) => {
                     businessFollowings
                 );
 
-                const Images = await ReviewImages.findAll({
-                    where: {_id_review: reviewDTO._id_review},
-                    attributes: ['image_url']
-                });
-                for (const image of Images) {
-                    reviewDTO.setImages(image.image_url);
-                }
+                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
             }
-        ));
+        );
 
         res.status(200).send({
             message: "Liked reviews retrieved successfully",
@@ -664,7 +662,8 @@ export const getUserLikedReviews = async (req, res) => {
 
 // Get All Reviews
 export const getAllReviews = async (req, res) => {
-    const _id_user_requesting = req.user._id_user;
+    //const _id_user_requesting = req.user._id_user;
+    const _id_user_requesting = "1dd3071c-f86b-42a8-8bcb-894892caeb07"
     try {
         const allReviews = await Review.findAll({
             where: { is_valid: true },
@@ -678,6 +677,10 @@ export const getAllReviews = async (req, res) => {
                 {
                     model: User,
                     attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
                 },
             ],
         });
@@ -695,7 +698,7 @@ export const getAllReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(allReviews.map(async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = allReviews.map( (review, index) => {
             const reviewLike = likesMap.get(review._id_review);
         
             const reviewDTO = new ReviewDTO(
@@ -712,20 +715,13 @@ export const getAllReviews = async (req, res) => {
                 userFollowings,
                 businessFollowings
             );
-        
-            const Images = await ReviewImages.findAll({
-                where: {_id_review: reviewDTO._id_review},
-                attributes: ['image_url']
-            });
-            for (const image of Images) {
-                reviewDTO.setImages(image.image_url);
-            }
-            
-            //console.log(Images.dataValues.image_url)
-            //console.log(Images.ReviewImages.dataValues.image_url)
+
+            const imageUrls = review.ReviewImages.map(image => image.image_url);
+            reviewDTO.setImages(imageUrls);
+
         
             return reviewDTO.getReviewData();
-        }));
+        });
         
 
         res.status(200).send({
