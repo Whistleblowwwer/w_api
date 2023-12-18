@@ -153,12 +153,12 @@ export const getReviewParent = async (req, res) => {
             businessFollowings
         );
 
-        const response = {
+        const reviewWithParentComments = {
             ...reviewDTO.getReviewData(),
             Comments: transformedComments  
         };
 
-        return res.status(200).send(response);
+        return res.status(200).send(reviewWithParentComments);
     } catch (error) {
         console.error(error);
         return res
