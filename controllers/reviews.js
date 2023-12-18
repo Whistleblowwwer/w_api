@@ -662,8 +662,7 @@ export const getUserLikedReviews = async (req, res) => {
 
 // Get All Reviews
 export const getAllReviews = async (req, res) => {
-    //const _id_user_requesting = req.user._id_user;
-    const _id_user_requesting = "1dd3071c-f86b-42a8-8bcb-894892caeb07"
+    const _id_user_requesting = req.user._id_user;
     try {
         const allReviews = await Review.findAll({
             where: { is_valid: true },
