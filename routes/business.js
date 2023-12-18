@@ -1,10 +1,16 @@
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { 
+import {
     createBusiness,
+    getBusinessDetails,
+    listAllBusinesses,
+    getMyBusinesses,
     updateBusiness,
     deleteBusiness,
-    searchBusiness
+    searchBusiness,
+    getBusinessFeed,
+    getFollowedBusinessFeed,
+    getNonFollowedBusinessFeed
 } from "../controllers/business.js";
 
 const router = Router();
@@ -12,15 +18,33 @@ const router = Router();
 //----------Business Routes-------------
 
 //Create Business
-router.post('/', validateToken, createBusiness);
+router.post("/", validateToken, createBusiness);
+
+//Get Business Details
+router.get("/details", validateToken, getBusinessDetails);
+
+//Get Business List
+router.get("/", validateToken, listAllBusinesses);
+
+//Get User Business
+router.get("/my-businesses", validateToken, getMyBusinesses);
 
 //Update Business
-router.put('/:_id_business', validateToken, updateBusiness);
+router.put("/", validateToken, updateBusiness);
 
 //Delete Business
-router.patch('/:_id_business', validateToken, deleteBusiness);
+router.patch("/", validateToken, deleteBusiness);
 
 //Search Business
 router.get("/search", validateToken, searchBusiness);
+
+//Business Feed
+router.get("/feed", validateToken, getBusinessFeed);
+
+//Followed Business Feed
+router.get("/followed/feed", validateToken, getFollowedBusinessFeed);
+
+//Non Followed Business Feed
+router.get("/non-followed/feed", validateToken, getNonFollowedBusinessFeed);
 
 export default router;

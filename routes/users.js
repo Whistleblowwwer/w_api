@@ -6,12 +6,18 @@ import {
     updateUser,
     getUserDetails,
     likeReview,
+    likeComment,
     followUser,
     followBusiness,
     deactivateUser,
+    nukeUser,
     VerifySMS,
     sendSMS,
-    searchUser
+    searchUser,
+    verifyToken,
+    getUserLikes,
+    getUserReviews,
+    getUserComments,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -28,10 +34,16 @@ router.post("/login", logIn);
 router.put("/", validateToken, updateUser);
 
 //Get User Details
-router.get("/:_id_user", validateToken, getUserDetails);
+router.get("/", validateToken, getUserDetails);
 
 //Like Review
 router.post("/reviews/like", validateToken, likeReview);
+
+//Reviews made by User
+router.get("/reviews", validateToken, getUserReviews);
+
+//Like Comment
+router.post("/comments/like", validateToken, likeComment);
 
 //Follow User
 router.post("/follow", validateToken, followUser);
@@ -40,15 +52,27 @@ router.post("/follow", validateToken, followUser);
 router.post("/business/follow", validateToken, followBusiness);
 
 //Deactivate User
-router.patch("/deactivate", deactivateUser);
+router.patch("/deactivate", validateToken, deactivateUser);
 
-//Search User 
+//Nuke User
+router.delete("/delete/all", validateToken, nukeUser);
+
+//Search User
 router.get("/search", validateToken, searchUser);
 
+//Send SMS
+router.get("/sendsms", sendSMS);
 
+//Verify SMS
+router.get("/verifysms", VerifySMS);
 
-router.get('/sendsms', sendSMS);
+// Validate token
+router.get("/token", validateToken, verifyToken);
 
-router.get('/verifysms', VerifySMS);
+// Get Liked Reviews by User
+router.get("/likes", validateToken, getUserLikes);
+
+//Get User Comments
+router.get("/comments", validateToken, getUserComments);
 
 export default router;
