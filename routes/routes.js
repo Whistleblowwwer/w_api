@@ -20,4 +20,11 @@ router.use("/bucket", bucketRoute);
 router.use("/users", userRoute);
 router.use("/feeditems", FeedItemsRoute);
 
+// Health Check Route
+router.get("/", (req, res) => {
+    res.status(200).json({
+        message: "Node.js/Sequelize project is up and running.",
+    });
+});
+
 export default router;
