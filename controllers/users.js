@@ -231,6 +231,7 @@ export const updateUser = async (req, res) => {
 //Get User Details
 export const getUserDetails = async (req, res) => {
     const _id_user = req.query._id_user || req.user._id_user;
+    const _id_user_requesting = req.user._id_user;  
 
     try {
         let user = await User.findOne({
@@ -250,9 +251,16 @@ export const getUserDetails = async (req, res) => {
             where: { _id_followed: _id_user },
         });
 
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        });
+
+        const isFollowed = userFollowings.some(following => following._id_followed === _id_user);
+
         user = user.toJSON();
         user.followings = followingsCount;
         user.followers = followersCount;
+        user.is_followed = isFollowed; 
 
         res.status(200).send({
             message: "User found",
