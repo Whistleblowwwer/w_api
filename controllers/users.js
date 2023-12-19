@@ -992,3 +992,61 @@ export const getUserComments = async (req, res) => {
         res.status(500).send({ message: "Internal server error" });
     }
 };
+
+//Get 5 Random user recommendations
+export const getRandomUsers = async(req, res) => {
+    const _id_user_requesting = req.user._id_user;
+
+    try {
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+        const recentReviews = await Review.findAll({
+            where: {
+                createdAt: {
+                    [Op.gte]: threeMonthsAgo
+                }
+            },
+            include: {
+                model: User,
+                attributes: ['_id_user', 'name', 'last_name', 'nick_name']
+            },
+            limit: 100 
+        });
+
+        const uniqueUsers = new Map();
+        recentReviews.forEach(review => {
+            if (!uniqueUsers.has(review.User._id_user)) {
+                uniqueUsers.set(review.User._id_user, review.User);
+            }
+        });
+
+        let usersArray = Array.from(uniqueUsers.values());
+        for (let currentIndex = usersArray.length - 1; currentIndex > 0; currentIndex--) {
+            const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
+            [usersArray[currentIndex], usersArray[randomIndex]] = [usersArray[randomIndex], usersArray[currentIndex]]; 
+        }
+
+        const randomUsers = usersArray.slice(0, 5);
+
+        const followStatusPromises = randomUsers.map(async user => {
+            const isFollowed = await UserFollowers.findOne({
+                where: {
+                    _id_follower: _id_user_requesting,
+                    _id_followed: user._id_user
+                }
+            });
+            return { ...user.toJSON(), is_followed: !!isFollowed };
+        });
+
+        const usersWithFollowStatus = await Promise.all(followStatusPromises);
+
+        res.status(200).send({
+            message: "Random user recommendations",
+            users: usersWithFollowStatus
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "Internal server error", error: error.message });
+    }
+};
