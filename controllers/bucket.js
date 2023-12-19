@@ -135,8 +135,9 @@ export const uploadFile = async (req, res) => {
                     else{
                         return res.status(400).send({ message: "No photo type specified" });
                     }
-                    return res.status(200).send({ message: "File/Files Uploaded Successfully"})
+                    
                 }
+                return res.status(200).send({ message: "File/Files Uploaded Successfully"})
             }
         });
     } catch (error) {
