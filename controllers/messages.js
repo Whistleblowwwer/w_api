@@ -1,5 +1,6 @@
 import { Message } from "../models/messages.js";
 import { User } from "../models/users.js";
+import { UserFollowers } from "../models/userFollowers.js";
 import { Op } from "sequelize";
 import Sequelize from "sequelize";
 
@@ -96,6 +97,56 @@ export const getAllConversations = async (req, res) => {
       return res.status(400).send({ message: "Validation Error", errors: error.errors });
     } else {
       return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+};
+
+//Get a users list for starting a new conversation
+export const getConversationStarterUserList = async (req, res) => {
+  const _id_user = req.user._id_user;
+
+  try {
+    const followedUsersList = await UserFollowers.findAll({
+      attributes: ['_id_followed'],
+      where: { _id_follower: _id_user }
+    });
+
+    const followedUserIds = followedUsersList.map(followed => followed._id_followed);
+
+    const followedUsersDetails = await User.findAll({
+      where: { _id_user: followedUserIds },
+      attributes: ['_id_user', 'name', 'last_name', 'nick_name', 'profile_picture_url'],
+    });
+
+    const followedUsersWithStatus = followedUsersDetails.map(user => ({ 
+      ...user.get({ plain: true }), 
+      followed: true 
+    }));
+
+    const additionalUsers = await User.findAll({
+      where: { 
+        _id_user: { [Sequelize.Op.notIn]: followedUserIds }
+      },
+      attributes: ['_id_user', 'name', 'last_name', 'nick_name', 'profile_picture_url'],
+      limit: 30
+    });
+
+    const additionalUsersWithStatus = additionalUsers.map(user => ({ 
+      ...user.get({ plain: true }), 
+      followed: false 
+    }));
+
+    const combinedUserList = [...followedUsersWithStatus, ...additionalUsersWithStatus];
+
+    res.json(combinedUserList);
+
+  } catch (error) {
+    if (error instanceof Sequelize.DatabaseError) {
+      res.status(500).send({ message: "Database error occurred", details: error.message });
+    } else if (error instanceof Error) {
+      res.status(500).send({ message: "An error occurred", details: error.message });
+    } else {
+      res.status(500).send({ message: "Unexpected error occurred" });
     }
   }
 };

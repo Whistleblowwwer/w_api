@@ -1,8 +1,6 @@
 export default class ReviewDTO {
     constructor(review, _id_user_requesting) {
         // Data
-
-        console.log("\n -- REVIEW EN CLASE: ", review);
         this._id_review = review._id_review;
         this.content = review.content;
         this.rating = review.rating;
@@ -47,7 +45,7 @@ export default class ReviewDTO {
             is_followed: false,
         };
 
-        this.Images = []
+        this.Images = [];
     }
 
     setMetaData(
@@ -115,7 +113,7 @@ export default class ReviewDTO {
                 entity: this.Business.entity,
                 is_followed: this.Business.is_followed,
             },
-            Images: this.Images
+            Images: this.Images,
         };
     }
 }

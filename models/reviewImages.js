@@ -29,7 +29,6 @@ export const ReviewImages = sequelize.define(
                 key: "_id_review",
             },
         },
-        
     },
     {
         tableName: "reviewImages",

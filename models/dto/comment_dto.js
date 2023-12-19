@@ -6,7 +6,6 @@ export default class CommentDTO {
         this.is_valid = comment.is_valid;
         this.createdAt = comment.createdAt;
         this.updatedAt = comment.updatedAt;
-        this._id_user = comment._id_user;
         this._id_review = comment._id_review;
         this._id_parent = comment._id_parent;
 
@@ -43,7 +42,6 @@ export default class CommentDTO {
             is_valid: this.is_valid,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
-            _id_user: this._id_user,
             _id_review: this._id_review,
             _id_parent: this._id_parent,
             likesCount: this.likesCount,

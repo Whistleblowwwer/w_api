@@ -1,12 +1,17 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+    S3Client,
+    PutObjectCommand,
+    GetObjectCommand,
+    DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { bucketName, s3 } from "../middlewares/s3.js";
 import { upload } from "../middlewares/multer.js";
 
 import { User } from "../models/users.js";
-import { Business } from "../models/business.js"
-import { Review } from "../models/reviews.js"
+import { Business } from "../models/business.js";
+import { Review } from "../models/reviews.js";
 import { ReviewImages } from "../models/reviewImages.js";
 import { BuisnessCache } from "../middlewares/cache.js";
 
@@ -14,9 +19,10 @@ export const uploadFile = async (req, res) => {
     try{
         const { id, photo_type} = req.query;
         upload.array('fileN', 20)(req, res, async (err) => {
-        
             if (err) {
-                return res.status(404).send({ message: "Internal Error" });
+                return res
+                    .status(404)
+                    .send({ message: "Internal Error", Error: err });
             } else {
                 //Get image and check it is an image type file.
                 const files = req.files
@@ -38,7 +44,6 @@ export const uploadFile = async (req, res) => {
                     else if(photo_type === "reviews_img"){
                         
                         const review = await Review.findByPk(id)
-
                         if (!review) {
                             return res.status(400).send({ message: "Review not found" });
                         }
@@ -137,19 +142,15 @@ export const uploadFile = async (req, res) => {
                 }
             }
         });
-    }
-    catch(error){
+    } catch (error) {
         return res.status(500).send({ error: error.message });
-    }   
-}
+    }
+};
 
 export const getUrl = async (req, res) => {
-    try{
-        
-        return res.status(201).send({fileName: filepath, url: url});
-
-    }
-    catch(error){
+    try {
+        return res.status(201).send({ fileName: filepath, url: url });
+    } catch (error) {
         return res.status(500).send({ error: error.message });
     }
-}
+};

@@ -4,6 +4,7 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Business } from "../models/business.js";
 import ReviewDTO from "../models/dto/review_dto.js";
+import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
@@ -13,6 +14,7 @@ import {
     commentsMetaData,
     likesMetaData,
 } from "../middlewares/reviewInteractions.js";
+import { commentMetaData } from "../middlewares/commentInteractions.js";
 
 export const createReview = async (req, res) => {
     try {
@@ -62,7 +64,7 @@ export const createReview = async (req, res) => {
             where: { _id_user },
         });
 
-        console.log("\n -- REVIEW & USER: ", reviewWithUser);
+        // console.log("\n -- REVIEW & USER: ", reviewWithUser);
         // Now you can use reviewWithUser in your DTO
         const reviewDTO = new ReviewDTO(reviewWithUser.dataValues, _id_user);
         reviewDTO.setBusiness(businessFollowings);
@@ -91,73 +93,16 @@ export const getReviewParent = async (req, res) => {
 
     try {
         const review = await Review.findByPk(_id_review, {
-            attributes: {
-                include: [
-                    [
-                        Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "reviewLikes" AS reviewLikes
-                            WHERE
-                            reviewLikes."_id_review" = "Review"."_id_review"
-                        )`),
-                        "likes",
-                    ],
-                    [
-                        Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "comments" as Comments
-                            WHERE
-                            Comments._id_review = "Review"."_id_review"
-                        )`),
-                        "comments",
-                    ],
-                ],
-            },
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name"],
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
                     as: "User",
                 },
                 {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
-                },
-                {
-                    model: Comment,
-                    as: "Comments",
-                    where: { _id_parent: null },
-                    required: false,
-                    include: [
-                        {
-                            model: User,
-                            attributes: ["_id_user", "name", "last_name"],
-                            as: "User",
-                        },
-                    ],
-                    attributes: {
-                        include: [
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM "commentLikes" AS commentLikes
-                                    WHERE
-                                    commentLikes."_id_comment" = "Comments"."_id_comment"
-                                )`),
-                                "likes",
-                            ],
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM Comments as "children"
-                                    WHERE
-                                    "children"."_id_parent" = "Comments"."_id_comment"
-                                )`),
-                                "childrenCommentCount",
-                            ],
-                        ],
-                    },
-                },
+                }
             ],
         });
 
@@ -165,89 +110,55 @@ export const getReviewParent = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        const userLikedReviews = await ReviewLikes.findOne({
-            where: {
-                _id_review: _id_review,
-                _id_user: _id_user_requesting,
-            },
+        const likesForReview = await likesMetaData([review], _id_user_requesting);
+        const likeDataForReview = likesForReview.find(like => like._id_review === review._id_review);
+
+        const commentsData = await commentsMetaData([review]);
+        const commentsForReview = commentsData.find(c => c._id_review === review._id_review);
+
+        const parentComments = await Comment.findAll({
+            where: { _id_review: review._id_review, _id_parent: null, is_valid: true },
+            include: [{
+                model: User,
+                attributes: ["_id_user", "name", "last_name", "nick_name"],
+                as: "User",
+            }],
         });
+
+        const { likesMetaDataObject, repliesMetaDataObject } = 
+            await commentMetaData(parentComments, _id_user_requesting);
 
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
-        }).then(
-            (followings) =>
-                new Set(followings.map((following) => following._id_followed))
-        );
-
+        });
         const businessFollowings = await BusinessFollowers.findAll({
             where: { _id_user: _id_user_requesting },
-        }).then(
-            (followings) =>
-                new Set(followings.map((following) => following._id_business))
-        );
-
-        // Retrieve liked comments for the user
-        const userLikedComments = await CommentLikes.findAll({
-            where: {
-                _id_comment: {
-                    [Sequelize.Op.in]: review.Comments.map(
-                        (comment) => comment._id_comment
-                    ),
-                },
-                _id_user: _id_user_requesting,
-            },
         });
 
-        // Create a set of liked comment IDs
-        const likedCommentsSet = new Set(
-            userLikedComments.map((like) => like._id_comment)
+        const transformedComments = parentComments.map(comment => {
+            const commentDTO = new CommentDTO(comment, _id_user_requesting);
+            commentDTO.setMetaData(
+                likesMetaDataObject, 
+                repliesMetaDataObject, 
+                new Set(userFollowings.map(following => following._id_followed))
+            );
+            return commentDTO.getCommentData();
+        });
+
+        const reviewDTO = new ReviewDTO(review, _id_user_requesting);
+        reviewDTO.setMetaData(
+            commentsForReview || {},
+            likeDataForReview || {},
+            userFollowings,
+            businessFollowings
         );
 
-        const transformedComments = review.Comments.map((comment) => ({
-            _id_comment: comment._id_comment,
-            content: comment.content,
-            is_valid: comment.is_valid,
-            createdAt: comment.createdAt,
-            updatedAt: comment.updatedAt,
-            _id_business: comment._id_business,
-            _id_user: comment._id_user,
-            _id_review: comment._id_review,
-            _id_parent: comment._id_parent,
-            is_liked: likedCommentsSet.has(comment._id_comment),
-            likes: comment.getDataValue("likes"),
-            comments: comment.getDataValue("childrenCommentCount"),
-            User: {
-                ...comment.User.get({ plain: true }),
-                is_followed: userFollowings.has(comment.User._id_user),
-            },
-        }));
-
-        const reviewData = {
-            _id_review: review._id_review,
-            content: review.content,
-            rating: review.rating,
-            is_valid: review.is_valid,
-            createdAt: review.createdAt,
-            updatedAt: review.updatedAt,
-            _id_business: review._id_business,
-            _id_user: review._id_user,
-            is_liked: !!userLikedReviews,
-            likes: review.getDataValue("likes"),
-            comments: review.getDataValue("comments"),
-            User: {
-                ...review.User.get({ plain: true }),
-                is_followed: userFollowings.has(review.User._id_user),
-            },
-            Business: {
-                ...review.Business.get({ plain: true }),
-                is_followed: businessFollowings.has(
-                    review.Business._id_business
-                ),
-            },
-            Comments: transformedComments,
+        const reviewWithParentComments = {
+            ...reviewDTO.getReviewData(),
+            Comments: transformedComments  
         };
 
-        return res.status(200).send(reviewData);
+        return res.status(200).send(reviewWithParentComments);
     } catch (error) {
         console.error(error);
         return res
@@ -534,8 +445,8 @@ export const getReviewsForBusiness = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(businessReviews.map(
-            async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = await Promise.all(
+            businessReviews.map(async (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
                 const reviewDTO = new ReviewDTO(
@@ -553,12 +464,13 @@ export const getReviewsForBusiness = async (req, res) => {
                     businessFollowings
                 );
 
+
                 const imageUrls = review.ReviewImages.map(image => image.image_url);
                 reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
-            }
-        ));
+            })
+        );
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
@@ -721,7 +633,6 @@ export const getAllReviews = async (req, res) => {
         
             return reviewDTO.getReviewData();
         });
-        
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
