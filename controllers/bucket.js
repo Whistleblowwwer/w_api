@@ -18,7 +18,7 @@ import { BuisnessCache } from "../middlewares/cache.js";
 export const uploadFile = async (req, res) => {
     try{
         const { id, photo_type} = req.query;
-        upload.array('fileN', 20)(req, res, async (err) => {
+        upload.array('fileN', 8)(req, res, async (err) => {
             if (err) {
                 return res
                     .status(404)
@@ -55,8 +55,6 @@ export const uploadFile = async (req, res) => {
 
                         _id_review_image = reviewimage._id_review_image
 
-                        console.log(review._id_business)
-
                         fileName = `${photo_type}/${review._id_business}/${id}/${_id_review_image}`;
                     }
                     else{
@@ -79,12 +77,11 @@ export const uploadFile = async (req, res) => {
                         Key: fileName
                     }
                     const commandurl = new GetObjectCommand(getObjectParams);
-                    const url = await getSignedUrl(s3, commandurl);
 
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
                     if(photo_type === "users_profile_img"){
                         const _id_user = id;
-                        const profile_picture_url = url;
+                        const profile_picture_url = 'https://w-images-bucket.s3.amazonaws.com/' + fileName;;
                         const user = await User.findOne({
                             where: { _id_user },
                             attributes: { exclude: ["password_token"] },
@@ -103,7 +100,7 @@ export const uploadFile = async (req, res) => {
                     }
                     else if(photo_type === "business_header_img"){
                         const _id_business = id;
-                        const profile_picture_url = url;
+                        const profile_picture_url = 'https://w-images-bucket.s3.amazonaws.com/' + fileName;;
                         const business = await Business.findOne({
                             where: { _id_business },
                         });
@@ -121,7 +118,7 @@ export const uploadFile = async (req, res) => {
                     }
                     else if(photo_type === "reviews_img"){
                         const _id_review = id;
-                        const image_url = url;
+                        const image_url = 'https://w-images-bucket.s3.amazonaws.com/' + fileName;;
                         const review = await Review.findOne({
                             where: { _id_review },
                         });
