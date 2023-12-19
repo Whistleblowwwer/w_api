@@ -18,6 +18,7 @@ import {
     getUserLikes,
     getUserReviews,
     getUserComments,
+    getRandomUsers,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -74,5 +75,8 @@ router.get("/likes", validateToken, getUserLikes);
 
 //Get User Comments
 router.get("/comments", validateToken, getUserComments);
+
+//Get Random User Recommendation
+router.get("/recommendation", validateToken, getRandomUsers);
 
 export default router;

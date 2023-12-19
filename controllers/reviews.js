@@ -102,7 +102,7 @@ export const getReviewParent = async (req, res) => {
                 {
                     model: Business,
                     attributes: ["_id_business", "name", "entity"],
-                }
+                },
             ],
         });
 
@@ -110,22 +110,35 @@ export const getReviewParent = async (req, res) => {
             return res.status(404).send({ message: "Review not found" });
         }
 
-        const likesForReview = await likesMetaData([review], _id_user_requesting);
-        const likeDataForReview = likesForReview.find(like => like._id_review === review._id_review);
+        const likesForReview = await likesMetaData(
+            [review],
+            _id_user_requesting
+        );
+        const likeDataForReview = likesForReview.find(
+            (like) => like._id_review === review._id_review
+        );
 
         const commentsData = await commentsMetaData([review]);
-        const commentsForReview = commentsData.find(c => c._id_review === review._id_review);
+        const commentsForReview = commentsData.find(
+            (c) => c._id_review === review._id_review
+        );
 
         const parentComments = await Comment.findAll({
-            where: { _id_review: review._id_review, _id_parent: null, is_valid: true },
-            include: [{
-                model: User,
-                attributes: ["_id_user", "name", "last_name", "nick_name"],
-                as: "User",
-            }],
+            where: {
+                _id_review: review._id_review,
+                _id_parent: null,
+                is_valid: true,
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    as: "User",
+                },
+            ],
         });
 
-        const { likesMetaDataObject, repliesMetaDataObject } = 
+        const { likesMetaDataObject, repliesMetaDataObject } =
             await commentMetaData(parentComments, _id_user_requesting);
 
         const userFollowings = await UserFollowers.findAll({
@@ -135,12 +148,14 @@ export const getReviewParent = async (req, res) => {
             where: { _id_user: _id_user_requesting },
         });
 
-        const transformedComments = parentComments.map(comment => {
+        const transformedComments = parentComments.map((comment) => {
             const commentDTO = new CommentDTO(comment, _id_user_requesting);
             commentDTO.setMetaData(
-                likesMetaDataObject, 
-                repliesMetaDataObject, 
-                new Set(userFollowings.map(following => following._id_followed))
+                likesMetaDataObject,
+                repliesMetaDataObject,
+                new Set(
+                    userFollowings.map((following) => following._id_followed)
+                )
             );
             return commentDTO.getCommentData();
         });
@@ -155,7 +170,7 @@ export const getReviewParent = async (req, res) => {
 
         const reviewWithParentComments = {
             ...reviewDTO.getReviewData(),
-            Comments: transformedComments  
+            Comments: transformedComments,
         };
 
         return res.status(200).send(reviewWithParentComments);
@@ -464,8 +479,9 @@ export const getReviewsForBusiness = async (req, res) => {
                     businessFollowings
                 );
 
-
-                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
                 reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
@@ -555,7 +571,9 @@ export const getUserLikedReviews = async (req, res) => {
                     businessFollowings
                 );
 
-                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
                 reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
@@ -609,30 +627,33 @@ export const getAllReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = allReviews.map( (review, index) => {
-            const reviewLike = likesMap.get(review._id_review);
-        
-            const reviewDTO = new ReviewDTO(
-                review.dataValues,
-                reviewLike?.dataValues?.userLiked === "1",
-                userFollowings,
-                businessFollowings,
-                _id_user_requesting
-            );
-        
-            reviewDTO.setMetaData(
-                commentsDTO[index],
-                reviewLike,
-                userFollowings,
-                businessFollowings
-            );
+        const reviewsWithLikesAndFollowInfo = allReviews.map(
+            (review, index) => {
+                const reviewLike = likesMap.get(review._id_review);
 
-            const imageUrls = review.ReviewImages.map(image => image.image_url);
-            reviewDTO.setImages(imageUrls);
+                const reviewDTO = new ReviewDTO(
+                    review.dataValues,
+                    reviewLike?.dataValues?.userLiked === "1",
+                    userFollowings,
+                    businessFollowings,
+                    _id_user_requesting
+                );
 
-        
-            return reviewDTO.getReviewData();
-        });
+                reviewDTO.setMetaData(
+                    commentsDTO[index],
+                    reviewLike,
+                    userFollowings,
+                    businessFollowings
+                );
+
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
+                reviewDTO.setImages(imageUrls);
+
+                return reviewDTO.getReviewData();
+            }
+        );
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
