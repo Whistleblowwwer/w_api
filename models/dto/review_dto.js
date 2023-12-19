@@ -84,9 +84,8 @@ export default class ReviewDTO {
                 businessFollowing.dataValues._id_business === targetBusinessId
         );
     }
-
-    setImages(images) {
-        this.Images = images;
+    setImages(Image) {
+        this.Images = Image;
     }
 
     getReviewData() {
