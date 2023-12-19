@@ -85,8 +85,8 @@ export default class ReviewDTO {
         );
     }
 
-    setImages(Image) {
-        this.Images.push(Image);
+    setImages(images) {
+        this.Images = images;
     }
 
     getReviewData() {
