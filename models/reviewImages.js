@@ -10,12 +10,28 @@ export const ReviewImages = sequelize.define(
             primaryKey: true,
         },
         image_url: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: false,
+        },
+        createdAt: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        },
+        _id_review: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: "reviews",
+                key: "_id_review",
+            },
         },
     },
     {
-        tableName: "review_images",
+        tableName: "reviewImages",
         timestamps: true,
     }
 );

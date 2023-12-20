@@ -13,6 +13,11 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
+        entity: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            defaultValue: null,
+        },
         address: {
             type: DataTypes.TEXT,
             allowNull: true,
@@ -26,8 +31,23 @@ export const Business = sequelize.define(
             allowNull: true,
         },
         profile_picture_url: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: true,
+        },
+        country: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: "Mexico",
+        },
+        _id_category: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: "categories",
+                key: "_id_category",
+            },
+            onUpdate: "CASCADE",
+            onDelete: "SET NULL",
         },
         is_valid: {
             type: DataTypes.BOOLEAN,
