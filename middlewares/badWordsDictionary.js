@@ -17,6 +17,14 @@ const badWordsDictionary = [
     "perra",
     "perras",
     "mamón",
+    "idiota",
+    "idiotas",
+    "maricones",
+    "marica",
+    "maricas",
+    "hijueputas",
+    "hijueputa",
+    "culos",
 ];
 
 export default badWordsDictionary;

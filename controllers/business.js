@@ -66,9 +66,11 @@ export const createBusiness = async (req, res) => {
         });
 
         if (existingBusiness) {
-            return res.status(400).send({
-                message: "A business with the same name already exists",
-            });
+            return res
+                .status(400)
+                .send({
+                    message: "A business with the same name already exists",
+                });
         }
 
         // Check if category exists or has a good similarity rate
