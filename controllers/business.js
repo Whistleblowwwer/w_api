@@ -1,27 +1,40 @@
+import { Op } from "sequelize";
+import Sequelize from "sequelize";
 import { User } from "../models/users.js";
+import { Review } from "../models/reviews.js";
+import { Comment } from "../models/comments.js";
 import { Business } from "../models/business.js";
 import { Category } from "../models/categories.js";
-import { Comment } from "../models/comments.js";
-import { Review } from "../models/reviews.js";
-import { UserFollowers } from "../models/userFollowers.js";
-import { BusinessFollowers } from "../models/businessFollowers.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
-import Sequelize from "sequelize";
-import { Op } from "sequelize";
+import { filterBadWords } from "../middlewares/badWordsFilter.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
 
 // Create Business
 export const createBusiness = async (req, res) => {
     try {
-        const { name, entity, country, address, state, city, category } =
-            req.body;
+        // Destructure fields from the request body
+        const {
+            name,
+            entity,
+            country,
+            iso2_country_code,
+            address,
+            state,
+            iso2_state_code,
+            city,
+            category,
+        } = req.body;
         const _id_user = req.user._id_user;
 
+        // Check for missing fields
         const requiredFields = [
             "name",
             "entity",
             "country",
+            "iso2_country_code",
             "address",
             "state",
+            "iso2_state_code",
             "city",
             "category",
         ];
@@ -31,6 +44,31 @@ export const createBusiness = async (req, res) => {
                     .status(400)
                     .send({ message: `Missing ${field} field` });
             }
+        }
+
+        // Check for profanity in relevant fields
+        const containsBadWord = await filterBadWords(
+            `${name} ${entity} ${address} ${state} ${city} ${category}`
+        );
+        if (containsBadWord) {
+            return res
+                .status(400)
+                .send({ message: "Contenido contiene palabras prohibidas" });
+        }
+
+        // Check if a business with the same name already exists
+        const existingBusiness = await Business.findOne({
+            where: {
+                name: {
+                    [Sequelize.Op.iLike]: name, // Case-insensitive search
+                },
+            },
+        });
+
+        if (existingBusiness) {
+            return res.status(400).send({
+                message: "A business with the same name already exists",
+            });
         }
 
         // Check if category exists or has a good similarity rate
@@ -55,14 +93,15 @@ export const createBusiness = async (req, res) => {
             }
         }
 
-        console.log("\n-- CATEGORY: ", categoryInstance._id_category);
-        // Create business with category
+        // Create business with category and additional fields
         const createdBusiness = await Business.create({
             name,
             address,
             state,
             city,
             country,
+            iso2_country_code,
+            iso2_state_code,
             entity,
             _id_user,
             _id_category: categoryInstance
@@ -176,11 +215,13 @@ export const getFollowedBusinessFeed = async (req, res) => {
             attributes: ["_id_business"],
         });
 
-        const followedBusinessesIds = followedBusinesses.map(business => business._id_business);
+        const followedBusinessesIds = followedBusinesses.map(
+            (business) => business._id_business
+        );
 
         const businesses = await Business.findAll({
             where: {
-                _id_business: followedBusinessesIds
+                _id_business: followedBusinessesIds,
             },
             include: [
                 {
@@ -197,25 +238,32 @@ export const getFollowedBusinessFeed = async (req, res) => {
 
         const feedData = await Promise.all(
             businesses.map(async (business) => {
-                const averageRating = business.Reviews.reduce(
-                    (acc, review) => acc + review.rating,
-                    0
-                ) / business.Reviews.length;
+                const averageRating =
+                    business.Reviews.reduce(
+                        (acc, review) => acc + review.rating,
+                        0
+                    ) / business.Reviews.length;
 
                 let reviewsWithMetrics = await Promise.all(
                     business.Reviews.map(async (review) => {
                         const likesCount = await ReviewLikes.count({
                             where: { _id_review: review._id_review },
                         });
-                        const commentsCount = await Comment.count({ 
+                        const commentsCount = await Comment.count({
                             where: { _id_review: review._id_review },
                         });
 
-                        return { ...review.dataValues, likes: likesCount, comments: commentsCount };
+                        return {
+                            ...review.dataValues,
+                            likes: likesCount,
+                            comments: commentsCount,
+                        };
                     })
                 );
 
-                reviewsWithMetrics.sort((a, b) => b.likes - a.likes || b.comments - a.comments);
+                reviewsWithMetrics.sort(
+                    (a, b) => b.likes - a.likes || b.comments - a.comments
+                );
 
                 const mostRelevantReview = reviewsWithMetrics[0] || {};
 
@@ -223,14 +271,18 @@ export const getFollowedBusinessFeed = async (req, res) => {
                     Business: {
                         name: business.name,
                         is_followed: true,
-                        average_rating: averageRating
+                        average_rating: averageRating,
                     },
                     Review: mostRelevantReview,
                 };
             })
         );
 
-        feedData.sort((a, b) => b.Review.likes - a.Review.likes || b.Review.comments - a.Review.comments);
+        feedData.sort(
+            (a, b) =>
+                b.Review.likes - a.Review.likes ||
+                b.Review.comments - a.Review.comments
+        );
 
         res.status(200).json({ feed: feedData });
     } catch (error) {
@@ -248,11 +300,13 @@ export const getNonFollowedBusinessFeed = async (req, res) => {
             attributes: ["_id_business"],
         });
 
-        const followedBusinessesIds = followedBusinesses.map(business => business._id_business);
+        const followedBusinessesIds = followedBusinesses.map(
+            (business) => business._id_business
+        );
 
         const nonFollowedBusinesses = await Business.findAll({
             where: {
-                _id_business: { [Op.notIn]: followedBusinessesIds } 
+                _id_business: { [Op.notIn]: followedBusinessesIds },
             },
             include: [
                 {
@@ -269,40 +323,51 @@ export const getNonFollowedBusinessFeed = async (req, res) => {
 
         const feedData = await Promise.all(
             nonFollowedBusinesses.map(async (business) => {
-                const averageRating = business.Reviews.reduce(
-                    (acc, review) => acc + review.rating,
-                    0
-                ) / business.Reviews.length;
+                const averageRating =
+                    business.Reviews.reduce(
+                        (acc, review) => acc + review.rating,
+                        0
+                    ) / business.Reviews.length;
 
                 let reviewsWithMetrics = await Promise.all(
                     business.Reviews.map(async (review) => {
                         const likesCount = await ReviewLikes.count({
                             where: { _id_review: review._id_review },
                         });
-                        const commentsCount = await Comment.count({ 
+                        const commentsCount = await Comment.count({
                             where: { _id_review: review._id_review },
                         });
 
-                        return { ...review.dataValues, likes: likesCount, comments: commentsCount };
+                        return {
+                            ...review.dataValues,
+                            likes: likesCount,
+                            comments: commentsCount,
+                        };
                     })
                 );
 
-                reviewsWithMetrics.sort((a, b) => b.likes - a.likes || b.comments - a.comments);
+                reviewsWithMetrics.sort(
+                    (a, b) => b.likes - a.likes || b.comments - a.comments
+                );
 
                 const mostRelevantReview = reviewsWithMetrics[0] || {};
 
                 return {
                     Business: {
                         name: business.name,
-                        is_followed: false, 
-                        average_rating: averageRating
+                        is_followed: false,
+                        average_rating: averageRating,
                     },
                     Review: mostRelevantReview,
                 };
             })
         );
 
-        feedData.sort((a, b) => b.Review.likes - a.Review.likes || b.Review.comments - a.Review.comments);
+        feedData.sort(
+            (a, b) =>
+                b.Review.likes - a.Review.likes ||
+                b.Review.comments - a.Review.comments
+        );
 
         res.status(200).json({ feed: feedData });
     } catch (error) {
@@ -324,27 +389,38 @@ export const getBusinessDetails = async (req, res) => {
 
         const reviews = await Review.findAll({
             where: { _id_business: _id_business },
-            attributes: ['rating']
+            attributes: ["rating"],
         });
-        const averageRating = reviews.length > 0
-            ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
-            : 0;
+        const averageRating =
+            reviews.length > 0
+                ? reviews.reduce((acc, review) => acc + review.rating, 0) /
+                  reviews.length
+                : 0;
 
         const followers = await BusinessFollowers.findAll({
-            where: { _id_business: _id_business }
+            where: { _id_business: _id_business },
         });
         const followerCount = followers.length;
-        const businessFollowStatus = followers.some(follower => follower._id_user === _id_user);
+        const businessFollowStatus = followers.some(
+            (follower) => follower._id_user === _id_user
+        );
 
         const businessCreator = await User.findByPk(business._id_user, {
-            attributes: ['_id_user', 'name', 'last_name']
+            attributes: ["_id_user", "name", "last_name"],
         });
 
-        const businessCategory = await Category.findByPk(business._id_category, {
-            attributes: ['_id_category', 'name']
-        });
+        const businessCategory = await Category.findByPk(
+            business._id_category,
+            {
+                attributes: ["_id_category", "name"],
+            }
+        );
 
-        const { _id_user: _, _id_category: __, ...restBusinessDetails } = business.get({ plain: true });
+        const {
+            _id_user: _,
+            _id_category: __,
+            ...restBusinessDetails
+        } = business.get({ plain: true });
 
         const businessDetails = {
             ...restBusinessDetails,
@@ -352,7 +428,9 @@ export const getBusinessDetails = async (req, res) => {
             followers: followerCount,
             is_followed: businessFollowStatus,
             User: businessCreator ? businessCreator.get({ plain: true }) : null,
-            Category: businessCategory ? businessCategory.get({ plain: true }) : null
+            Category: businessCategory
+                ? businessCategory.get({ plain: true })
+                : null,
         };
 
         return res.status(200).send({

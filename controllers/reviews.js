@@ -10,6 +10,7 @@ import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import { ReviewImages } from "../models/reviewImages.js";
+import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import {
     commentsMetaData,
     likesMetaData,
@@ -43,6 +44,14 @@ export const createReview = async (req, res) => {
             return res.status(404).send({ message: "User not found" });
         }
 
+        const containsBadWord = await filterBadWords(content);
+        console.log("\n -- CONTAINS 2?: ", containsBadWord);
+        if (containsBadWord) {
+            return res
+                .status(400)
+                .send({ message: "Contenido contiene palabras prohibidas" });
+        }
+
         const createdReview = await Review.create({
             content,
             _id_business,
@@ -64,8 +73,6 @@ export const createReview = async (req, res) => {
             where: { _id_user },
         });
 
-        // console.log("\n -- REVIEW & USER: ", reviewWithUser);
-        // Now you can use reviewWithUser in your DTO
         const reviewDTO = new ReviewDTO(reviewWithUser.dataValues, _id_user);
         reviewDTO.setBusiness(businessFollowings);
 

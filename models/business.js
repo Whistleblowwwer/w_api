@@ -1,3 +1,4 @@
+// models/business.js
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
 
@@ -38,6 +39,14 @@ export const Business = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: false,
             defaultValue: "Mexico",
+        },
+        iso2_country_code: {
+            type: DataTypes.STRING(2),
+            allowNull: true,
+        },
+        iso2_state_code: {
+            type: DataTypes.STRING(2),
+            allowNull: true,
         },
         _id_category: {
             type: DataTypes.UUID,
