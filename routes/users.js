@@ -27,46 +27,46 @@ const router = Router();
 
 //----------User Routes-------------
 
-//Create User
+// Create User
 router.post("/", createUser);
 
-//Log In
+// Log In
 router.post("/login", logIn);
 
-//Update User
+// Update User
 router.put("/", validateToken, updateUser);
 
-//Get User Details
+// Get User Details
 router.get("/", validateToken, getUserDetails);
 
-//Like Review
+// Like Review
 router.post("/reviews/like", validateToken, likeReview);
 
-//Reviews made by User
+// Reviews made by User
 router.get("/reviews", validateToken, getUserReviews);
 
-//Like Comment
+// Like Comment
 router.post("/comments/like", validateToken, likeComment);
 
-//Follow User
+// Follow User
 router.post("/follow", validateToken, followUser);
 
-//Follow Business
+// Follow Business
 router.post("/business/follow", validateToken, followBusiness);
 
-//Deactivate User
+// Deactivate User
 router.patch("/deactivate", validateToken, deactivateUser);
 
-//Nuke User
+// Nuke User
 router.delete("/delete/all", validateToken, nukeUser);
 
-//Search User
+// Search User
 router.get("/search", validateToken, searchUser);
 
-//Send SMS
+// Send SMS
 router.get("/sendsms", sendSMS);
 
-//Verify SMS
+// Verify SMS
 router.get("/verifysms", VerifySMS);
 
 // Validate token
@@ -75,16 +75,16 @@ router.get("/token", validateToken, verifyToken);
 // Get Liked Reviews by User
 router.get("/likes", validateToken, getUserLikes);
 
-//Get User Comments
+// Get User Comments
 router.get("/comments", validateToken, getUserComments);
 
-//Get Random User Recommendation
+// Get Random User Recommendation
 router.get("/recommendation", validateToken, getRandomUsers);
 
-//Get Random User Recommendation
+// Validate de OTP
 router.post("/validate-otp", validateToken, validateOtp);
 
-//Get Random User Recommendation
+// Request an OTP
 router.get("/send-otp", validateToken, requestOtp);
 
 export default router;

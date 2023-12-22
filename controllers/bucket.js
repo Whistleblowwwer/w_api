@@ -13,6 +13,7 @@ export const uploadFile = async (req, res) => {
     try {
         const { id, photo_type } = req.query;
         const imageUrls = [];
+        const _id_user_requesting = req.user._id_user;
 
         upload.array("fileN", 8)(req, res, async (err) => {
             if (err) {
@@ -31,7 +32,7 @@ export const uploadFile = async (req, res) => {
                     var fileName;
                     var _id_review_image;
                     if (photo_type === "users_profile_img") {
-                        fileName = `${photo_type}/${id}`;
+                        fileName = `${photo_type}/${_id_user_requesting}`;
                     } else if (photo_type === "business_header_img") {
                         fileName = `${photo_type}/${id}`;
                     } else if (photo_type === "reviews_img") {
@@ -80,26 +81,16 @@ export const uploadFile = async (req, res) => {
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
 
                     if (photo_type === "users_profile_img") {
-                        const _id_user = id;
+                        console.log("\n -- ID REQ: ", _id_user_requesting);
                         const profile_picture_url =
                             "https://w-images-bucket.s3.amazonaws.com/" +
                             fileName;
-                        const user = await User.findOne({
-                            where: { _id_user },
-                            attributes: { exclude: ["password_token"] },
-                        });
-
-                        if (!user) {
-                            return res
-                                .status(400)
-                                .send({ message: "User not found" });
-                        }
 
                         await User.update(
                             {
                                 profile_picture_url,
                             },
-                            { where: { _id_user } }
+                            { where: { _id_user: _id_user_requesting } }
                         );
                     } else if (photo_type === "business_header_img") {
                         const _id_business = id;
