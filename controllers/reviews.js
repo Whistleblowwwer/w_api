@@ -45,7 +45,6 @@ export const createReview = async (req, res) => {
         }
 
         const containsBadWord = await filterBadWords(content);
-        console.log("\n -- CONTAINS 2?: ", containsBadWord);
         if (containsBadWord) {
             return res
                 .status(400)
@@ -65,6 +64,10 @@ export const createReview = async (req, res) => {
                 {
                     model: User,
                     attributes: ["_id_user", "name", "last_name", "nick_name"],
+                },
+                {
+                    model: Business,
+                    attributes: ["_id_business", "name", "entity"],
                 },
             ],
         });
