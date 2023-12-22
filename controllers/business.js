@@ -25,7 +25,7 @@ export const createBusiness = async (req, res) => {
             category,
         } = req.body;
         const _id_user = req.user._id_user;
-
+        console.log("\n -- ID USER: ", _id_user);
         // Check for missing fields
         const requiredFields = [
             "name",
@@ -66,11 +66,9 @@ export const createBusiness = async (req, res) => {
         });
 
         if (existingBusiness) {
-            return res
-                .status(400)
-                .send({
-                    message: "A business with the same name already exists",
-                });
+            return res.status(400).send({
+                message: "A business with the same name already exists",
+            });
         }
 
         // Check if category exists or has a good similarity rate
@@ -105,7 +103,7 @@ export const createBusiness = async (req, res) => {
             iso2_country_code,
             iso2_state_code,
             entity,
-            _id_user,
+            _id_user: _id_user,
             _id_category: categoryInstance
                 ? categoryInstance._id_category
                 : null,

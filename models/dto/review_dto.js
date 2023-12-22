@@ -71,6 +71,9 @@ export default class ReviewDTO {
         );
     }
 
+    setIsLiked(is_liked) {
+        this.is_liked = is_liked;
+    }
     setUserName(user) {
         this.User.name = user.name;
         this.User.last_name = user.last_name;

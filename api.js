@@ -14,6 +14,7 @@ const app = express();
 const httpServer = createServer(app); //Express app runs on http server
 
 // Middlewares
+app.set("trust proxy", true);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(
@@ -31,21 +32,20 @@ const io = initializeWebSocketServer(httpServer);
 
 async function main() {
     await sequelize.sync({ force: false });
-    console.log("Connected to DB")
+    console.log("Connected to DB");
 
     await sequelize_write.sync({ force: false });
-    console.log("Connected to Write DB")
+    console.log("Connected to Write DB");
 
     await sequelize_read.sync({ force: false });
-    console.log("Connected to Read DB")
-    
+    console.log("Connected to Read DB");
+
     await UpdateCache();
 
     const PORT = process.env.PORT || 4000;
     httpServer.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });
-    
 }
 main();
 

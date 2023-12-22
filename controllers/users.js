@@ -2,27 +2,32 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Op, Sequelize } from "sequelize";
+import { Op, Sequelize, where } from "sequelize";
 import { User } from "../models/users.js";
-import { Review } from "../models/reviews.js";
-import { Comment } from "../models/comments.js";
-import { Message } from "../models/messages.js";
-import { Business } from "../models/business.js";
-import { ReviewLikes } from "../models/reviewLikes.js";
-import { ReviewImages } from "../models/reviewImages.js";
-import { CommentLikes } from "../models/commentLikes.js";
-import { sendOTP, verifyOTP } from "../middlewares/sms.js";
-import { UserFollowers } from "../models/userFollowers.js";
-import { BusinessFollowers } from "../models/businessFollowers.js";
-import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 import {
     commentsMetaData,
     likesMetaData,
 } from "../middlewares/reviewInteractions.js";
-import { commentMetaData } from "../middlewares/commentInteractions.js";
+import {
+    sendOTPByEmail,
+    validateOTP,
+} from "../middlewares/sendValidationMail.js";
+import { Review } from "../models/reviews.js";
+import { Comment } from "../models/comments.js";
+import { Message } from "../models/messages.js";
+import { Business } from "../models/business.js";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
+import { ReviewLikes } from "../models/reviewLikes.js";
+import { ReviewImages } from "../models/reviewImages.js";
+import { CommentLikes } from "../models/commentLikes.js";
+import { UserFollowers } from "../models/userFollowers.js";
+import { filterBadWords } from "../middlewares/badWordsFilter.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
+import { commentMetaData } from "../middlewares/commentInteractions.js";
+import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
+// Registrate User
 export const createUser = async (req, res) => {
     try {
         const {
@@ -52,6 +57,16 @@ export const createUser = async (req, res) => {
                     .status(400)
                     .send({ message: `Missing ${field} field` });
             }
+        }
+
+        // Check for profanity in relevant fields
+        const containsBadWord = await filterBadWords(
+            `${name} ${last_name} ${email} ${phone_number} ${gender} ${nick_name}`
+        );
+        if (containsBadWord) {
+            return res
+                .status(400)
+                .send({ message: "Contenido contiene palabras prohibidas" });
         }
 
         if (!(await isValidEmail(email))) {
@@ -86,6 +101,7 @@ export const createUser = async (req, res) => {
                 password_token: hashedPassword,
                 role: role ? "admin" : "consumer",
                 nick_name: defaultNickName,
+                is_valid: false,
             },
         });
 
@@ -103,7 +119,7 @@ export const createUser = async (req, res) => {
             { expiresIn: "3d" }
         );
 
-        // TODO: Add email distribution
+        sendOTPByEmail(email);
 
         res.status(200).send({
             message: "User created successfully",
@@ -122,6 +138,71 @@ export const createUser = async (req, res) => {
                 .status(500)
                 .send({ message: "An unexpected error occurred" });
         }
+    }
+};
+
+// Validate OTP
+export const validateOtp = async (req, res) => {
+    try {
+        const { code, email } = req.body;
+
+        // Check for empty code field
+        if (!code) {
+            return res.status(400).json({ message: "Missing code field" });
+        }
+
+        // Validate OTP
+        const isValidOTP = validateOTP(email, code);
+
+        if (isValidOTP) {
+            // Include logic here for a successful OTP validation, e.g., updating user status
+            await User.update({ is_valid: true }, { where: { email: email } });
+            res.status(200).json({
+                message: "User created successfully",
+            });
+        } else {
+            res.status(400).json({
+                message: "Could not validate code. Please try again.",
+            });
+        }
+    } catch (error) {
+        console.error("Error in validateOtp:", error);
+
+        // Handle unexpected errors
+        res.status(500).json({
+            message: "An unexpected error occurred",
+        });
+    }
+};
+
+export const requestOtp = async (req, res) => {
+    try {
+        const _id_user = req.user._id_user;
+
+        // Assuming you have the user's email address
+        const user = await User.findByPk(_id_user, {
+            where: { is_valid: true },
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found or not valid",
+            });
+        }
+
+        // Send OTP via email
+        await sendOTPByEmail(user.email);
+
+        res.status(200).json({
+            message: "OTP sent successfully",
+        });
+    } catch (error) {
+        console.error("Error in requestOtp:", error);
+
+        // Handle unexpected errors
+        res.status(500).json({
+            message: "An unexpected error occurred",
+        });
     }
 };
 
@@ -231,7 +312,7 @@ export const updateUser = async (req, res) => {
 //Get User Details
 export const getUserDetails = async (req, res) => {
     const _id_user = req.query._id_user || req.user._id_user;
-    const _id_user_requesting = req.user._id_user;  
+    const _id_user_requesting = req.user._id_user;
 
     try {
         let user = await User.findOne({
@@ -255,12 +336,14 @@ export const getUserDetails = async (req, res) => {
             where: { _id_follower: _id_user_requesting },
         });
 
-        const isFollowed = userFollowings.some(following => following._id_followed === _id_user);
+        const isFollowed = userFollowings.some(
+            (following) => following._id_followed === _id_user
+        );
 
         user = user.toJSON();
         user.followings = followingsCount;
         user.followers = followersCount;
-        user.is_followed = isFollowed; 
+        user.is_followed = isFollowed;
 
         res.status(200).send({
             message: "User found",
@@ -628,12 +711,40 @@ export const searchUser = async (req, res) => {
 };
 
 // Verify Token
-export const verifyToken = (req, res) => {
-    // If the execution reaches here, the token is valid.
-    res.status(200).json({
-        success: true,
-        message: "Token is valid",
-    });
+export const verifyToken = async (req, res) => {
+    try {
+        const _id_user = req.user._id_user;
+
+        const user = await User.findByPk(_id_user);
+
+        if (user) {
+            if (user.is_valid) {
+                res.status(200).json({
+                    success: true,
+                    message: "Token is valid",
+                });
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message:
+                        "User is not validated. Please validate your account.",
+                });
+            }
+        } else {
+            res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+    } catch (error) {
+        console.error("Error in verifyToken:", error);
+
+        // Handle unexpected errors
+        res.status(500).json({
+            success: false,
+            message: "An unexpected error occurred",
+        });
+    }
 };
 
 // Get User Feed with Pagination
@@ -772,35 +883,62 @@ export const getUserFeed = async (req, res) => {
 // Get Liked Reviews By User
 export const getUserLikes = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
+    // Log model attributes
+    console.log("User Model Attributes:", Object.keys(User.rawAttributes));
+    console.log("Review Model Attributes:", Object.keys(Review.rawAttributes));
+    console.log(
+        "ReviewLikes Model Attributes:",
+        Object.keys(ReviewLikes.rawAttributes)
+    );
+
+    // Log model associations
+    console.log("User Model Associations:", Object.keys(User.associations));
+    console.log("Review Model Associations:", Object.keys(Review.associations));
+    console.log(
+        "ReviewLikes Model Associations:",
+        Object.keys(ReviewLikes.associations)
+    );
     try {
-        const allReviews = await Review.findAll({
-            where: { is_valid: true },
-            limit: 20,
-            order: [["createdAt", "DESC"]],
+        const allLikedReviews = await User.findOne({
+            where: {
+                _id_user: _id_user_requesting,
+            },
             include: [
                 {
-                    model: Business,
-                    attributes: ["_id_business", "name", "entity"],
-                    as: "businessFollowers", // This alias should match the alias used in User.belongsToMany
-                    through: {
-                        model: BusinessFollowers,
-                        attributes: [], // Exclude any additional attributes from BusinessFollowers
-                    },
-                    required: false, // Change to true if you only want reviews where the user is following at least one business
-                },
-                {
-                    model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
-                },
-                {
-                    model: ReviewImages,
-                    attributes: ["image_url"],
+                    model: Review,
+                    as: "LikedReviews",
+                    include: [
+                        {
+                            model: Business,
+                            attributes: ["_id_business", "name", "entity"],
+                        },
+                        {
+                            model: User,
+                            attributes: [
+                                "_id_user",
+                                "name",
+                                "last_name",
+                                "nick_name",
+                            ],
+                        },
+                        {
+                            model: ReviewImages,
+                            attributes: ["image_url"],
+                        },
+                    ],
                 },
             ],
         });
 
-        const commentsDTO = await commentsMetaData(allReviews);
-        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
+        console.log("\n -- ALL LIKED REVIEWS: ", allLikedReviews.LikedReviews);
+
+        const commentsDTO = await commentsMetaData(
+            allLikedReviews.LikedReviews
+        );
+        const likesDTO = await likesMetaData(
+            allLikedReviews.LikedReviews,
+            _id_user_requesting
+        );
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
         });
@@ -812,10 +950,10 @@ export const getUserLikes = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = allReviews.map(
+        const reviewsWithLikesAndFollowInfo = allLikedReviews.LikedReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
-
+                console.log("\n -- REVIEW LIKE: ", reviewLike);
                 const reviewDTO = new ReviewDTO(
                     review.dataValues,
                     reviewLike?.dataValues?.userLiked === "1",
@@ -831,7 +969,9 @@ export const getUserLikes = async (req, res) => {
                     businessFollowings
                 );
 
-                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
                 reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
@@ -900,8 +1040,8 @@ export const getUserReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = await Promise.all(userReviews.map(
-            async (review, index) => {
+        const reviewsWithLikesAndFollowInfo = await Promise.all(
+            userReviews.map(async (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
                 const reviewDTO = new ReviewDTO(
@@ -919,12 +1059,14 @@ export const getUserReviews = async (req, res) => {
                     businessFollowings
                 );
 
-                const imageUrls = review.ReviewImages.map(image => image.image_url);
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
                 reviewDTO.setImages(imageUrls);
 
                 return reviewDTO.getReviewData();
-            }
-        ));
+            })
+        );
 
         res.status(200).send({
             message: "Reviews retrieved successfully",
@@ -994,7 +1136,7 @@ export const getUserComments = async (req, res) => {
 };
 
 //Get 5 Random user recommendations
-export const getRandomUsers = async(req, res) => {
+export const getRandomUsers = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
 
     try {
@@ -1004,37 +1146,44 @@ export const getRandomUsers = async(req, res) => {
         const recentReviews = await Review.findAll({
             where: {
                 createdAt: {
-                    [Op.gte]: threeMonthsAgo
-                }
+                    [Op.gte]: threeMonthsAgo,
+                },
             },
             include: {
                 model: User,
-                attributes: ['_id_user', 'name', 'last_name', 'nick_name']
+                attributes: ["_id_user", "name", "last_name", "nick_name"],
             },
-            limit: 100 
+            limit: 100,
         });
 
         const uniqueUsers = new Map();
-        recentReviews.forEach(review => {
+        recentReviews.forEach((review) => {
             if (!uniqueUsers.has(review.User._id_user)) {
                 uniqueUsers.set(review.User._id_user, review.User);
             }
         });
 
         let usersArray = Array.from(uniqueUsers.values());
-        for (let currentIndex = usersArray.length - 1; currentIndex > 0; currentIndex--) {
+        for (
+            let currentIndex = usersArray.length - 1;
+            currentIndex > 0;
+            currentIndex--
+        ) {
             const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
-            [usersArray[currentIndex], usersArray[randomIndex]] = [usersArray[randomIndex], usersArray[currentIndex]]; 
+            [usersArray[currentIndex], usersArray[randomIndex]] = [
+                usersArray[randomIndex],
+                usersArray[currentIndex],
+            ];
         }
 
         const randomUsers = usersArray.slice(0, 5);
 
-        const followStatusPromises = randomUsers.map(async user => {
+        const followStatusPromises = randomUsers.map(async (user) => {
             const isFollowed = await UserFollowers.findOne({
                 where: {
                     _id_follower: _id_user_requesting,
-                    _id_followed: user._id_user
-                }
+                    _id_followed: user._id_user,
+                },
             });
             return { ...user.toJSON(), is_followed: !!isFollowed };
         });
@@ -1043,10 +1192,13 @@ export const getRandomUsers = async(req, res) => {
 
         res.status(200).send({
             message: "Random user recommendations",
-            users: usersWithFollowStatus
+            users: usersWithFollowStatus,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: "Internal server error", error: error.message });
+        res.status(500).send({
+            message: "Internal server error",
+            error: error.message,
+        });
     }
 };

@@ -19,6 +19,8 @@ import {
     getUserReviews,
     getUserComments,
     getRandomUsers,
+    validateOtp,
+    requestOtp,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -78,5 +80,11 @@ router.get("/comments", validateToken, getUserComments);
 
 //Get Random User Recommendation
 router.get("/recommendation", validateToken, getRandomUsers);
+
+//Get Random User Recommendation
+router.post("/validate-otp", validateToken, validateOtp);
+
+//Get Random User Recommendation
+router.get("/send-otp", validateToken, requestOtp);
 
 export default router;

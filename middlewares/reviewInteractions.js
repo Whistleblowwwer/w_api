@@ -35,6 +35,7 @@ export const commentsMetaData = async (reviews) => {
 };
 
 export const likesMetaData = async (reviews, userID) => {
+    // console.log("\n -- INCOMING REVIEWS: ", reviews[0]);
     try {
         const reviewIds = reviews.map((review) => review._id_review);
 
