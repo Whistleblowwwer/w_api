@@ -158,20 +158,18 @@ export const validateOtp = async (req, res) => {
         }
     } catch (error) {
         console.error("Error in validateOtp:", error);
-
-        // Handle unexpected errors
         res.status(500).json({
             message: "An unexpected error occurred",
         });
     }
 };
 
+
 // Request OTP
 export const requestOtp = async (req, res) => {
     try {
         const _id_user = req.user._id_user;
 
-        // Assuming you have the user's email address
         const user = await User.findByPk(_id_user, {
             where: { is_valid: true },
         });
@@ -190,13 +188,12 @@ export const requestOtp = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in requestOtp:", error);
-
-        // Handle unexpected errors
         res.status(500).json({
-            message: "An unexpected error occurred",
+            message: error,
         });
     }
 };
+
 
 //Log In
 export const logIn = async (req, res) => {
