@@ -160,6 +160,7 @@ export const validateOtp = async (req, res) => {
         console.error("Error in validateOtp:", error);
         res.status(500).json({
             message: "An unexpected error occurred",
+            error: error.message
         });
     }
 };
@@ -193,6 +194,7 @@ export const requestOtp = async (req, res) => {
 
         res.status(500).json({
             message: "An unexpected error occurred",
+            error: error.message
         });
     }
 };
