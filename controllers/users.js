@@ -2,7 +2,6 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Op, Sequelize, where } from "sequelize";
 import { User } from "../models/users.js";
 import {
     commentsMetaData,
@@ -12,6 +11,7 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
 import { Business } from "../models/business.js";
+import { Op, Sequelize, where } from "sequelize";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
