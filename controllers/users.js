@@ -168,32 +168,34 @@ export const validateOtp = async (req, res) => {
 // Request OTP
 export const requestOtp = async (req, res) => {
     try {
-        const _id_user = req.user._id_user;
+        const email = req.query.email;
 
-        const user = await User.findByPk(_id_user, {
-            where: { is_valid: true },
-        });
+        if (!email) {
+            return res.status(400).json({
+                message: "Email parameter is missing",
+            });
+        }
 
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found or not valid",
+        if (!(await isValidEmail(email))) {
+            return res.status(400).json({
+                message: "Invalid email format",
             });
         }
 
         // Send OTP via email
-        await sendOTPByEmail(user.email);
+        await sendOTPByEmail(email);
 
         res.status(200).json({
             message: "OTP sent successfully",
         });
     } catch (error) {
         console.error("Error in requestOtp:", error);
+
         res.status(500).json({
-            message: error,
+            message: "An unexpected error occurred",
         });
     }
 };
-
 
 //Log In
 export const logIn = async (req, res) => {
