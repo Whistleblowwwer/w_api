@@ -37,8 +37,8 @@ async function main() {
     await sequelize_write.sync({ force: false });
     console.log("Connected to Write DB");
 
-    await sequelize_read.sync({ force: false });
-    console.log("Connected to Read DB");
+    // await sequelize_read.sync({ force: false });
+    // console.log("Connected to Read DB");
 
     await UpdateCache();
 

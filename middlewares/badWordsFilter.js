@@ -12,8 +12,6 @@ const containsAlphabetical = (word) => /[a-zA-Z]/.test(word);
 
 export const filterBadWords = async (content) => {
     try {
-        console.log("\n -- CONTENT: ", content);
-
         // Split content into words
         const words = content.split(/\s+/);
 
@@ -30,7 +28,6 @@ export const filterBadWords = async (content) => {
         // Combine the results
         const containsBadWord = containsIndividualBadWord || containsProfanity;
 
-        console.log("\n -- CONTAINS?: ", containsBadWord);
         return containsBadWord;
     } catch (error) {
         console.error("Error checking for profanity:", error);

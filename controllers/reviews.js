@@ -6,11 +6,11 @@ import { Business } from "../models/business.js";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
+import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
-import { BusinessFollowers } from "../models/businessFollowers.js";
-import { ReviewImages } from "../models/reviewImages.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
 import {
     commentsMetaData,
     likesMetaData,

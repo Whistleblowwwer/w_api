@@ -8,10 +8,6 @@ import {
     commentsMetaData,
     likesMetaData,
 } from "../middlewares/reviewInteractions.js";
-import {
-    sendOTPByEmail,
-    validateOTP,
-} from "../middlewares/sendValidationMail.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
@@ -24,6 +20,10 @@ import { CommentLikes } from "../models/commentLikes.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
+import {
+    validateOTP,
+    sendOTPByEmail,
+} from "../middlewares/sendValidationMail.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
@@ -101,7 +101,6 @@ export const createUser = async (req, res) => {
                 password_token: hashedPassword,
                 role: role ? "admin" : "consumer",
                 nick_name: defaultNickName,
-                is_valid: false,
             },
         });
 
@@ -118,8 +117,6 @@ export const createUser = async (req, res) => {
             process.env.TOKEN_SECRET,
             { expiresIn: "3d" }
         );
-
-        sendOTPByEmail(email);
 
         res.status(200).send({
             message: "User created successfully",
@@ -145,18 +142,12 @@ export const createUser = async (req, res) => {
 export const validateOtp = async (req, res) => {
     try {
         const { code, email } = req.body;
-
-        // Check for empty code field
         if (!code) {
             return res.status(400).json({ message: "Missing code field" });
         }
-
-        // Validate OTP
         const isValidOTP = validateOTP(email, code);
 
         if (isValidOTP) {
-            // Include logic here for a successful OTP validation, e.g., updating user status
-            await User.update({ is_valid: true }, { where: { email: email } });
             res.status(200).json({
                 message: "User created successfully",
             });
@@ -175,6 +166,7 @@ export const validateOtp = async (req, res) => {
     }
 };
 
+// Request OTP
 export const requestOtp = async (req, res) => {
     try {
         const _id_user = req.user._id_user;
