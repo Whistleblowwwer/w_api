@@ -41,11 +41,11 @@ export const Business = sequelize.define(
             defaultValue: "Mexico",
         },
         iso2_country_code: {
-            type: DataTypes.STRING(2),
+            type: DataTypes.STRING(3),
             allowNull: true,
         },
         iso2_state_code: {
-            type: DataTypes.STRING(2),
+            type: DataTypes.STRING(3),
             allowNull: true,
         },
         _id_category: {
