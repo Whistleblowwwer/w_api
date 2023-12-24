@@ -35,6 +35,7 @@ export default class ReviewDTO {
             name: review.User?.name || null,
             last_name: review.User?.last_name || null,
             nick_name: review.User?.nick_name || null,
+            profile_picture_url: review.User?.profile_picture_url || null,
             is_followed: false,
         };
 
@@ -42,6 +43,7 @@ export default class ReviewDTO {
             _id_business: review._id_business,
             name: review.Business?.name || null,
             entity: review.Business?.entity || null,
+            profile_picture_url: review.Business?.profile_picture_url || null,
             is_followed: false,
         };
 
@@ -107,12 +109,14 @@ export default class ReviewDTO {
                 name: this.User.name,
                 last_name: this.User.last_name,
                 nick_name: this.User.nick_name,
+                profile_picture_url: this.User.profile_picture_url,
                 is_followed: this.User.is_followed,
             },
             Business: {
                 _id_business: this.Business._id_business,
                 name: this.Business.name,
                 entity: this.Business.entity,
+                profile_picture_url: this.Business.profile_picture_url,
                 is_followed: this.Business.is_followed,
             },
             Images: this.Images,

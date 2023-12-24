@@ -106,12 +106,23 @@ export const getReviewParent = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                     as: "User",
                 },
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
             ],
         });
@@ -224,12 +235,22 @@ export const getReviewChildren = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "profile_picture_url",
+                    ],
                     as: "User",
                 },
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: Comment,
@@ -239,7 +260,12 @@ export const getReviewChildren = async (req, res) => {
                     include: [
                         {
                             model: User,
-                            attributes: ["_id_user", "name", "last_name"],
+                            attributes: [
+                                "_id_user",
+                                "name",
+                                "last_name",
+                                "profile_picture_url",
+                            ],
                             as: "User",
                         },
                         {
@@ -253,6 +279,7 @@ export const getReviewChildren = async (req, res) => {
                                         "_id_user",
                                         "name",
                                         "last_name",
+                                        "profile_picture_url",
                                     ],
                                     as: "User",
                                 },
@@ -441,11 +468,22 @@ export const getReviewsForBusiness = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: ReviewImages,
@@ -536,11 +574,22 @@ export const getUserLikedReviews = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: ReviewImages,
@@ -611,11 +660,22 @@ export const getAllReviews = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: ReviewImages,

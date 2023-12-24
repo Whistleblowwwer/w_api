@@ -983,11 +983,22 @@ export const getUserReviews = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                 },
                 {
                     model: ReviewImages,
@@ -1076,7 +1087,13 @@ export const getUserComments = async (req, res) => {
                 {
                     model: User,
                     as: "User",
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                 },
             ],
         });
@@ -1128,7 +1145,13 @@ export const getRandomUsers = async (req, res) => {
             },
             include: {
                 model: User,
-                attributes: ["_id_user", "name", "last_name", "nick_name"],
+                attributes: [
+                    "_id_user",
+                    "name",
+                    "last_name",
+                    "nick_name",
+                    "profile_picture_url",
+                ],
             },
             limit: 100,
         });
