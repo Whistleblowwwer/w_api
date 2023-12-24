@@ -15,7 +15,7 @@ const app = express();
 const httpServer = createServer(app); //Express app runs on http server
 
 // Middlewares
-// app.set("trust proxy", true);
+app.set("trust proxy", true);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(

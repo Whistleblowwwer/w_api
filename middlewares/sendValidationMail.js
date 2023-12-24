@@ -23,7 +23,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-
 function generateOTP() {
     return Math.floor(1000 + Math.random() * 9000); // Generate a 4-digit OTP
 }
@@ -102,24 +101,33 @@ export const sendOTPByEmail = (email) => {
 
 // Function to validate OTP
 export const validateOTP = (email, enteredOTP) => {
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
+    try {
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            throw new Error("Invalid email format");
+        }
+
+        const storedData = otpCache.get(email);
+
+        if (!storedData) {
+            throw new Error("OTP data not found for the provided email");
+        }
+
+        if (storedData.otp === enteredOTP) {
+            const timeDifference = Date.now() - storedData.timestamp;
+            if (timeDifference < 300000) {
+                // Valid OTP
+                otpCache.del(email); // Delete the code once validated
+                return true;
+            } else {
+                throw new Error("OTP expired");
+            }
+        } else {
+            throw new Error("Invalid OTP");
+        }
+    } catch (error) {
+        console.error("Error in validateOTP:", error.message);
         return false;
     }
-    console.log("\n -- CACHE: ", otpCache);
-    const storedData = otpCache.get(email);
-    console.log("\n -- STORED DATA: ", storedData);
-
-    if (storedData.otp === enteredOTP) {
-        const timeDifference = Date.now() - storedData.timestamp;
-        if (timeDifference < 300000) {
-            // Valid OTP
-            return true;
-        }
-        return true;
-    }
-
-    // Invalid OTP or expired
-    return false;
 };

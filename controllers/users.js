@@ -142,14 +142,17 @@ export const createUser = async (req, res) => {
 export const validateOtp = async (req, res) => {
     try {
         const { code, email } = req.body;
-        if (!code) {
-            return res.status(400).json({ message: "Missing code field" });
+        if (!code || !email) {
+            return res
+                .status(400)
+                .json({ message: "Missing code or email field" });
         }
+
         const isValidOTP = validateOTP(email, code);
 
         if (isValidOTP) {
             res.status(200).json({
-                message: "User created successfully",
+                message: "Validation successful!",
             });
         } else {
             res.status(400).json({
@@ -157,14 +160,13 @@ export const validateOtp = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Error in validateOtp:", error);
+        console.error("Error in validateOtp:", error.message);
         res.status(500).json({
             message: "An unexpected error occurred",
-            error: error.message
+            error: error.message,
         });
     }
 };
-
 
 // Request OTP
 export const requestOtp = async (req, res) => {
@@ -194,7 +196,7 @@ export const requestOtp = async (req, res) => {
 
         res.status(500).json({
             message: "An unexpected error occurred",
-            error: error.message
+            error: error.message,
         });
     }
 };
