@@ -1,5 +1,5 @@
 import { sequelize } from "./config/db.js";
-import { sequelize_read } from "./config/db_read.js";
+// import { sequelize_read } from "./config/db_read.js";
 import { sequelize_write } from "./config/db_write.js";
 import express from "express";
 import { createServer } from "http";
