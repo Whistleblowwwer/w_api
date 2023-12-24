@@ -576,7 +576,6 @@ export const sendSMS = async (req, res) => {
 
         await sendOTP(phone_number);
 
-        console.log("OTP enviado exitosamente");
         return res.status(206).json({
             message: "Code verification sent successfully.",
         });
@@ -878,21 +877,7 @@ export const getUserFeed = async (req, res) => {
 // Get Liked Reviews By User
 export const getUserLikes = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
-    // Log model attributes
-    console.log("User Model Attributes:", Object.keys(User.rawAttributes));
-    console.log("Review Model Attributes:", Object.keys(Review.rawAttributes));
-    console.log(
-        "ReviewLikes Model Attributes:",
-        Object.keys(ReviewLikes.rawAttributes)
-    );
 
-    // Log model associations
-    console.log("User Model Associations:", Object.keys(User.associations));
-    console.log("Review Model Associations:", Object.keys(Review.associations));
-    console.log(
-        "ReviewLikes Model Associations:",
-        Object.keys(ReviewLikes.associations)
-    );
     try {
         const allLikedReviews = await User.findOne({
             where: {
@@ -925,8 +910,6 @@ export const getUserLikes = async (req, res) => {
             ],
         });
 
-        console.log("\n -- ALL LIKED REVIEWS: ", allLikedReviews.LikedReviews);
-
         const commentsDTO = await commentsMetaData(
             allLikedReviews.LikedReviews
         );
@@ -948,7 +931,6 @@ export const getUserLikes = async (req, res) => {
         const reviewsWithLikesAndFollowInfo = allLikedReviews.LikedReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
-                console.log("\n -- REVIEW LIKE: ", reviewLike);
                 const reviewDTO = new ReviewDTO(
                     review.dataValues,
                     reviewLike?.dataValues?.userLiked === "1",

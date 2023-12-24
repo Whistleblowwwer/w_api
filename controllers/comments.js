@@ -92,7 +92,6 @@ export const getCommentChildren = async (req, res) => {
                 _id_user,
             },
         });
-        console.log("\n-- IS USER LIKED: ", !!userLikedComment);
 
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user },
@@ -154,8 +153,6 @@ export const getCommentChildren = async (req, res) => {
             Comments: transformedComments,
         };
 
-        console.log("\n-- CHILDREN: ", transformedComments);
-        console.log("\n-- COMMENT: ", commentData);
         res.status(200).json({
             message: "Comments retrieved successfully",
             comment: commentData,

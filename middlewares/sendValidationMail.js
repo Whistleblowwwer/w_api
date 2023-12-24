@@ -92,7 +92,6 @@ export const sendOTPByEmail = (email) => {
                 console.log(error);
                 reject("Failed to send OTP email.");
             } else {
-                console.log("Email sent: " + info.response);
                 resolve(info);
             }
         });

@@ -5,29 +5,27 @@ import { User } from "../models/users.js";
 import { UserCache } from "../middlewares/cache.js";
 import { addtoBatch } from "../middlewares/batchprocessing.js";
 
-
 export const CreateFeedItem = async (req, res) => {
-    try{
-        const {_id_user, score, interaction, is_valid} = req.body;
+    try {
+        const { _id_user, score, interaction, is_valid } = req.body;
 
         //Check if User exits
-        if(!UserCache.get(_id_user)){
-            return res.status(400).send({ message: "User not found"});
+        if (!UserCache.get(_id_user)) {
+            return res.status(400).send({ message: "User not found" });
         }
 
         //Get list of Followers
         const list_id_target = await UserFollowers.findAll({
-            attributes: ['_id_follower'],
-            where: {_id_followed: _id_user}
-        })
+            attributes: ["_id_follower"],
+            where: { _id_followed: _id_user },
+        });
 
-        const followerIds = list_id_target.map(item => item._id_follower);
+        const followerIds = list_id_target.map((item) => item._id_follower);
 
-        if(!followerIds){
-            return res.status(400).send({ message: "User has no followers"});
+        if (!followerIds) {
+            return res.status(400).send({ message: "User has no followers" });
         }
 
-        
         //Create Feed Item
         addtoBatch(async () => {
             const createdFeedItem = await FeedItems_Write.create({
@@ -39,7 +37,7 @@ export const CreateFeedItem = async (req, res) => {
             });
         });
 
-        for (const follower in followerIds){
+        for (const follower in followerIds) {
             addtoBatch(async () => {
                 const createdFeedItem = await FeedItems_Read.create({
                     _id_user,
@@ -51,24 +49,23 @@ export const CreateFeedItem = async (req, res) => {
             });
         }
 
-
         return res.status(201).json({
             message: "FeedItem created successfully",
         });
-
+    } catch (error) {
+        return res
+            .status(500)
+            .send({ message: "Internal Server Error", error: error });
     }
-    catch(error){
-        return res.status(500).send({ message: "Internal Server Error", error: error });
-    }
-}
+};
 
 export const ReadFeedItem = async (req, res) => {
-    try{
-        const _id_feed_item = req.query._id_feed_item
+    try {
+        const _id_feed_item = req.query._id_feed_item;
 
         const feedItem = await FeedItems_Read.findByPk(_id_feed_item);
 
-        if(!feedItem){
+        if (!feedItem) {
             return res.status(400).json({
                 message: "FeedItem not found",
             });
@@ -76,25 +73,32 @@ export const ReadFeedItem = async (req, res) => {
 
         return res.status(201).json({
             message: "FeedItem retrieved successfully",
-            FeedItem: feedItem.dataValues
+            FeedItem: feedItem.dataValues,
         });
-
+    } catch (err) {
+        return res
+            .status(500)
+            .send({ message: "Internal Server Error", error: err });
     }
-    catch(err){
-        return res.status(500).send({ message: "Internal Server Error", error: err });
-    }
-}
+};
 
 export const UpdateFeedItem = async (req, res) => {
-    try{
-        const { _id_feed_item, _id_user, list_id_target, score, interaction, is_valid} = req.body;
+    try {
+        const {
+            _id_feed_item,
+            _id_user,
+            list_id_target,
+            score,
+            interaction,
+            is_valid,
+        } = req.body;
 
         const feedItem = await FeedItems_Write.findByPk(_id_feed_item);
 
-        console.log(feedItem)
-
         if (!feedItem) {
-            return res.status(400).send({ message: "No FeedItem with that id" });
+            return res
+                .status(400)
+                .send({ message: "No FeedItem with that id" });
         }
 
         const updatedFields = {
@@ -103,7 +107,7 @@ export const UpdateFeedItem = async (req, res) => {
                 list_id_target: list_id_target,
                 score: score,
                 interaction: interaction,
-                is_valid: is_valid
+                is_valid: is_valid,
             },
         };
 
@@ -112,35 +116,36 @@ export const UpdateFeedItem = async (req, res) => {
                 where: {
                     _id_feed_item: _id_feed_item,
                 },
-            });    
+            });
         });
 
         return res.status(201).json({
             message: "FeedItem updated successfully",
-            FeedItem: feedItem.dataValues
+            FeedItem: feedItem.dataValues,
         });
+    } catch (err) {
+        return res
+            .status(500)
+            .send({ message: "Internal Server Error", error: err });
     }
-    catch(err){
-        return res.status(500).send({ message: "Internal Server Error", error: err });
-    }
-}
+};
 
 export const DeleteFeedItem = async (req, res) => {
-    try{
-        const _id_feed_item = req.body._id_feed_item
+    try {
+        const _id_feed_item = req.body._id_feed_item;
 
         addtoBatch(async () => {
             await FeedItems_Write.destroy({
-                where:{_id_feed_item: _id_feed_item}
+                where: { _id_feed_item: _id_feed_item },
             });
         });
 
         return res.status(201).json({
             message: "FeedItem deleted successfully",
         });
-
+    } catch (err) {
+        return res
+            .status(500)
+            .send({ message: "Internal Server Error", error: err });
     }
-    catch(err){
-        return res.status(500).send({ message: "Internal Server Error", error: err });
-    }
-}
+};

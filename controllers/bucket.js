@@ -81,7 +81,6 @@ export const uploadFile = async (req, res) => {
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
 
                     if (photo_type === "users_profile_img") {
-                        console.log("\n -- ID REQ: ", _id_user_requesting);
                         const profile_picture_url =
                             "https://w-images-bucket.s3.amazonaws.com/" +
                             fileName;
