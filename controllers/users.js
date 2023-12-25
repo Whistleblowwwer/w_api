@@ -989,6 +989,9 @@ export const getUserReviews = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: User,
@@ -999,6 +1002,9 @@ export const getUserReviews = async (req, res) => {
                         "nick_name",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: ReviewImages,
@@ -1094,6 +1100,9 @@ export const getUserComments = async (req, res) => {
                         "nick_name",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
             ],
         });
@@ -1152,6 +1161,9 @@ export const getRandomUsers = async (req, res) => {
                     "nick_name",
                     "profile_picture_url",
                 ],
+                where: {
+                    is_valid: true,
+                },
             },
             limit: 100,
         });

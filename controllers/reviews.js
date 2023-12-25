@@ -114,6 +114,9 @@ export const getReviewParent = async (req, res) => {
                         "profile_picture_url",
                     ],
                     as: "User",
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: Business,
@@ -123,6 +126,9 @@ export const getReviewParent = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
             ],
         });
@@ -155,6 +161,9 @@ export const getReviewParent = async (req, res) => {
                     model: User,
                     attributes: ["_id_user", "name", "last_name", "nick_name"],
                     as: "User",
+                    where: {
+                        is_valid: true,
+                    },
                 },
             ],
         });
@@ -217,7 +226,7 @@ export const getReviewChildren = async (req, res) => {
                             SELECT COUNT(*)
                             FROM "reviewLikes" AS reviewLikes
                             WHERE
-                            reviewLikes."_id_review" = "Review"."_id_review"
+                            reviewLikes."_id_review" = "Review"."_id_review" AND is_valid = true
                         )`),
                         "likes",
                     ],
@@ -226,7 +235,7 @@ export const getReviewChildren = async (req, res) => {
                             SELECT COUNT(*)
                             FROM "comments" as Comments
                             WHERE
-                            Comments._id_review = "Review"."_id_review"
+                            Comments._id_review = "Review"."_id_review" AND is_valid = true
                         )`),
                         "comments",
                     ],
@@ -242,6 +251,9 @@ export const getReviewChildren = async (req, res) => {
                         "profile_picture_url",
                     ],
                     as: "User",
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: Business,
@@ -251,11 +263,14 @@ export const getReviewChildren = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: Comment,
                     as: "Comments",
-                    where: { _id_parent: null },
+                    where: { _id_parent: null, is_valid: true },
                     required: false,
                     include: [
                         {
@@ -267,6 +282,9 @@ export const getReviewChildren = async (req, res) => {
                                 "profile_picture_url",
                             ],
                             as: "User",
+                            where: {
+                                is_valid: true,
+                            },
                         },
                         {
                             model: Comment,
@@ -282,6 +300,9 @@ export const getReviewChildren = async (req, res) => {
                                         "profile_picture_url",
                                     ],
                                     as: "User",
+                                    where: {
+                                        is_valid: true,
+                                    },
                                 },
                             ],
                         },
@@ -293,7 +314,7 @@ export const getReviewChildren = async (req, res) => {
                                     SELECT COUNT(*)
                                     FROM "commentLikes" AS commentLikes
                                     WHERE
-                                    commentLikes."_id_comment" = "Comments"."_id_comment"
+                                    commentLikes."_id_comment" = "Comments"."_id_comment" AND is_valid = true
                                 )`),
                                 "likes",
                             ],
@@ -474,6 +495,9 @@ export const getReviewsForBusiness = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: User,
@@ -484,6 +508,9 @@ export const getReviewsForBusiness = async (req, res) => {
                         "nick_name",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: ReviewImages,
@@ -580,6 +607,9 @@ export const getUserLikedReviews = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: User,
@@ -590,6 +620,9 @@ export const getUserLikedReviews = async (req, res) => {
                         "nick_name",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: ReviewImages,
@@ -666,6 +699,9 @@ export const getAllReviews = async (req, res) => {
                         "entity",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: User,
@@ -676,6 +712,9 @@ export const getAllReviews = async (req, res) => {
                         "nick_name",
                         "profile_picture_url",
                     ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: ReviewImages,
