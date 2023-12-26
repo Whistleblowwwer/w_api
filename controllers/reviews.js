@@ -8,6 +8,7 @@ import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
+import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
@@ -130,6 +131,10 @@ export const getReviewParent = async (req, res) => {
                         is_valid: true,
                     },
                 },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -165,6 +170,10 @@ export const getReviewParent = async (req, res) => {
                         is_valid: true,
                     },
                 },
+                {
+                    model: CommentImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -187,6 +196,8 @@ export const getReviewParent = async (req, res) => {
                     userFollowings.map((following) => following._id_followed)
                 )
             );
+            const imageUrls = comment.CommentImages.map(image => image.image_url);
+            commentDTO.setImages(imageUrls);
             return commentDTO.getCommentData();
         });
 
@@ -197,6 +208,11 @@ export const getReviewParent = async (req, res) => {
             userFollowings,
             businessFollowings
         );
+        
+        const imageUrls = review.ReviewImages.map(
+            (image) => image.image_url
+        );
+        reviewDTO.setImages(imageUrls);
 
         const reviewWithParentComments = {
             ...reviewDTO.getReviewData(),

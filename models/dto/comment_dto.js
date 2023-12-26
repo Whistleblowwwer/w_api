@@ -21,6 +21,8 @@ export default class CommentDTO {
             nick_name: comment.User.nick_name,
             is_followed: false,
         };
+
+        this.Images = [];
     }
 
     setMetaData(likesMetaData, repliesMetaData, userFollowingsSet) {
@@ -33,6 +35,9 @@ export default class CommentDTO {
 
         const targetUserId = this._id_user;
         this.User.is_followed = userFollowingsSet.has(targetUserId);
+    }
+    setImages(Image) {
+        this.Images = Image;
     }
 
     getCommentData() {
@@ -48,6 +53,7 @@ export default class CommentDTO {
             commentsCount: this.commentsCount, 
             is_liked: this.is_liked,
             User: this.User,
+            Images: this.Images,
         };
     }
 }

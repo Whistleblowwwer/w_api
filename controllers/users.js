@@ -17,6 +17,7 @@ import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
+import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
@@ -1104,6 +1105,10 @@ export const getUserComments = async (req, res) => {
                         is_valid: true,
                     },
                 },
+                {
+                    model: CommentImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -1125,6 +1130,9 @@ export const getUserComments = async (req, res) => {
                 repliesMetaDataObject,
                 userFollowingsSet
             );
+
+            const imageUrls = comment.CommentImages.map(image => image.image_url);
+            commentDTO.setImages(imageUrls);
             return commentDTO.getCommentData();
         });
 
