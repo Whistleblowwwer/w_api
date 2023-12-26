@@ -26,16 +26,18 @@ export default class CommentDTO {
     }
 
     setMetaData(likesMetaData, repliesMetaData, userFollowingsSet) {
-       const likeData = likesMetaData[this._id_comment];
-        const replyData = repliesMetaData[this._id_comment]; 
+        
+        const likeData = likesMetaData ? likesMetaData[this._id_comment] : null;
+        const replyData = repliesMetaData ? repliesMetaData[this._id_comment] : null;
 
         this.likesCount = likeData ? parseInt(likeData.likeCount) || 0 : 0;
         this.commentsCount = replyData ? parseInt(replyData.repliesCount) || 0 : 0;
         this.is_liked = likeData ? likeData.userLiked === "1" : false;
 
-        const targetUserId = this._id_user;
+        const targetUserId = this.User._id_user;
         this.User.is_followed = userFollowingsSet.has(targetUserId);
     }
+
     setImages(Image) {
         this.Images = Image;
     }
