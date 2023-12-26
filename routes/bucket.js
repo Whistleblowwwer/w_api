@@ -2,7 +2,9 @@ import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js";
 import {
     uploadFile,
-    getUrl
+    getUrl,
+    UploadCommentImage,
+    UploadReviewImage
 } from "../controllers/bucket.js";
 
 const router = Router();
@@ -11,6 +13,10 @@ const router = Router();
 
 //Add/Change Image to User/Buisiness/Review
 router.post("/",validateToken ,uploadFile);
+
+router.post("/comment",validateToken ,UploadCommentImage);
+
+router.post("/review",validateToken ,UploadReviewImage);
 
 router.get("/", validateToken, getUrl);
 

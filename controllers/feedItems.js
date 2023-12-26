@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { FeedItems_Read, FeedItems_Write } from "../models/feedItems.js";
+import {  FeedItems_Write } from "../models/feedItems.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { User } from "../models/users.js";
 import { UserCache } from "../middlewares/cache.js";
@@ -37,17 +37,6 @@ export const CreateFeedItem = async (req, res) => {
             });
         });
 
-        for (const follower in followerIds) {
-            addtoBatch(async () => {
-                const createdFeedItem = await FeedItems_Read.create({
-                    _id_user,
-                    list_id_target: follower,
-                    score,
-                    interaction,
-                    is_valid,
-                });
-            });
-        }
 
         return res.status(201).json({
             message: "FeedItem created successfully",
@@ -63,7 +52,7 @@ export const ReadFeedItem = async (req, res) => {
     try {
         const _id_feed_item = req.query._id_feed_item;
 
-        const feedItem = await FeedItems_Read.findByPk(_id_feed_item);
+        const feedItem = await FeedItems_Write.findByPk(_id_feed_item);
 
         if (!feedItem) {
             return res.status(400).json({
