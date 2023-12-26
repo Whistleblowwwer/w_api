@@ -164,7 +164,7 @@ export const getReviewParent = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: ["_id_user", "name", "last_name", "nick_name","profile_picture_url"],
                     as: "User",
                     where: {
                         is_valid: true,

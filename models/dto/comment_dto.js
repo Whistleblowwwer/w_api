@@ -19,6 +19,7 @@ export default class CommentDTO {
             name: comment.User.name,
             last_name: comment.User.last_name,
             nick_name: comment.User.nick_name,
+            profile_picture_url: comment.User.profile_picture_url,
             is_followed: false,
         };
 

@@ -22,7 +22,7 @@ export const getCommentChildren = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name"],
+                    attributes: ["_id_user", "name", "last_name","profile_picture_url"],
                     as: "User",
                 },
                 {
@@ -41,7 +41,7 @@ export const getCommentChildren = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name"],
+                    attributes: ["_id_user", "name", "last_name","profile_picture_url"],
                     as: "User",
                 },
                 {
