@@ -9,6 +9,7 @@ import "./models/associations.js";
 import router from "./routes/routes.js";
 import { initializeWebSocketServer } from "./socket.js";
 import { UpdateCache } from "./middlewares/cache.js";
+import { IpInfo } from "./middlewares/ipInfo.js";
 
 const app = express();
 const httpServer = createServer(app); //Express app runs on http server
@@ -25,6 +26,7 @@ app.use(
     })
 );
 
+app.use(IpInfo);
 app.use(router);
 
 //Initialize Socket.io configuration, also runs on http server

@@ -82,9 +82,9 @@ router.get("/comments", validateToken, getUserComments);
 router.get("/recommendation", validateToken, getRandomUsers);
 
 // Validate de OTP
-router.post("/validate-otp", validateToken, validateOtp);
+router.post("/validate-otp", validateOtp);
 
 // Request an OTP
-router.get("/send-otp", validateToken, requestOtp);
+router.get("/send-otp", requestOtp);
 
 export default router;

@@ -2,7 +2,6 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Op, Sequelize, where } from "sequelize";
 import { User } from "../models/users.js";
 import {
     commentsMetaData,
@@ -12,6 +11,7 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
 import { Business } from "../models/business.js";
+import { Op, Sequelize, where } from "sequelize";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
@@ -142,14 +142,17 @@ export const createUser = async (req, res) => {
 export const validateOtp = async (req, res) => {
     try {
         const { code, email } = req.body;
-        if (!code) {
-            return res.status(400).json({ message: "Missing code field" });
+        if (!code || !email) {
+            return res
+                .status(400)
+                .json({ message: "Missing code or email field" });
         }
+
         const isValidOTP = validateOTP(email, code);
 
         if (isValidOTP) {
             res.status(200).json({
-                message: "User created successfully",
+                message: "Validation successful!",
             });
         } else {
             res.status(400).json({
@@ -157,11 +160,10 @@ export const validateOtp = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Error in validateOtp:", error);
-
-        // Handle unexpected errors
+        console.error("Error in validateOtp:", error.message);
         res.status(500).json({
             message: "An unexpected error occurred",
+            error: error.message,
         });
     }
 };
@@ -169,21 +171,22 @@ export const validateOtp = async (req, res) => {
 // Request OTP
 export const requestOtp = async (req, res) => {
     try {
-        const _id_user = req.user._id_user;
+        const email = req.query.email;
 
-        // Assuming you have the user's email address
-        const user = await User.findByPk(_id_user, {
-            where: { is_valid: true },
-        });
+        if (!email) {
+            return res.status(400).json({
+                message: "Email parameter is missing",
+            });
+        }
 
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found or not valid",
+        if (!(await isValidEmail(email))) {
+            return res.status(400).json({
+                message: "Invalid email format",
             });
         }
 
         // Send OTP via email
-        await sendOTPByEmail(user.email);
+        await sendOTPByEmail(email);
 
         res.status(200).json({
             message: "OTP sent successfully",
@@ -191,9 +194,9 @@ export const requestOtp = async (req, res) => {
     } catch (error) {
         console.error("Error in requestOtp:", error);
 
-        // Handle unexpected errors
         res.status(500).json({
             message: "An unexpected error occurred",
+            error: error.message,
         });
     }
 };
@@ -573,7 +576,6 @@ export const sendSMS = async (req, res) => {
 
         await sendOTP(phone_number);
 
-        console.log("OTP enviado exitosamente");
         return res.status(206).json({
             message: "Code verification sent successfully.",
         });
@@ -875,21 +877,7 @@ export const getUserFeed = async (req, res) => {
 // Get Liked Reviews By User
 export const getUserLikes = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
-    // Log model attributes
-    console.log("User Model Attributes:", Object.keys(User.rawAttributes));
-    console.log("Review Model Attributes:", Object.keys(Review.rawAttributes));
-    console.log(
-        "ReviewLikes Model Attributes:",
-        Object.keys(ReviewLikes.rawAttributes)
-    );
 
-    // Log model associations
-    console.log("User Model Associations:", Object.keys(User.associations));
-    console.log("Review Model Associations:", Object.keys(Review.associations));
-    console.log(
-        "ReviewLikes Model Associations:",
-        Object.keys(ReviewLikes.associations)
-    );
     try {
         const allLikedReviews = await User.findOne({
             where: {
@@ -922,8 +910,6 @@ export const getUserLikes = async (req, res) => {
             ],
         });
 
-        console.log("\n -- ALL LIKED REVIEWS: ", allLikedReviews.LikedReviews);
-
         const commentsDTO = await commentsMetaData(
             allLikedReviews.LikedReviews
         );
@@ -945,7 +931,6 @@ export const getUserLikes = async (req, res) => {
         const reviewsWithLikesAndFollowInfo = allLikedReviews.LikedReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
-                console.log("\n -- REVIEW LIKE: ", reviewLike);
                 const reviewDTO = new ReviewDTO(
                     review.dataValues,
                     reviewLike?.dataValues?.userLiked === "1",
@@ -998,11 +983,28 @@ export const getUserReviews = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: ["_id_business", "name", "entity"],
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
                 {
                     model: ReviewImages,
@@ -1091,7 +1093,16 @@ export const getUserComments = async (req, res) => {
                 {
                     model: User,
                     as: "User",
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
                 },
             ],
         });
@@ -1143,7 +1154,16 @@ export const getRandomUsers = async (req, res) => {
             },
             include: {
                 model: User,
-                attributes: ["_id_user", "name", "last_name", "nick_name"],
+                attributes: [
+                    "_id_user",
+                    "name",
+                    "last_name",
+                    "nick_name",
+                    "profile_picture_url",
+                ],
+                where: {
+                    is_valid: true,
+                },
             },
             limit: 100,
         });

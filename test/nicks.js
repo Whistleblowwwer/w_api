@@ -13,8 +13,6 @@ export const updateNicknames = async () => {
             const formattedNickname = newNickname.replace(/\s+/g, ""); // Remove spaces
             await user.update({ nick_name: formattedNickname });
         }
-
-        console.log("Nicknames updated successfully!");
     } catch (error) {
         console.error("Error updating nicknames:", error);
         throw error;

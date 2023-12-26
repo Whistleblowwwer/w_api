@@ -25,7 +25,7 @@ export const createBusiness = async (req, res) => {
             category,
         } = req.body;
         const _id_user = req.user._id_user;
-        console.log("\n -- ID USER: ", _id_user);
+
         // Check for missing fields
         const requiredFields = [
             "name",
