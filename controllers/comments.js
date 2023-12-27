@@ -122,13 +122,14 @@ export const getCommentChildren = async (req, res) => {
             childDTO.setImages(
                 child.CommentImages.map((image) => image.image_url)
             );
-            return childDTO.getCommentData();
+            return childDTO;
         });
+
+        parentCommentDTO.setChildren(transformedChildrenDTOs);
 
         res.status(200).json({
             message: "Comments retrieved successfully",
             comment: parentCommentDTO.getCommentData(),
-            Comments: transformedChildrenDTOs,
         });
     } catch (error) {
         console.error("Error finding comments:", error);
@@ -255,9 +256,12 @@ export const deactivateComment = async (req, res) => {
     const _id_comment = req.query._id_comment;
     const _id_user = req.user._id_user;
 
+    console.log("User Model Associations:", Object.keys(Comment.associations));
+
     try {
         const commentToDeactivate = await Comment.findOne({
             where: { _id_comment },
+            include: ["children"],
         });
 
         if (!commentToDeactivate) {

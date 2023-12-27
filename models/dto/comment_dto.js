@@ -46,8 +46,12 @@ export default class CommentDTO {
         this.Images = Image;
     }
 
+    setChildren(childrenDTOs) {
+        this.Comments = childrenDTOs;
+    }
+
     getCommentData() {
-        return {
+        const commentData = {
             _id_comment: this._id_comment,
             content: this.content,
             is_valid: this.is_valid,
@@ -61,5 +65,11 @@ export default class CommentDTO {
             User: this.User,
             Images: this.Images,
         };
+
+        if (this.Comments) {
+            commentData.Comments = this.Comments;
+        }
+
+        return commentData;
     }
 }
