@@ -25,6 +25,17 @@ const badWordsDictionary = [
     "hijueputas",
     "hijueputa",
     "culos",
+    "Sharbel",
+    "Charbel",
+    "Sharvel",
+    "Charvel",
+    "Ancer",
+    "Anser",
+    "Anzer",
+    "Jorge Ancer",
+    "Jorge Sharbel Ancer",
+    "Ancer Jorge",
+    "Ancer Sharbel Jorge",
 ];
 
 export default badWordsDictionary;
