@@ -33,8 +33,8 @@ app.use(router);
 const io = initializeWebSocketServer(httpServer);
 
 async function main() {
-    await sequelize.sync({ force: false });
-    console.log("Connected to DB");
+    // await sequelize.sync({ force: false });
+    // console.log("Connected to DB");
 
     await sequelize_write.sync({ force: false });
     console.log("Connected to Write DB");

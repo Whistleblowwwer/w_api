@@ -5,7 +5,7 @@ dotenv.config();
 
 export const sequelize = new Sequelize(
     process.env.DB_NAME_WRITE,
-    process.env.DB_USER_WRITE_WRITE,
+    process.env.DB_USER_WRITE,
     process.env.DB_PASSWORD_WRITE,
     {
         host: process.env.DB_HOST_WRITE,
