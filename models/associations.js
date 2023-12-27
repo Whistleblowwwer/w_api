@@ -1,6 +1,7 @@
 import { BusinessFollowers } from "./businessFollowers.js";
 import { UserFollowers } from "./userFollowers.js";
 import { CommentLikes } from "./commentLikes.js";
+import { CommentImages } from "./commentImages.js";
 import { ReviewImages } from "./reviewImages.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { Category } from "./categories.js";
@@ -176,12 +177,20 @@ Category.hasMany(Business, { foreignKey: "_id_category" });
 // 1:1
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
 
+// Una imagen pertenece a un comentario
+// 1:1
+CommentImages.belongsTo(Comment, { foreignKey: "_id_comment" });
+// 1:N
+Comment.hasMany(CommentImages, { foreignKey: "_id_comment" });
+
+
 // ------------------ MENSAJES ------------------
 // Un mensaje pertenece a un usuario como remitente/destinatario
 // 1:1
 Message.belongsTo(User, { foreignKey: "_id_sender", as: "Sender" });
 // 1:1
 Message.belongsTo(User, { foreignKey: "_id_receiver", as: "Receiver" });
+
 
 // ------------------ ARTICULOS ------------------
 

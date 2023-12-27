@@ -8,6 +8,7 @@ import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
+import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
@@ -17,6 +18,7 @@ import {
 } from "../middlewares/reviewInteractions.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 
+//Create Review
 export const createReview = async (req, res) => {
     try {
         const { _id_business, content, rating } = req.body;
@@ -42,6 +44,14 @@ export const createReview = async (req, res) => {
 
         if (!userCreatingReview) {
             return res.status(404).send({ message: "User not found" });
+        }
+
+        if (!userCreatingReview.is_valid) {
+            return res.status(400).send({ message: "User is not valid" });
+        }
+
+        if (!businessReviewed.is_valid) {
+            return res.status(400).send({ message: "Business is not valid" });
         }
 
         const containsBadWord = await filterBadWords(content);
@@ -130,6 +140,10 @@ export const getReviewParent = async (req, res) => {
                         is_valid: true,
                     },
                 },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
+                },
             ],
         });
 
@@ -159,11 +173,15 @@ export const getReviewParent = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name"],
+                    attributes: ["_id_user", "name", "last_name", "nick_name","profile_picture_url"],
                     as: "User",
                     where: {
                         is_valid: true,
                     },
+                },
+                {
+                    model: CommentImages,
+                    attributes: ["image_url"],
                 },
             ],
         });
@@ -187,6 +205,8 @@ export const getReviewParent = async (req, res) => {
                     userFollowings.map((following) => following._id_followed)
                 )
             );
+            const imageUrls = comment.CommentImages.map(image => image.image_url);
+            commentDTO.setImages(imageUrls);
             return commentDTO.getCommentData();
         });
 
@@ -197,6 +217,11 @@ export const getReviewParent = async (req, res) => {
             userFollowings,
             businessFollowings
         );
+        
+        const imageUrls = review.ReviewImages.map(
+            (image) => image.image_url
+        );
+        reviewDTO.setImages(imageUrls);
 
         const reviewWithParentComments = {
             ...reviewDTO.getReviewData(),

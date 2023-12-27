@@ -19,20 +19,28 @@ export default class CommentDTO {
             name: comment.User.name,
             last_name: comment.User.last_name,
             nick_name: comment.User.nick_name,
+            profile_picture_url: comment.User.profile_picture_url,
             is_followed: false,
         };
+
+        this.Images = [];
     }
 
     setMetaData(likesMetaData, repliesMetaData, userFollowingsSet) {
-       const likeData = likesMetaData[this._id_comment];
-        const replyData = repliesMetaData[this._id_comment]; 
+        
+        const likeData = likesMetaData ? likesMetaData[this._id_comment] : null;
+        const replyData = repliesMetaData ? repliesMetaData[this._id_comment] : null;
 
         this.likesCount = likeData ? parseInt(likeData.likeCount) || 0 : 0;
         this.commentsCount = replyData ? parseInt(replyData.repliesCount) || 0 : 0;
         this.is_liked = likeData ? likeData.userLiked === "1" : false;
 
-        const targetUserId = this._id_user;
+        const targetUserId = this.User._id_user;
         this.User.is_followed = userFollowingsSet.has(targetUserId);
+    }
+
+    setImages(Image) {
+        this.Images = Image;
     }
 
     getCommentData() {
@@ -48,6 +56,7 @@ export default class CommentDTO {
             commentsCount: this.commentsCount, 
             is_liked: this.is_liked,
             User: this.User,
+            Images: this.Images,
         };
     }
 }

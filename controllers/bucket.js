@@ -117,7 +117,7 @@ export const uploadFile = async (req, res) => {
 
 export const UploadReviewImage = async (req, res) => {
     try {
-        const { _id_review } = req.query;
+        const _id_review  = req.query._id_review;
         const imageUrls = [];
         const _id_user_requesting = req.user._id_user;
 
@@ -133,15 +133,13 @@ export const UploadReviewImage = async (req, res) => {
                 for (const file of files) {
                     const contentType = file.mimetype;
 
-                    //Prepare file for bucket and send file.
+                    // Prepare file for bucket and send file.
                     const fileBuffer = file.buffer;
                     var fileName;
                     var _id_review_image;
                     const review = await Review.findByPk(_id_review);
                     if (!review) {
-                        return res
-                            .status(400)
-                            .send({ message: "Review not found" });
+                        return res.status(400).send({ message: "Review not found" });
                     }
 
                     const reviewimage = await ReviewImages.create({
@@ -151,7 +149,7 @@ export const UploadReviewImage = async (req, res) => {
 
                     _id_review_image = reviewimage._id_review_image;
 
-                    fileName = `${photo_type}/${review._id_business}/${_id_review}/${_id_review_image}`;
+                    fileName = `reviews_img/${review._id_business}/${_id_review}/${_id_review_image}`;
 
                     imageUrls.push(
                         "https://w-images-bucket.s3.amazonaws.com/" + fileName
@@ -176,7 +174,6 @@ export const UploadReviewImage = async (req, res) => {
 
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
 
-                    const _id_review = id;
                     const image_url =
                         "https://w-images-bucket.s3.amazonaws.com/" +
                         fileName;
