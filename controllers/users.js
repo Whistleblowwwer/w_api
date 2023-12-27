@@ -74,7 +74,7 @@ export const createUser = async (req, res) => {
             return res.status(400).send({ message: "Invalid email format" });
         }
 
-        if (!isValidPhoneNumber(phone_number)) {
+        if (phone_number && !isValidPhoneNumber(phone_number)) {
             return res
                 .status(400)
                 .send({ message: "Invalid phone number format" });
@@ -1135,7 +1135,9 @@ export const getUserComments = async (req, res) => {
                 userFollowingsSet
             );
 
-            const imageUrls = comment.CommentImages.map(image => image.image_url);
+            const imageUrls = comment.CommentImages.map(
+                (image) => image.image_url
+            );
             commentDTO.setImages(imageUrls);
             return commentDTO.getCommentData();
         });
