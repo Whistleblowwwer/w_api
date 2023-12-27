@@ -18,6 +18,7 @@ import {
 } from "../middlewares/reviewInteractions.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 
+//Create Review
 export const createReview = async (req, res) => {
     try {
         const { _id_business, content, rating } = req.body;
@@ -43,6 +44,14 @@ export const createReview = async (req, res) => {
 
         if (!userCreatingReview) {
             return res.status(404).send({ message: "User not found" });
+        }
+
+        if (!userCreatingReview.is_valid) {
+            return res.status(400).send({ message: "User is not valid" });
+        }
+
+        if (!businessReviewed.is_valid) {
+            return res.status(400).send({ message: "Business is not valid" });
         }
 
         const containsBadWord = await filterBadWords(content);

@@ -583,11 +583,13 @@ export const deleteBusiness = async (req, res) => {
 export const searchBusiness = async (req, res) => {
     const { name, address, state, city, country, entity } = req.query;
 
-    let searchCriteria = {};
+    let searchCriteria = {
+        is_valid: true,
+    };
 
     if (name) {
         searchCriteria.name = {
-            [Op.iLike]: `%${name}%`,
+            [Op.iLike]: `%${name}%`, 
         };
     }
     if (address) {

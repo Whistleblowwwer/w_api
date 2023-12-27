@@ -623,8 +623,12 @@ export const searchUser = async (req, res) => {
     const searchTerm = req.query.searchTerm;
     const _id_user_requesting = req.user._id_user;
 
-    let nameSearchCriteria = {};
-    let lastNameSearchCriteria = {};
+    let nameSearchCriteria = {
+        is_valid: true,
+    };
+    let lastNameSearchCriteria = {
+        is_valid: true,
+    };
 
     if (searchTerm.includes(" ")) {
         const [providedName, providedLastName] = searchTerm.split(" ");
