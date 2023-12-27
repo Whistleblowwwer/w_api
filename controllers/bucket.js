@@ -149,7 +149,7 @@ export const UploadReviewImage = async (req, res) => {
 
                     _id_review_image = reviewimage._id_review_image;
 
-                    fileName = `${photo_type}/${review._id_business}/${_id_review}/${_id_review_image}`;
+                    fileName = `reviews_img/${review._id_business}/${_id_review}/${_id_review_image}`;
 
                     imageUrls.push(
                         "https://w-images-bucket.s3.amazonaws.com/" + fileName
