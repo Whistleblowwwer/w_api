@@ -154,11 +154,11 @@ Comment.hasMany(CommentLikes, {
 
 // Un comentario puede tener varios comentarios hijos
 // 1:N
-Comment.hasMany(Comment, { as: "Children", foreignKey: "_id_parent" });
+Comment.hasMany(Comment, { as: "children", foreignKey: "_id_parent" });
 
 // Un comentario puede tener un comentario padre
 // 1:1
-Comment.belongsTo(Comment, { as: "Parent", foreignKey: "_id_parent" });
+Comment.belongsTo(Comment, { as: "parent", foreignKey: "_id_parent" });
 
 // ------------------ CATEGORIA ------------------
 

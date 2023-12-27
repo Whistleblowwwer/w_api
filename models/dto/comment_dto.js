@@ -11,7 +11,7 @@ export default class CommentDTO {
 
         // MetaData
         this.likesCount = 0;
-        this.commentsCount = 0; 
+        this.commentsCount = 0;
         this.is_liked = false;
 
         this.User = {
@@ -27,12 +27,15 @@ export default class CommentDTO {
     }
 
     setMetaData(likesMetaData, repliesMetaData, userFollowingsSet) {
-        
         const likeData = likesMetaData ? likesMetaData[this._id_comment] : null;
-        const replyData = repliesMetaData ? repliesMetaData[this._id_comment] : null;
+        const replyData = repliesMetaData
+            ? repliesMetaData[this._id_comment]
+            : null;
 
         this.likesCount = likeData ? parseInt(likeData.likeCount) || 0 : 0;
-        this.commentsCount = replyData ? parseInt(replyData.repliesCount) || 0 : 0;
+        this.commentsCount = replyData
+            ? parseInt(replyData.repliesCount) || 0
+            : 0;
         this.is_liked = likeData ? likeData.userLiked === "1" : false;
 
         const targetUserId = this.User._id_user;
@@ -53,7 +56,7 @@ export default class CommentDTO {
             _id_review: this._id_review,
             _id_parent: this._id_parent,
             likesCount: this.likesCount,
-            commentsCount: this.commentsCount, 
+            commentsCount: this.commentsCount,
             is_liked: this.is_liked,
             User: this.User,
             Images: this.Images,

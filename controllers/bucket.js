@@ -164,8 +164,6 @@ export const UploadReviewImage = async (req, res) => {
 
                     const command = new PutObjectCommand(params);
 
-                    
-
                     const getObjectParams = {
                         Bucket: bucketName,
                         Key: fileName,
@@ -175,8 +173,7 @@ export const UploadReviewImage = async (req, res) => {
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
 
                     const image_url =
-                        "https://w-images-bucket.s3.amazonaws.com/" +
-                        fileName;
+                        "https://w-images-bucket.s3.amazonaws.com/" + fileName;
 
                     await ReviewImages.update(
                         { image_url },
@@ -196,7 +193,7 @@ export const UploadReviewImage = async (req, res) => {
 };
 
 export const UploadCommentImage = async (req, res) => {
-    try{
+    try {
         const { _id_comment } = req.query;
         const imageUrls = [];
         //const _id_user_requesting = req.user._id_user;
@@ -222,7 +219,6 @@ export const UploadCommentImage = async (req, res) => {
                             .send({ message: "Comment not found" });
                     }
 
-                    
                     const commentimage = await CommentImages.create({
                         image_url: "null",
                         _id_comment: comment._id_comment,
@@ -247,8 +243,7 @@ export const UploadCommentImage = async (req, res) => {
 
                     //Updates the specified row of the specified table in the DB with the FilePath inside the Bucket.
                     const image_url =
-                        "https://w-images-bucket.s3.amazonaws.com/" +
-                        fileName;
+                        "https://w-images-bucket.s3.amazonaws.com/" + fileName;
 
                     await CommentImages.update(
                         { image_url },
@@ -262,11 +257,11 @@ export const UploadCommentImage = async (req, res) => {
                     Images: imageUrls,
                 });
             }
-        })
+        });
     } catch (error) {
         return res.status(500).send({ error: error.message });
     }
-}
+};
 
 export const getUrl = async (req, res) => {
     try {
