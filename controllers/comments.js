@@ -259,11 +259,33 @@ export const deactivateComment = async (req, res) => {
     console.log("User Model Associations:", Object.keys(Comment.associations));
 
     try {
-        const commentToDeactivate = await Comment.findOne({
-            where: { _id_comment },
-            include: ["children"],
-        });
 
+        const getCommentWithChildren = async (_id_comment) => {
+            var comment = await Comment.findOne({
+                where: { _id_comment },
+                include: [
+                    {
+                        model: Comment,
+                        as: 'children',
+                        hierarchy: true,
+                    },
+                ],
+            });
+        
+            if (comment) {
+                for (let i = 0; i < comment.children.length; i++) {
+                    const children = await getCommentWithChildren(comment.children[i]._id_comment);
+                    if(children){
+                        comment.dataValues.children[i].dataValues.children = children.children
+                    }
+                }
+            }
+        
+            return comment;
+        };
+        
+        const commentToDeactivate = await getCommentWithChildren(_id_comment);
+        
         if (!commentToDeactivate) {
             return res.status(404).json({ message: "Comment not found" });
         }
