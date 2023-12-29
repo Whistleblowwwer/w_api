@@ -56,6 +56,11 @@ export const User = sequelize.define(
             type: DataTypes.STRING(255),
             allowNull: true,
         },
+        blockedBy: {
+            type: DataTypes.ARRAY(DataTypes.UUID), // Array of user IDs who blocked this user
+            allowNull: true,
+            defaultValue: [],
+        },
     },
     {
         tableName: "users",

@@ -1,4 +1,4 @@
-import { Sequelize } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
@@ -173,7 +173,13 @@ export const getReviewParent = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["_id_user", "name", "last_name", "nick_name","profile_picture_url"],
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
                     as: "User",
                     where: {
                         is_valid: true,
@@ -205,7 +211,9 @@ export const getReviewParent = async (req, res) => {
                     userFollowings.map((following) => following._id_followed)
                 )
             );
-            const imageUrls = comment.CommentImages.map(image => image.image_url);
+            const imageUrls = comment.CommentImages.map(
+                (image) => image.image_url
+            );
             commentDTO.setImages(imageUrls);
             return commentDTO.getCommentData();
         });
@@ -217,10 +225,8 @@ export const getReviewParent = async (req, res) => {
             userFollowings,
             businessFollowings
         );
-        
-        const imageUrls = review.ReviewImages.map(
-            (image) => image.image_url
-        );
+
+        const imageUrls = review.ReviewImages.map((image) => image.image_url);
         reviewDTO.setImages(imageUrls);
 
         const reviewWithParentComments = {
@@ -711,8 +717,24 @@ export const getUserLikedReviews = async (req, res) => {
 export const getAllReviews = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
     try {
+        const blockedUsers = await User.findAll({
+            where: {
+                blockedBy: {
+                    [Op.contains]: [_id_user_requesting],
+                },
+            },
+        });
+
+        const blockedUserIds = blockedUsers.map((user) => user._id_user).flat();
+
+        console.log("\n -- USERS BLOCKED: ", blockedUserIds);
         const allReviews = await Review.findAll({
-            where: { is_valid: true },
+            where: {
+                is_valid: true,
+                _id_user: {
+                    [Op.notIn]: blockedUserIds, // Exclude reviews made by blocked users
+                },
+            },
             limit: 20,
             order: [["createdAt", "DESC"]],
             include: [

@@ -746,139 +746,6 @@ export const verifyToken = async (req, res) => {
     }
 };
 
-// Get User Feed with Pagination
-export const getUserFeed = async (req, res) => {
-    const _id_user = req.user._id_user;
-    const { size = 10, currentDate, nextPage } = req.query;
-
-    try {
-        // Step 1: Get user details
-        let user = await User.findOne({
-            where: { _id_user },
-            attributes: { exclude: ["password_token"] },
-        });
-
-        if (!user) {
-            return res.status(400).send({ message: "User not found" });
-        }
-
-        // Step 2: Get all businesses the user follows
-        const userBusinesses = await BusinessFollowers.findAll({
-            where: { _id_user },
-        });
-
-        // Step 3: Iterate through each business and get the most liked review
-        const feedPromises = userBusinesses.map(async (businessFollower) => {
-            const businessId = businessFollower._id_business;
-
-            // Step 3.1: Get all reviews for the current business
-            const businessReviews = await Review.findAll({
-                where: { _id_business: businessId },
-                order: [["createdAt", "DESC"]],
-            });
-
-            // Step 3.2: Get the most liked review for each business
-            const reviewsWithLikes = await Promise.all(
-                businessReviews.map(async (review) => {
-                    const likes = await ReviewLikes.count({
-                        where: { _id_review: review._id_review },
-                    });
-
-                    // Get user information for the current review
-                    const userForReview = await User.findOne({
-                        where: { _id_user: review._id_user },
-                        attributes: ["_id_user", "name", "last_name"],
-                    });
-
-                    // Get business information for the current review
-                    const businessForReview = await Business.findOne({
-                        where: { _id_business: review._id_business },
-                        attributes: ["_id_business", "name", "entity"],
-                    });
-
-                    // Step 3.3: Get the number of comments for the current review
-                    const comments = await Comment.count({
-                        where: { _id_review: review._id_review },
-                    });
-
-                    return {
-                        ...review.toJSON(),
-                        likes,
-                        comments,
-                        User: {
-                            _id_user: userForReview._id_user,
-                            name: userForReview.name,
-                            last_name: userForReview.last_name,
-                        },
-                        Business: {
-                            _id_business: businessForReview._id_business,
-                            name: businessForReview.name,
-                            entity: businessForReview.entity,
-                            is_followed: true,
-                        },
-                    };
-                })
-            );
-
-            // Find the most liked review based on like count and timestamp
-            const mostLikedReview = reviewsWithLikes.reduce((prev, current) => {
-                if (
-                    !prev ||
-                    current.likeCount > prev.likeCount ||
-                    (current.likeCount === prev.likeCount &&
-                        current.createdAt > prev.createdAt)
-                ) {
-                    return current;
-                } else {
-                    return prev;
-                }
-            }, null);
-
-            // Only add the object if mostLikedReview is truthy
-            if (mostLikedReview) {
-                return mostLikedReview;
-            } else {
-                return null;
-            }
-        });
-
-        // Step 4: Execute all promises concurrently
-        const feed = await Promise.all(feedPromises);
-
-        // Filter out null objects
-        const filteredFeed = feed.filter((item) => item !== null);
-
-        // Pagination logic
-        const startIndex = nextPage
-            ? filteredFeed.findIndex((item) => item.createdAt < nextPage)
-            : 0;
-        const endIndex = startIndex + size;
-        const paginatedFeed = filteredFeed.slice(startIndex, endIndex);
-
-        // Calculate next date for the next batch
-        const nextBatchFirstReviewDate =
-            paginatedFeed.length > 0
-                ? paginatedFeed[paginatedFeed.length - 1].createdAt
-                : null;
-
-        // Calculate total pages
-        const totalPages = Math.ceil(filteredFeed.length / size);
-
-        res.status(200).send({
-            message: "User found",
-            businessReviews: paginatedFeed,
-            size: paginatedFeed.length,
-            currentDate: nextBatchFirstReviewDate
-                ? nextBatchFirstReviewDate
-                : currentDate,
-            nextDate: nextBatchFirstReviewDate,
-            totalPages,
-        });
-    } catch (error) {
-        res.status(500).send({ error: error.message });
-    }
-};
-
 // Get Liked Reviews By User
 export const getUserLikes = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
@@ -970,7 +837,7 @@ export const getUserLikes = async (req, res) => {
     }
 };
 
-// Get Reviews for User
+// Get Reviews made by User
 export const getUserReviews = async (req, res) => {
     let _id_user = req.query._id_user;
 
@@ -1226,5 +1093,76 @@ export const getRandomUsers = async (req, res) => {
             message: "Internal server error",
             error: error.message,
         });
+    }
+};
+
+// Block another User
+export const blockUser = async (req, res) => {
+    const { _id_user_to_block } = req.query;
+    const _id_user_unblocking = req.user._id_user;
+    console.log("\n --ID QUERY: ", _id_user_to_block);
+    try {
+        const userToBlock = await User.findByPk(_id_user_to_block);
+
+        if (!userToBlock) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log("\n -- BLOCKED BY: ", userToBlock.blockedBy);
+        // Check if the user is already blocked
+        if (userToBlock.blockedBy.includes(_id_user_unblocking)) {
+            return res.status(400).json({ message: "User is already blocked" });
+        }
+
+        // Block the user
+        userToBlock.blockedBy.push(_id_user_unblocking);
+        await User.update(
+            { blockedBy: [...userToBlock.blockedBy, _id_user_unblocking] },
+            { where: { _id_user: _id_user_to_block } }
+        );
+
+        console.log("\n -- BLOCKED BY: ", userToBlock.blockedBy);
+        return res.status(200).json({ message: "User blocked successfully" });
+    } catch (error) {
+        console.error("Error blocking user:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Unblock another User
+export const unBlockUser = async (req, res) => {
+    const { _id_user_to_unblock } = req.query;
+    const _id_user_unblocking = req.user._id_user;
+
+    try {
+        const userToUnblock = await User.findByPk(_id_user_to_unblock);
+
+        if (!userToUnblock) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the user is blocked
+        if (!userToUnblock.blockedBy.includes(_id_user_unblocking)) {
+            return res.status(400).json({ message: "User is not blocked" });
+        }
+
+        // Unblock the user
+        userToUnblock.blockedBy = userToUnblock.blockedBy.filter(
+            (id) => id !== _id_user_unblocking
+        );
+
+        await User.update(
+            {
+                blockedBy: userToUnblock.blockedBy.filter(
+                    (id) => id !== _id_user_unblocking
+                ),
+            },
+            { where: { _id_user: _id_user_to_unblock } }
+        );
+
+        return res.status(200).json({ message: "User unblocked successfully" });
+    } catch (error) {
+        console.error("Error unblocking user:", error);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 };

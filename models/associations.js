@@ -72,6 +72,13 @@ User.hasMany(Article, {
     as: "Articles",
 });
 
+// User.belongsToMany(User, {
+//     as: "blockedBy",
+//     through: "BlockedUsers", // replace with your actual join table name
+//     foreignKey: "_id_user", // replace with your actual foreign key
+//     otherKey: "blocked_by_id_user", // replace with your actual other key
+// });
+
 // ------------------ BUSINESS ------------------
 // Una empresa tiene un creador
 // 1:1
@@ -183,14 +190,12 @@ CommentImages.belongsTo(Comment, { foreignKey: "_id_comment" });
 // 1:N
 Comment.hasMany(CommentImages, { foreignKey: "_id_comment" });
 
-
 // ------------------ MENSAJES ------------------
 // Un mensaje pertenece a un usuario como remitente/destinatario
 // 1:1
 Message.belongsTo(User, { foreignKey: "_id_sender", as: "Sender" });
 // 1:1
 Message.belongsTo(User, { foreignKey: "_id_receiver", as: "Receiver" });
-
 
 // ------------------ ARTICULOS ------------------
 

@@ -21,6 +21,8 @@ import {
     getRandomUsers,
     validateOtp,
     requestOtp,
+    blockUser,
+    unBlockUser,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -86,5 +88,11 @@ router.post("/validate-otp", validateOtp);
 
 // Request an OTP
 router.get("/send-otp", requestOtp);
+
+// Block User
+router.get("/block", validateToken, blockUser);
+
+// Unblock User
+router.get("/unblock", validateToken, unBlockUser);
 
 export default router;
