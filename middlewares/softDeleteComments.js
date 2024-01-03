@@ -1,4 +1,4 @@
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 import { Comment } from "../models/comments.js";
 
 export async function softDeleteCommentAndChildren(commentId) {

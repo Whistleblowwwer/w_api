@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const ReviewImages = sequelize.define(
+export const ReviewImages = sequelize_write.define(
     "ReviewImages",
     {
         _id_review_image: {

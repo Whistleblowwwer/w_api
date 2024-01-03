@@ -1,8 +1,8 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const Message = sequelize.define(
-    'Message', 
+export const Message = sequelize_write.define(
+    "Message",
     {
         _id_message: {
             type: DataTypes.UUID,
@@ -17,10 +17,9 @@ export const Message = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
-    }, 
+    },
     {
-        tableName: 'messages',
-        timestamps: true
+        tableName: "messages",
+        timestamps: true,
     }
 );
-

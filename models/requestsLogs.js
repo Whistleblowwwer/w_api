@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-const Log = sequelize.define(
+const Log = sequelize_write.define(
     "Log",
     {
         continent: DataTypes.STRING,

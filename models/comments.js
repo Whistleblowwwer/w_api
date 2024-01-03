@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const Comment = sequelize.define(
+export const Comment = sequelize_write.define(
     "Comment",
     {
         _id_comment: {

@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const Category = sequelize.define(
+export const Category = sequelize_write.define(
     "Category",
     {
         _id_category: {

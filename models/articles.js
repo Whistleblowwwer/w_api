@@ -1,8 +1,9 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const Article = sequelize.define(
-    "Article", {
+export const Article = sequelize_write.define(
+    "Article",
+    {
         _id_article: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -28,4 +29,4 @@ export const Article = sequelize.define(
         tableName: "articles",
         timestamps: true,
     }
- );
+);

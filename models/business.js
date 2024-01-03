@@ -1,8 +1,8 @@
 // models/business.js
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize_write } from "../config/db_write.js";
 
-export const Business = sequelize.define(
+export const Business = sequelize_write.define(
     "Business",
     {
         _id_business: {

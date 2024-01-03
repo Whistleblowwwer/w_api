@@ -62,14 +62,6 @@ export const FeedItems_Write = sequelize_write.define(
             primaryKey: true,
             allowNull: false,
         },
-        _id_user: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: "users",
-                key: "_id_user",
-            },
-        },
         list_id_target: {
             type: DataTypes.ARRAY(DataTypes.UUID),
         },
@@ -79,13 +71,13 @@ export const FeedItems_Write = sequelize_write.define(
         },
         interaction: {
             type: DataTypes.ENUM(
-                'Like Review',
-                'Like Comment',
-                'Comment Review',
-                'Comment Comment',
-                'Create Review',
-                'Follow Business',
-                'Create Business'
+                "Like Review",
+                "Like Comment",
+                "Comment Review",
+                "Comment Comment",
+                "Create Review",
+                "Follow Business",
+                "Create Business"
             ),
             allowNull: false,
         },
@@ -95,7 +87,7 @@ export const FeedItems_Write = sequelize_write.define(
         },
     },
     {
-        tableName: "FeedItems",
+        tableName: "feedItems",
         timestamps: false,
     }
 );
