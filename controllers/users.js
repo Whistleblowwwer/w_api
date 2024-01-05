@@ -21,10 +21,7 @@ import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-import {
-    validateOTP,
-    sendOTPByEmail,
-} from "../middlewares/sendValidationMail.js";
+import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 

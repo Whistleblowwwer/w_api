@@ -1,6 +1,7 @@
 import NodeCache from "node-cache";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { User } from "../models/users.js";
 
 dotenv.config();
 
@@ -128,5 +129,63 @@ export const validateOTP = (email, enteredOTP) => {
     } catch (error) {
         console.error("Error in validateOTP:", error.message);
         return false;
+    }
+};
+
+export const sendEmail = async (to, subject, html) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to,
+            subject,
+            html,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Email sent successfully to ${to}`);
+    } catch (error) {
+        console.error("Failed to send email:", error);
+        throw new Error("Failed to send email");
+    }
+};
+
+export const sendNotificationEmails = async (
+    userData,
+    brokerData,
+    message,
+    userType
+) => {
+    try {
+        // Send email to the user requesting
+        await sendEmail(
+            userData.email,
+            "Hemos recibido tu mensaje",
+            "Te responderemos en breve."
+        );
+
+        if (userType === "attorney" || userType === "assistant") {
+            // Send email to the attorney or assistant
+            await sendEmail(
+                brokerData.email,
+                `Has recibido un mensaje: ${message}`,
+                `De ${userData.name} ${userData.last_name}.`
+            );
+        }
+
+        // Send email to admins
+        const admins = await User.findAll({ where: { role: "admin" } });
+
+        for (const admin of admins) {
+            await sendEmail(
+                admin.email,
+                `${brokerData.name} ${brokerData.last_name} ha recibido una solicitud`,
+                `De ${userData.name} ${userData.last_name}. Diciendo: ${message}`
+            );
+        }
+
+        console.log("Notification emails sent successfully");
+    } catch (error) {
+        console.error("Error sending notification emails:", error);
+        throw new Error("Failed to send notification emails");
     }
 };

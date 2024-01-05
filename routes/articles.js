@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
+import { validateToken } from "../middlewares/jwt.js";
 import { createArticle, getAllArticles } from "../controllers/articles.js";
 
 const router = Router();

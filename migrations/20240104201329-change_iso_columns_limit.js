@@ -1,4 +1,5 @@
-// migrations/XXXXXX-change-iso-code-length.js
+"use strict";
+
 module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.changeColumn("businesses", "iso2_country_code", {
@@ -13,7 +14,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        // If needed, you can revert the changes here
         await queryInterface.changeColumn("businesses", "iso2_country_code", {
             type: Sequelize.STRING(3),
             allowNull: true,
