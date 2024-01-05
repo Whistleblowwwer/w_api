@@ -735,7 +735,7 @@ export const getAllReviews = async (req, res) => {
                     [Op.notIn]: blockedUserIds, // Exclude reviews made by blocked users
                 },
             },
-            limit: 20,
+            limit: 30,
             order: [["createdAt", "DESC"]],
             include: [
                 {

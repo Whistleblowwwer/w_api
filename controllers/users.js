@@ -11,7 +11,7 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
 import { Business } from "../models/business.js";
-import { Op, Sequelize, where } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
@@ -21,8 +21,8 @@ import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
+import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
 // Registrate User
