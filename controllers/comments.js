@@ -1,8 +1,6 @@
-import { Sequelize, where } from "sequelize";
 import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
-import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import CommentDTO from "../models/dto/comment_dto.js";
@@ -17,8 +15,7 @@ export const getCommentChildren = async (req, res) => {
     if (!_id_comment) {
         return res.status(400).json({ message: "Comment ID is required" });
     }
-    console.log("\n -- ASSOCIATIONS: ", Object.keys(Comment.associations));
-    console.log("\n -- USER ASSOCIATIONS: ", Object.keys(User.associations));
+
     try {
         const parentComment = await Comment.findByPk(_id_comment, {
             include: [

@@ -1,5 +1,5 @@
-import { sequelize_write } from "../config/db_write.js";
 import { Comment } from "../models/comments.js";
+import { sequelize } from "../config/db.js";
 
 export async function softDeleteCommentAndChildren(commentId) {
     let transaction;
