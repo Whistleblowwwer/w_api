@@ -72,13 +72,6 @@ User.hasMany(Article, {
     as: "Articles",
 });
 
-// User.belongsToMany(User, {
-//     as: "blockedBy",
-//     through: "BlockedUsers", // replace with your actual join table name
-//     foreignKey: "_id_user", // replace with your actual foreign key
-//     otherKey: "blocked_by_id_user", // replace with your actual other key
-// });
-
 // ------------------ BUSINESS ------------------
 // Una empresa tiene un creador
 // 1:1

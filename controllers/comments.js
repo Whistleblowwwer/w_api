@@ -17,6 +17,7 @@ export const getCommentChildren = async (req, res) => {
     }
 
     try {
+        // Fetch paretn comment and first children
         const parentComment = await Comment.findByPk(_id_comment, {
             include: [
                 {
@@ -53,17 +54,16 @@ export const getCommentChildren = async (req, res) => {
                             model: CommentImages,
                             attributes: ["image_url"],
                         },
-                        // Continue to include "children" association for all levels
                     ],
                 },
             ],
         });
 
-        console.log("\n -- COMMENT: ", parentComment.children);
         if (!parentComment) {
             return res.status(404).json({ message: "Comment not found" });
         }
 
+        // Used for each children, to count replies using commentInteractions
         const childComments = await Comment.findAll({
             where: { _id_parent: _id_comment },
             include: [
@@ -85,9 +85,12 @@ export const getCommentChildren = async (req, res) => {
         });
 
         const allComments = [parentComment, ...childComments];
+
+        // Counts likes a replies of children.
         const { likesMetaDataObject, repliesMetaDataObject } =
             await commentMetaData(allComments, _id_user_requesting);
 
+        // Fetch user followings
         const userFollowingsSet = new Set(
             (
                 await UserFollowers.findAll({
@@ -96,10 +99,13 @@ export const getCommentChildren = async (req, res) => {
             ).map((following) => following._id_followed)
         );
 
+        // Initializes parent
         const parentCommentDTO = new CommentDTO(
             parentComment,
             _id_user_requesting
         );
+
+        //
         parentCommentDTO.setMetaData(
             likesMetaDataObject || {},
             repliesMetaDataObject || {},
@@ -155,10 +161,6 @@ export const createComment = async (req, res) => {
         if (!parentReview || !parentReview.is_valid) {
             return res.status(404).json({ message: "Review not found" });
         }
-
-        // if (!parentReview.is_valid) {
-        //     return res.status(400).json({ message: "Invalid review" });
-        // }
 
         const createdComment = await Comment.create({
             content,

@@ -8,7 +8,11 @@ export const commentsMetaData = async (reviews) => {
     const commentsData = await Promise.all(
         reviews.map(async (review) => {
             const comments = await Comment.findAll({
-                where: { _id_review: review._id_review, is_valid: true },
+                where: {
+                    _id_review: review._id_review,
+                    is_valid: true,
+                    _id_parent: null,
+                },
                 order: [["createdAt", "DESC"]],
                 include: [
                     {

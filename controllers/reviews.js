@@ -727,7 +727,6 @@ export const getAllReviews = async (req, res) => {
 
         const blockedUserIds = blockedUsers.map((user) => user._id_user).flat();
 
-        console.log("\n -- USERS BLOCKED: ", blockedUserIds);
         const allReviews = await Review.findAll({
             where: {
                 is_valid: true,
