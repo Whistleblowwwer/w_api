@@ -388,19 +388,23 @@ export const getBusinessDetails = async (req, res) => {
         }
 
         const reviews = await Review.findAll({
-            where: { _id_business: _id_business },
+            where: { _id_business: _id_business, is_valid: true },
             attributes: ["rating"],
         });
+
+        const reviewsCount = reviews.length;
+
         const averageRating =
-            reviews.length > 0
+            reviewsCount > 0
                 ? reviews.reduce((acc, review) => acc + review.rating, 0) /
-                  reviews.length
+                  reviewsCount
                 : 0;
 
         const followers = await BusinessFollowers.findAll({
             where: { _id_business: _id_business },
         });
         const followerCount = followers.length;
+
         const businessFollowStatus = followers.some(
             (follower) => follower._id_user === _id_user
         );
@@ -425,6 +429,7 @@ export const getBusinessDetails = async (req, res) => {
         const businessDetails = {
             ...restBusinessDetails,
             average_rating: averageRating,
+            reviewsCount,
             followers: followerCount,
             is_followed: businessFollowStatus,
             User: businessCreator ? businessCreator.get({ plain: true }) : null,
@@ -589,7 +594,7 @@ export const searchBusiness = async (req, res) => {
 
     if (name) {
         searchCriteria.name = {
-            [Op.iLike]: `%${name}%`, 
+            [Op.iLike]: `%${name}%`,
         };
     }
     if (address) {

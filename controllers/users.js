@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/users.js";
+import { Op, Sequelize } from "sequelize";
 import {
     commentsMetaData,
     likesMetaData,
@@ -11,11 +12,11 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
 import { Business } from "../models/business.js";
-import { Op, Sequelize } from "sequelize";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { ReviewImages } from "../models/reviewImages.js";
+import { Category } from "../models/categories.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
@@ -199,7 +200,7 @@ export const requestOtp = async (req, res) => {
     }
 };
 
-//Log In
+// Log In
 export const logIn = async (req, res) => {
     const { client_email, client_password } = req.body;
 
@@ -239,7 +240,7 @@ export const logIn = async (req, res) => {
     }
 };
 
-//Update User
+// Update User
 export const updateUser = async (req, res) => {
     const _id_user = req.user._id_user;
 
@@ -302,7 +303,7 @@ export const updateUser = async (req, res) => {
     }
 };
 
-//Get User Details
+// Get User Details
 export const getUserDetails = async (req, res) => {
     const _id_user = req.query._id_user || req.user._id_user;
     const _id_user_requesting = req.user._id_user;
@@ -347,7 +348,7 @@ export const getUserDetails = async (req, res) => {
     }
 };
 
-//Like Review
+// Like Review
 export const likeReview = async (req, res) => {
     const _id_review = req.query._id_review;
     const _id_user = req.user._id_user;
@@ -382,7 +383,7 @@ export const likeReview = async (req, res) => {
     }
 };
 
-//Like Comment
+// Like Comment
 export const likeComment = async (req, res) => {
     const _id_comment = req.query._id_comment;
     const _id_user = req.user._id_user;
@@ -416,7 +417,7 @@ export const likeComment = async (req, res) => {
     }
 };
 
-//Follow User
+// Follow User
 export const followUser = async (req, res) => {
     const _id_followed = req.query._id_followed;
     const _id_follower = req.user._id_user;
@@ -451,7 +452,7 @@ export const followUser = async (req, res) => {
     }
 };
 
-//Follow Business
+// Follow Business
 export const followBusiness = async (req, res) => {
     const _id_business = req.query._id_business;
     const _id_user = req.user._id_user;
@@ -486,7 +487,7 @@ export const followBusiness = async (req, res) => {
     }
 };
 
-//Deactivate User
+// Deactivate User
 export const deactivateUser = async (req, res) => {
     const _id_user = req.user._id_user;
 
@@ -508,7 +509,7 @@ export const deactivateUser = async (req, res) => {
     }
 };
 
-//Nuke User (Cascade Deleting all user appearences)
+// Nuke User (Cascade Deleting all user appearences)
 export const nukeUser = async (req, res) => {
     const _id_user = req.user._id_user;
     const user = await User.findByPk(_id_user);
@@ -557,61 +558,6 @@ export const nukeUser = async (req, res) => {
         return res.status(200).send({ message: "User deleted successfully" });
     } catch (error) {
         return res.status(500).send({ error: error.message });
-    }
-};
-
-// Send OTP
-export const sendSMS = async (req, res) => {
-    var phone_number = req.query.phone_number;
-    const country_number = req.query.country_number;
-
-    try {
-        if (phone_number && !isValidPhoneNumber(phone_number)) {
-            return res.status(400).send({ message: "Invalid phone number" });
-        }
-
-        phone_number = "+" + country_number + phone_number;
-
-        await sendOTP(phone_number);
-
-        return res.status(206).json({
-            message: "Code verification sent successfully.",
-        });
-    } catch (error) {
-        res.status(500).send({ error: error.message });
-    }
-};
-
-// Verify OTP Code
-export const VerifySMS = async (req, res) => {
-    try {
-        const code = req.query.code;
-        var phone_number = req.query.phone_number;
-        const country_number = req.query.country_number;
-
-        phone_number = "+" + country_number + phone_number;
-
-        const verificationCheck = await verifyOTP(phone_number, code);
-
-        if (verificationCheck.status === "approved") {
-            return res.status(200).json({
-                message: "Success",
-            });
-        } else {
-            return res.status(401).json({
-                message: "Incorrect Code",
-            });
-        }
-    } catch (error) {
-        if (error.status === 404) {
-            return res.status(404).json({
-                message: "Code expired or not found",
-            });
-        } else {
-            return res.status(400).json({
-                message: "Error with the verification process",
-            });
-        }
     }
 };
 
@@ -948,7 +894,7 @@ export const getUserReviews = async (req, res) => {
     }
 };
 
-//Get User Comments
+// Get User Comments
 export const getUserComments = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
     let _id_user = req.query._id_user || _id_user_requesting;
@@ -1016,7 +962,7 @@ export const getUserComments = async (req, res) => {
     }
 };
 
-//Get 5 Random user recommendations
+// Get 5 Random user recommendations
 export const getRandomUsers = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
 
@@ -1161,5 +1107,122 @@ export const unBlockUser = async (req, res) => {
     } catch (error) {
         console.error("Error unblocking user:", error);
         return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Get Followed Businesses
+export const getFollowedBusinesses = async (req, res) => {
+    const _id_user = req.user._id_user;
+
+    try {
+        // Find businesses that the user follows
+        const followedBusinesses = await BusinessFollowers.findAll({
+            where: { _id_user },
+            include: [
+                {
+                    model: Business,
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "address",
+                        "state",
+                        "city",
+                        "profile_picture_url",
+                        "country",
+                        "iso2_country_code",
+                        "iso2_state_code",
+                        [
+                            Sequelize.literal(
+                                '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
+                            ),
+                            "reviewsCount",
+                        ],
+                        "is_valid",
+                        "createdAt",
+                        "updatedAt",
+                    ],
+                    include: [
+                        {
+                            model: User,
+                            attributes: ["_id_user", "name", "last_name"],
+                        },
+                        {
+                            model: Category,
+                            attributes: ["_id_category", "name"],
+                        },
+                        {
+                            model: Review,
+                            attributes: ["rating"],
+                            where: { is_valid: true },
+                            required: false,
+                        },
+                    ],
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        console.log("\n -- FOLLOWED BUSINESSES", followedBusinesses);
+        if (followedBusinesses.length === 0) {
+            return res
+                .status(404)
+                .send({ message: "No followed businesses found" });
+        }
+
+        // Extract business details from the joined data
+        const businesses = await Promise.all(
+            followedBusinesses.map(async ({ Business, createdAt }) => {
+                console.log("\n -- BUSINESS: ", Business);
+                const {
+                    _id_user: _,
+                    _id_category: __,
+                    reviewsCount,
+                    Reviews, // Access the Reviews directly
+                    ...restBusinessDetails
+                } = Business.get({ plain: true });
+
+                const averageRating =
+                    reviewsCount > 0 && Reviews
+                        ? Reviews.reduce(
+                              (acc, review) => acc + review.rating,
+                              0
+                          ) / reviewsCount
+                        : 0;
+
+                // Fetch the count of followers for each business
+                const followersCount = await BusinessFollowers.count({
+                    where: { _id_business: Business._id_business },
+                });
+
+                const businessCreator = Business.User || null;
+                const businessCategory = Business.Category || null;
+
+                return {
+                    ...restBusinessDetails,
+                    average_rating: averageRating,
+                    reviewsCount,
+                    followers: followersCount,
+                    is_followed: true,
+                    joinedAt: createdAt,
+                    User: businessCreator
+                        ? businessCreator.get({ plain: true })
+                        : null,
+                    Category: businessCategory
+                        ? businessCategory.get({ plain: true })
+                        : null,
+                };
+            })
+        );
+
+        return res.status(200).send({
+            message: "Followed businesses found successfully",
+            businesses,
+        });
+    } catch (error) {
+        return res.status(500).send({
+            message: "Internal server error",
+            error: error.message,
+        });
     }
 };

@@ -84,7 +84,7 @@ Business.hasMany(Review, { foreignKey: "_id_business" });
 // Una empresa tiene varios seguidores
 // M:N
 Business.belongsToMany(User, {
-    as: "bFollowers",
+    as: "businessFollowers",
     through: BusinessFollowers,
     foreignKey: "_id_business",
     otherKey: "_id_user",
@@ -198,3 +198,25 @@ Article.belongsTo(User, {
     foreignKey: "_id_user",
     as: "Author",
 });
+
+// ------------------ BUSINESSFOLLOWERS ------------------
+// Asociación inversa de M:N con Business
+User.belongsToMany(Business, {
+    as: "followedBusinesses",
+    through: BusinessFollowers,
+    foreignKey: "_id_user",
+    otherKey: "_id_business",
+});
+
+BusinessFollowers.belongsTo(User, { foreignKey: "_id_user" });
+BusinessFollowers.belongsTo(Business, { foreignKey: "_id_business" });
+
+const associations = Business.associations;
+const Userassociations = User.associations;
+const BusinessFollowersAssociations = BusinessFollowers.associations;
+console.log("\n -- ASSOCIATIONS: ", associations);
+console.log("\n -- USER ASSOCIATIONS: ", Userassociations);
+console.log(
+    "\n -- BUSINESSFOLLOWERS ASSOCIATIONS: ",
+    BusinessFollowersAssociations
+);

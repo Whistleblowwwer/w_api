@@ -11,8 +11,6 @@ import {
     followBusiness,
     deactivateUser,
     nukeUser,
-    VerifySMS,
-    sendSMS,
     searchUser,
     verifyToken,
     getUserLikes,
@@ -23,6 +21,7 @@ import {
     requestOtp,
     blockUser,
     unBlockUser,
+    getFollowedBusinesses,
 } from "../controllers/users.js";
 
 const router = Router();
@@ -65,12 +64,6 @@ router.delete("/delete/all", validateToken, nukeUser);
 // Search User
 router.get("/search", validateToken, searchUser);
 
-// Send SMS
-router.get("/sendsms", sendSMS);
-
-// Verify SMS
-router.get("/verifysms", VerifySMS);
-
 // Validate token
 router.get("/token", validateToken, verifyToken);
 
@@ -94,5 +87,8 @@ router.get("/block", validateToken, blockUser);
 
 // Unblock User
 router.get("/unblock", validateToken, unBlockUser);
+
+// Followed Businesses
+router.get("/business/followed", validateToken, getFollowedBusinesses);
 
 export default router;
