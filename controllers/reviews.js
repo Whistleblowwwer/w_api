@@ -10,7 +10,6 @@ import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
-import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import {
     commentsMetaData,
@@ -54,12 +53,12 @@ export const createReview = async (req, res) => {
             return res.status(400).send({ message: "Business is not valid" });
         }
 
-        const containsBadWord = await filterBadWords(content);
-        if (containsBadWord) {
-            return res
-                .status(400)
-                .send({ message: "Contenido contiene palabras prohibidas" });
-        }
+        // const containsBadWord = await filterBadWords(content);
+        // if (containsBadWord) {
+        //     return res
+        //         .status(400)
+        //         .send({ message: "Contenido contiene palabras prohibidas" });
+        // }
 
         const createdReview = await Review.create({
             content,
