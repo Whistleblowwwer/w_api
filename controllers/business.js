@@ -631,13 +631,68 @@ export const searchBusiness = async (req, res) => {
             },
             include: [
                 {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
+                },
+                {
                     model: Category,
                     attributes: ["_id_category", "name"],
+                },
+                {
+                    model: Review,
+                    attributes: ["rating"],
+                    where: { is_valid: true },
+                    required: false,
                 },
             ],
         });
 
-        return res.status(200).send({ businesses });
+        const businessesWithStructure = await Promise.all(
+            businesses.map(async (Business) => {
+                const {
+                    _id_user: _,
+                    _id_category: __,
+                    reviewsCount,
+                    Reviews,
+                    ...restBusinessDetails
+                } = Business.get({ plain: true });
+
+                const averageRating =
+                    reviewsCount > 0 && Reviews
+                        ? Reviews.reduce(
+                              (acc, review) => acc + review.rating,
+                              0
+                          ) / reviewsCount
+                        : 0;
+
+                const followersCount = Business.bFollowers
+                    ? Business.bFollowers.length
+                    : 0;
+
+                const businessCreator = Business.User || null;
+                const businessCategory = Business.Category || null;
+
+                return {
+                    ...restBusinessDetails,
+                    average_rating: averageRating,
+                    reviewsCount,
+                    followers: followersCount,
+                    is_followed: false, // Set as false for the search
+                    joinedAt: null, // No joinedAt for search results
+                    User: businessCreator
+                        ? businessCreator.get({ plain: true })
+                        : null,
+                    Category: businessCategory
+                        ? businessCategory.get({ plain: true })
+                        : null,
+                };
+            })
+        );
+
+        return res.status(200).send({
+            message: "Businesses found successfully",
+            businesses: businessesWithStructure,
+        });
     } catch (error) {
         if (error instanceof Sequelize.ValidationError) {
             return res.status(400).send({
