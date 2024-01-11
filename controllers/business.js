@@ -626,9 +626,28 @@ export const searchBusiness = async (req, res) => {
     try {
         const businesses = await Business.findAll({
             where: searchCriteria,
-            attributes: {
-                exclude: ["_id_category"],
-            },
+            exclude: "_id_category",
+            attributes: [
+                "_id_business",
+                "name",
+                "entity",
+                "address",
+                "state",
+                "city",
+                "profile_picture_url",
+                "country",
+                "iso2_country_code",
+                "iso2_state_code",
+                [
+                    Sequelize.literal(
+                        '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
+                    ),
+                    "reviewsCount",
+                ],
+                "is_valid",
+                "createdAt",
+                "updatedAt",
+            ],
             include: [
                 {
                     model: User,
