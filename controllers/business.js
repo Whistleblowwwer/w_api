@@ -684,9 +684,9 @@ export const searchBusiness = async (req, res) => {
                           ) / reviewsCount
                         : 0;
 
-                const followersCount = Business.bFollowers
-                    ? Business.bFollowers.length
-                    : 0;
+                const followersCount = await BusinessFollowers.count({
+                    where: { _id_business: Business._id_business },
+                });
 
                 const businessCreator = Business.User || null;
                 const businessCategory = Business.Category || null;
