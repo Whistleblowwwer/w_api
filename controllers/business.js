@@ -727,3 +727,130 @@ export const searchBusiness = async (req, res) => {
         }
     }
 };
+
+// Search Business Only By Name And Entity
+export const searchBusinessByNameAndEntity = async (req, res) => {
+    const { searchTerm } = req.query; 
+
+    let searchCriteria = {
+        is_valid: true,
+        [Op.or]: [] 
+    };
+
+    if (searchTerm) {
+        searchCriteria[Op.or].push({ 
+            name: { 
+                [Op.iLike]: `%${searchTerm}%` 
+            } 
+        });
+        searchCriteria[Op.or].push({ 
+            entity: { 
+                [Op.iLike]: `%${searchTerm}%` 
+            } 
+        });
+    }
+
+    try {
+        const businesses = await Business.findAll({
+            where: searchCriteria,
+            exclude: "_id_category",
+            attributes: [
+                "_id_business",
+                "name",
+                "entity",
+                "address",
+                "state",
+                "city",
+                "profile_picture_url",
+                "country",
+                "iso2_country_code",
+                "iso2_state_code",
+                [
+                    Sequelize.literal(
+                        '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
+                    ),
+                    "reviewsCount",
+                ],
+                "is_valid",
+                "createdAt",
+                "updatedAt",
+            ],
+            include: [
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
+                },
+                {
+                    model: Category,
+                    attributes: ["_id_category", "name"],
+                },
+                {
+                    model: Review,
+                    attributes: ["rating"],
+                    where: { is_valid: true },
+                    required: false,
+                },
+            ],
+        });
+
+        const businessesWithStructure = await Promise.all(
+            businesses.map(async (Business) => {
+                const {
+                    _id_user: _,
+                    _id_category: __,
+                    reviewsCount,
+                    Reviews,
+                    ...restBusinessDetails
+                } = Business.get({ plain: true });
+
+                const averageRating =
+                    reviewsCount > 0 && Reviews
+                        ? Reviews.reduce(
+                              (acc, review) => acc + review.rating,
+                              0
+                          ) / reviewsCount
+                        : 0;
+
+                const followersCount = await BusinessFollowers.count({
+                    where: { _id_business: Business._id_business },
+                });
+
+                const businessCreator = Business.User || null;
+                const businessCategory = Business.Category || null;
+
+                return {
+                    ...restBusinessDetails,
+                    average_rating: averageRating,
+                    reviewsCount,
+                    followers: followersCount,
+                    is_followed: false, // Set as false for the search
+                    joinedAt: null, // No joinedAt for search results
+                    User: businessCreator
+                        ? businessCreator.get({ plain: true })
+                        : null,
+                    Category: businessCategory
+                        ? businessCategory.get({ plain: true })
+                        : null,
+                };
+            })
+        );
+
+        return res.status(200).send({
+            message: "Businesses found successfully",
+            businesses: businessesWithStructure,
+        });
+    } catch (error) {
+        if (error instanceof Sequelize.ValidationError) {
+            return res.status(400).send({
+                message: "Validation error",
+                errors: error.errors,
+            });
+        } else {
+            console.error(error);
+            return res.status(500).send({
+                message: "Internal Server Error",
+                error: error.message,
+            });
+        }
+    }
+};

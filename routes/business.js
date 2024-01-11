@@ -8,6 +8,7 @@ import {
     updateBusiness,
     deleteBusiness,
     searchBusiness,
+    searchBusinessByNameAndEntity,
     getBusinessFeed,
     getFollowedBusinessFeed,
     getNonFollowedBusinessFeed
@@ -37,6 +38,9 @@ router.patch("/", validateToken, deleteBusiness);
 
 //Search Business
 router.get("/search", validateToken, searchBusiness);
+
+//Search Business Only by Name/Entity
+router.get("/search-name-entity", validateToken, searchBusinessByNameAndEntity);
 
 //Business Feed
 router.get("/feed", validateToken, getBusinessFeed);
