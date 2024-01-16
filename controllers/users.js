@@ -23,7 +23,7 @@ import { UserFollowers } from "../models/userFollowers.js";
 import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
-import { validateOTP, sendOTPByEmail, sendOTPByEmailForPasswordReset } from "../middlewares/mailMain.js";
+import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
 // Registrate User
@@ -200,64 +200,18 @@ export const requestOtp = async (req, res) => {
     }
 };
 
-// Request OTP for Password Reset
-export const requestOtpForPasswordReset = async (req, res) => {
-    try {
-        const email = req.query.email;
-
-        if (!email) {
-            return res.status(400).json({
-                message: "Email parameter is missing",
-            });
-        }
-
-        if (!(await isValidEmail(email))) {
-            return res.status(400).json({
-                message: "Invalid email format",
-            });
-        }
-
-        const user = await User.findOne({ where: { email: email } });
-
-        if (user) {
-            await sendOTPByEmailForPasswordReset(email);
-        }
-
-        return res.status(200).json({
-            message: "If the email is registered, an OTP will be sent.",
-        });
-
-    } catch (error) {
-        console.error("Error in requestOtpForPasswordReset:", error);
-
-        res.status(500).json({
-            message: "An unexpected error occurred",
-            error: error.message,
-        });
-    }
-};
-
 //Change User Password
 export const changeUserPassword = async (req, res) => {
     try {
-        const { email, newPassword, code } = req.body;
+        const { email, newPassword } = req.body;
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
         if (!newPassword) {
-            return res.status(400).json({ message: "New password is required" });
-        }
-        if (!code) {
-            return res.status(400).json({ message: "OTP code is required" });
-        }
-
-        const isValidOTP = validateOTP(email, code);
-
-        if (!isValidOTP) {
-            return res.status(400).json({
-                message: "Invalid or expired OTP code",
-            });
+            return res
+                .status(400)
+                .json({ message: "New password is required" });
         }
 
         const user = await User.findOne({ where: { email: email } });
@@ -268,7 +222,7 @@ export const changeUserPassword = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        user.password_token = hashedPassword; 
+        user.password_token = hashedPassword;
         await user.save();
 
         res.status(200).json({
