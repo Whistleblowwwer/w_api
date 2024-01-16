@@ -19,7 +19,6 @@ import {
     getRandomUsers,
     validateOtp,
     requestOtp,
-    requestOtpForPasswordReset,
     changeUserPassword,
     blockUser,
     unBlockUser,
@@ -83,9 +82,6 @@ router.post("/validate-otp", validateOtp);
 
 // Request an OTP
 router.get("/send-otp", requestOtp);
-
-// Request an OTP for password reset
-router.get("/send-otp-password", requestOtpForPasswordReset);
 
 // Change user password
 router.patch("/change-password", changeUserPassword);
