@@ -37,7 +37,6 @@ export const createUser = async (req, res) => {
             birth_date,
             gender,
             password,
-            role,
             nick_name,
         } = req.body;
 

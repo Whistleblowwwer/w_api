@@ -198,6 +198,11 @@ Article.belongsTo(User, {
     foreignKey: "_id_user",
     as: "Author",
 });
+// Un articulo pertenece a una categoria
+// 1:1
+Article.belongsTo(Category, {
+    foreignKey: "_id_category",
+});
 
 // ------------------ BUSINESSFOLLOWERS ------------------
 // Asociación inversa de M:N con Business

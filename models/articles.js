@@ -24,6 +24,16 @@ export const Article = sequelize_write.define(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        _id_category: {
+            type: DataTypes.UUID,
+            allowNull: true, // Adjust as needed
+            references: {
+                model: "categories", // Replace with the actual table name of your Category model
+                key: "_id_category",
+            },
+            onUpdate: "CASCADE",
+            onDelete: "SET NULL", // Adjust as needed
+        },
     },
     {
         tableName: "articles",
