@@ -26,8 +26,9 @@ import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
-// Registrate User
+// Register User
 export const createUser = async (req, res) => {
+    console.log("START");
     try {
         const {
             name,
@@ -38,6 +39,7 @@ export const createUser = async (req, res) => {
             gender,
             password,
             nick_name,
+            role,
         } = req.body;
 
         // Check for empty fields
@@ -56,6 +58,7 @@ export const createUser = async (req, res) => {
                     .send({ message: `Missing ${field} field` });
             }
         }
+        console.log("REQUEST");
 
         // Check for profanity in relevant fields
         const containsBadWord = await filterBadWords(
@@ -88,25 +91,33 @@ export const createUser = async (req, res) => {
                 ""
             )}${Math.floor(1000 + Math.random() * 9000)}`;
 
-        const [userCreated, created] = await User.findOrCreate({
-            where: { email },
-            defaults: {
-                name,
-                last_name,
-                phone_number,
-                birth_date,
-                gender,
-                password_token: hashedPassword,
-                role: role ? "admin" : "consumer",
-                nick_name: defaultNickName,
-            },
-        });
+        console.log("PRE CREATION");
 
-        if (!created) {
+        // Try to find the user by email
+        const existingUser = await User.findOne({ where: { email } });
+
+        if (existingUser) {
+            // User already exists
             return res.status(403).send({ message: "Email already in use" });
         }
 
+        // User does not exist, create a new user
+        const userCreated = await User.create({
+            name,
+            last_name,
+            phone_number,
+            birth_date,
+            gender,
+            email,
+            password_token: hashedPassword,
+            role: role ? "admin" : "consumer",
+            nick_name: defaultNickName,
+        });
+
+        console.log("USER CREATED: ", userCreated);
+
         const userData = userCreated.get({ plain: true });
+        console.log("\n-- USER DATA: ", userData);
         delete userData.password_token;
 
         // Generate a JWT token
@@ -122,6 +133,8 @@ export const createUser = async (req, res) => {
             token,
         });
     } catch (error) {
+        console.error("Error during user creation:", error);
+
         if (error instanceof Sequelize.ValidationError) {
             // Handle Sequelize validation errors
             return res
@@ -129,9 +142,10 @@ export const createUser = async (req, res) => {
                 .send({ message: "Validation error", errors: error.errors });
         } else {
             // Catch any other unexpected errors
-            return res
-                .status(500)
-                .send({ message: "An unexpected error occurred" });
+            return res.status(500).send({
+                message: "An unexpected error occurred",
+                error: error.message,
+            });
         }
     }
 };
