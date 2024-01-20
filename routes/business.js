@@ -7,11 +7,10 @@ import {
     getMyBusinesses,
     updateBusiness,
     deleteBusiness,
-    searchBusiness,
     searchBusinessByNameAndEntity,
     getBusinessFeed,
     getFollowedBusinessFeed,
-    getNonFollowedBusinessFeed
+    getNonFollowedBusinessFeed,
 } from "../controllers/business.js";
 
 const router = Router();
@@ -37,7 +36,7 @@ router.put("/", validateToken, updateBusiness);
 router.patch("/", validateToken, deleteBusiness);
 
 //Search Business
-router.get("/search", validateToken, searchBusiness);
+router.get("/search", validateToken, searchBusinessByNameAndEntity);
 
 //Search Business Only by Name/Entity
 router.get("/search-name-entity", validateToken, searchBusinessByNameAndEntity);
