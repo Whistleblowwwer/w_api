@@ -94,7 +94,9 @@ export const createUser = async (req, res) => {
         console.log("PRE CREATION");
 
         // Try to find the user by email
-        const existingUser = await User.findOne({ where: { email } });
+        const existingUser = await User.findOne({
+            where: { email, is_valid: true },
+        });
 
         if (existingUser) {
             // User already exists
