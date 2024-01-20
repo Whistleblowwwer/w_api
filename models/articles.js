@@ -13,6 +13,10 @@ export const Article = sequelize_write.define(
             type: DataTypes.STRING(255),
             allowNull: false,
         },
+        subtitle: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
         content: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -26,13 +30,13 @@ export const Article = sequelize_write.define(
         },
         _id_category: {
             type: DataTypes.UUID,
-            allowNull: true, // Adjust as needed
+            allowNull: true,
             references: {
                 model: "categories", // Replace with the actual table name of your Category model
                 key: "_id_category",
             },
             onUpdate: "CASCADE",
-            onDelete: "SET NULL", // Adjust as needed
+            onDelete: "SET NULL",
         },
     },
     {
