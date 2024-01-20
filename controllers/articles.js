@@ -16,13 +16,20 @@ export const createArticle = async (req, res) => {
         }
 
         // Extract data from req.body
-        const { title, content, published_at, is_published, _id_category } =
-            req.body;
+        const {
+            title,
+            content,
+            subtitle,
+            published_at,
+            is_published,
+            _id_category,
+        } = req.body;
 
         // Create the article without processing markdown
         const createdArticle = await Article.create({
             title,
             content,
+            subtitle,
             published_at,
             is_published,
             _id_user,
