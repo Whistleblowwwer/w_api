@@ -20,7 +20,6 @@ export const User = sequelize_write.define(
         email: {
             type: DataTypes.STRING(255),
             allowNull: false,
-            unique: true,
         },
         phone_number: {
             type: DataTypes.STRING(20),
