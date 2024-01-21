@@ -28,7 +28,6 @@ import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
 
 // Register User
 export const createUser = async (req, res) => {
-    console.log("START");
     try {
         const {
             name,
@@ -58,7 +57,6 @@ export const createUser = async (req, res) => {
                     .send({ message: `Missing ${field} field` });
             }
         }
-        console.log("REQUEST");
 
         // Check for profanity in relevant fields
         const containsBadWord = await filterBadWords(
@@ -91,8 +89,6 @@ export const createUser = async (req, res) => {
                 ""
             )}${Math.floor(1000 + Math.random() * 9000)}`;
 
-        console.log("PRE CREATION");
-
         // Try to find the user by email
         const existingUser = await User.findOne({
             where: { email, is_valid: true },
@@ -116,10 +112,7 @@ export const createUser = async (req, res) => {
             nick_name: defaultNickName,
         });
 
-        console.log("USER CREATED: ", userCreated);
-
         const userData = userCreated.get({ plain: true });
-        console.log("\n-- USER DATA: ", userData);
         delete userData.password_token;
 
         // Generate a JWT token
@@ -260,6 +253,7 @@ export const logIn = async (req, res) => {
         const user = await User.findOne({
             where: {
                 email: client_email,
+                is_valid: true,
             },
         });
 

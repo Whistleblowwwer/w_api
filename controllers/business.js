@@ -730,23 +730,23 @@ export const searchBusiness = async (req, res) => {
 
 // Search Business Only By Name And Entity
 export const searchBusinessByNameAndEntity = async (req, res) => {
-    const { searchTerm } = req.query; 
+    const { searchTerm } = req.query;
 
     let searchCriteria = {
         is_valid: true,
-        [Op.or]: [] 
+        [Op.or]: [],
     };
 
     if (searchTerm) {
-        searchCriteria[Op.or].push({ 
-            name: { 
-                [Op.iLike]: `%${searchTerm}%` 
-            } 
+        searchCriteria[Op.or].push({
+            name: {
+                [Op.iLike]: `%${searchTerm}%`,
+            },
         });
-        searchCriteria[Op.or].push({ 
-            entity: { 
-                [Op.iLike]: `%${searchTerm}%` 
-            } 
+        searchCriteria[Op.or].push({
+            entity: {
+                [Op.iLike]: `%${searchTerm}%`,
+            },
         });
     }
 
