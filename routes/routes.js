@@ -31,7 +31,10 @@ router.get("/", (req, res) => {
 
 // Subscription Confirmation Route
 router.post("/sns-subscription-confirmation", (req, res) => {
-    const snsMessage = req.body;
+    const snsMessageBody = req.body;
+    const snsMessageParams = req.params;
+    console.log("\n-- SNS BODY:", snsMessageBody);
+    console.log("\n-- SNS PARAMS:", snsMessageParams);
     if (snsMessage && snsMessage.Type === "SubscriptionConfirmation") {
         // Confirm the subscription by making a GET request to the SubscribeURL
         // AWS will send a confirmation URL in the SubscribeURL field of the SNS message
