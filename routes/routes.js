@@ -37,30 +37,41 @@ router.post("/sns-subscription-confirmation", (req, res) => {
     console.log("\n-- SNS BODY:", snsMessageBody);
     console.log("\n-- SNS PARAMS:", snsMessageParams);
     console.log("\n-- SNS REQUEST:", snsMessage);
-    if (snsMessageBody && snsMessageBody.Type === "SubscriptionConfirmation") {
-        // Confirm the subscription by making a GET request to the SubscribeURL
-        // AWS will send a confirmation URL in the SubscribeURL field of the SNS message
-        const subscribeURL = snsMessageBody.SubscribeURL;
-        // You might want to use a library like axios or node-fetch to make the request
-        // Example using axios:
-        axios
-            .get(subscribeURL)
-            .then(() => {
-                res.status(200).json({
-                    message: "Subscription confirmed successfully.",
-                });
-            })
-            .catch((error) => {
-                console.error("Error confirming subscription:", error);
-                res.status(500).json({
-                    message: "Error confirming subscription.",
-                });
-            });
-    } else {
-        res.status(400).json({
-            message: "Invalid SNS message.",
-        });
-    }
+    res.status(200).json({
+        message: "Subscription confirmation received. No further action taken.",
+    });
 });
+// router.post("/sns-subscription-confirmation", (req, res) => {
+//     const snsMessageBody = req.body;
+//     const snsMessageParams = req.params;
+//     const snsMessage = req.params;
+//     console.log("\n-- SNS BODY:", snsMessageBody);
+//     console.log("\n-- SNS PARAMS:", snsMessageParams);
+//     console.log("\n-- SNS REQUEST:", snsMessage);
+//     if (snsMessageBody && snsMessageBody.Type === "SubscriptionConfirmation") {
+//         // Confirm the subscription by making a GET request to the SubscribeURL
+//         // AWS will send a confirmation URL in the SubscribeURL field of the SNS message
+//         const subscribeURL = snsMessageBody.SubscribeURL;
+//         // You might want to use a library like axios or node-fetch to make the request
+//         // Example using axios:
+//         axios
+//             .get(subscribeURL)
+//             .then(() => {
+//                 res.status(200).json({
+//                     message: "Subscription confirmed successfully.",
+//                 });
+//             })
+//             .catch((error) => {
+//                 console.error("Error confirming subscription:", error);
+//                 res.status(500).json({
+//                     message: "Error confirming subscription.",
+//                 });
+//             });
+//     } else {
+//         res.status(400).json({
+//             message: "Invalid SNS message.",
+//         });
+//     }
+// });
 
 export default router;
