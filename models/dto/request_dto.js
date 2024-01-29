@@ -5,13 +5,13 @@ export default class RequestDTO {
     constructor(req, geoLocation) {
         this.continent = geoLocation.continent;
         this.continentCode = geoLocation.continentCode;
-        this.country = geoLocation.country;
+        this.country = geoLocation.countryName;
         this.countryCode = geoLocation.countryCode;
-        this.city = geoLocation.city;
-        this.zip = geoLocation.zip;
-        this.lat = geoLocation.lat;
-        this.lon = geoLocation.lon;
-        this.timezone = geoLocation.timezone;
+        this.city = geoLocation.cityName;
+        this.zip = geoLocation.zipCode;
+        this.lat = geoLocation.latitude;
+        this.lon = geoLocation.longitude;
+        this.timezone = geoLocation.timeZone;
         this.offset = geoLocation.offset;
         this.requestMethod = req.method;
         this.queryRoute = req.originalUrl;
