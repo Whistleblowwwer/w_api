@@ -9,7 +9,7 @@ export const IpInfo = async (req, res, next) => {
     const response = await axios.get(url);
 
     // Construct RequestDTO
-    const requestDTO = new RequestDTO(req, response);
+    const requestDTO = new RequestDTO(req, response.data);
     // Attach RequestDTO to req object
     req.requestDTO = requestDTO;
 
