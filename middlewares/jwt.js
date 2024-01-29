@@ -8,6 +8,8 @@ export const validateToken = (req, res, next) => {
         req.headers.authorization && req.headers.authorization.split(" ")[1];
 
     if (!token) {
+        req.requestDTO.errorLog("No token provided");
+
         return res
             .status(401)
             .json({ success: false, message: "No token provided" });
@@ -15,12 +17,18 @@ export const validateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.TOKEN_SECRET, (err, decodedToken) => {
         if (err) {
+            // Handle JWT validation errors
+            console.error("JWT validation error:", err.message);
+
+            req.requestDTO.errorLog(err.message);
+
             return res
                 .status(401)
                 .json({ success: false, message: "Invalid token" });
         }
 
         req.user = decodedToken;
+
         next();
     });
 };

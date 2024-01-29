@@ -7,9 +7,14 @@ import BrokersRoute from "./brokers.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
+import { IpInfo } from "../middlewares/ipInfo.js";
 import { Router } from "express";
+import { validateToken } from "../middlewares/jwt.js";
 
 const router = Router();
+
+// Middlewares for client validation
+router.use(IpInfo);
 
 // Main Routes
 router.use("/feeditems", FeedItemsRoute);
@@ -21,13 +26,6 @@ router.use("/brokers", BrokersRoute);
 router.use("/reviews", reviewRoute);
 router.use("/bucket", bucketRoute);
 router.use("/users", userRoute);
-
-// Health Check Route
-router.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Node.js/Sequelize project is up and running.",
-    });
-});
 
 // Subscription Confirmation Route
 router.post("/sns-subscription-confirmation", (req, res) => {
@@ -41,6 +39,19 @@ router.post("/sns-subscription-confirmation", (req, res) => {
         message: "Subscription confirmation received. No further action taken.",
     });
 });
+
+// Catch-all middleware for handling non-existent routes
+router.use(validateToken, (req, res) => {
+    // Log the error for the non-existent route
+    const _id_user = req.user._id_user;
+    req.requestDTO._id_user = _id_user;
+
+    console.error("Non-existent route:", req.originalUrl);
+
+    req.requestDTO.errorLog("Invalid route");
+    res.status(404).json({ message: "Route not found" });
+});
+
 // router.post("/sns-subscription-confirmation", (req, res) => {
 //     const snsMessageBody = req.body;
 //     const snsMessageParams = req.params;

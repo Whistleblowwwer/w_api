@@ -1,17 +1,15 @@
-// import { sequelize_read } from "./config/db_read.js";
+import { initializeWebSocketServer } from "./socket.js";
 import { sequelize_write } from "./config/db_write.js";
-import express from "express";
+import { UpdateCache } from "./middlewares/cache.js";
+import router from "./routes/routes.js";
 import { createServer } from "http";
+import "./models/associations.js";
+import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import "./models/associations.js";
-import router from "./routes/routes.js";
-import { initializeWebSocketServer } from "./socket.js";
-import { UpdateCache } from "./middlewares/cache.js";
-import { IpInfo } from "./middlewares/ipInfo.js";
 
 const app = express();
-const httpServer = createServer(app); //Express app runs on http server
+const httpServer = createServer(app);
 
 // Middlewares
 app.set("trust proxy", true);
@@ -25,21 +23,15 @@ app.use(
     })
 );
 
-app.use(IpInfo);
+// Gateway
 app.use(router);
 
-//Initialize Socket.io configuration, also runs on http server
+//Initialize Socket.io configuration
 const io = initializeWebSocketServer(httpServer);
 
 async function main() {
-    // await sequelize.sync({ force: false });
-    // console.log("Connected to DB");
-
     await sequelize_write.sync({ force: false });
     console.log("Connected to Write DB");
-
-    // await sequelize_read.sync({ force: false });
-    // console.log("Connected to Read DB");
 
     await UpdateCache();
 

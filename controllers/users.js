@@ -122,6 +122,9 @@ export const createUser = async (req, res) => {
             { expiresIn: "3d" }
         );
 
+        req.requestDTO.setUserId(userCreated._id_user);
+        req.requestDTO.requestLog();
+
         res.status(200).send({
             message: "User created successfully",
             user: userData,
@@ -233,6 +236,9 @@ export const changeUserPassword = async (req, res) => {
         user.password_token = hashedPassword;
         await user.save();
 
+        req.requestDTO.setUserId(user._id_user);
+        req.requestDTO.requestLog();
+
         res.status(200).json({
             message: "Password changed successfully",
         });
@@ -276,6 +282,9 @@ export const logIn = async (req, res) => {
             process.env.TOKEN_SECRET,
             { expiresIn: "3d" }
         );
+
+        req.requestDTO.setUserId(user._id_user);
+        req.requestDTO.requestLog();
 
         res.status(200).send({
             message: "Login successful",
