@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { 
+import { validateUser } from "../middlewares/ClientValidations.js"; // Import the validateUser middleware
+import {
     getMessages,
-    getAllConversations, 
+    getAllConversations,
     getConversationStarterUserList,
     updateMessage,
-    deleteMessage    
+    deleteMessage,
 } from "../controllers/messages.js";
 
 const router = Router();
@@ -13,19 +13,18 @@ const router = Router();
 // //----------Messages Routes-------------
 
 // Get Messages from a conversation
-router.get('/', validateToken, getMessages); 
+router.get("/", validateUser, getMessages);
 
 //Get All Conversations of a User
-router.get('/conversations', validateToken, getAllConversations)
+router.get("/conversations", validateUser, getAllConversations);
 
 //Get a users list for starting a new conversation
-router.get('/users-list', validateToken, getConversationStarterUserList)
+router.get("/users-list", validateUser, getConversationStarterUserList);
 
 // Update message
-router.put('/', validateToken, updateMessage);
+router.put("/", validateUser, updateMessage);
 
 // Delete message
-router.patch('/', validateToken, deleteMessage);
+router.patch("/", validateUser, deleteMessage);
 
 export default router;
-

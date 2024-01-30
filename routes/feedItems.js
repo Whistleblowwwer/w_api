@@ -1,21 +1,26 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { CreateFeedItem, ReadFeedItem, UpdateFeedItem, DeleteFeedItem} from "../controllers/feedItems.js";
+import { validateUser } from "../middlewares/ClientValidations.js"; // Import the validateUser middleware
+import {
+    CreateFeedItem,
+    ReadFeedItem,
+    UpdateFeedItem,
+    DeleteFeedItem,
+} from "../controllers/feedItems.js";
 
 const router = Router();
 
 //----------FeedItems Routes-------------
 
 //Create FeedItem
-router.post('/',validateToken, CreateFeedItem)
+router.post("/", validateUser, CreateFeedItem);
 
 //Read FeedItem
-router.get('/',validateToken, ReadFeedItem);
+router.get("/", validateUser, ReadFeedItem);
 
 //Update FeedItem
-router.put('/',validateToken, UpdateFeedItem);
+router.put("/", validateUser, UpdateFeedItem);
 
 //Delete FeedItem
-router.delete('/',validateToken, DeleteFeedItem);
+router.delete("/", validateUser, DeleteFeedItem);
 
 export default router;

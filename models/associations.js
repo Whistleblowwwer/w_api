@@ -1,11 +1,13 @@
 import { BusinessFollowers } from "./businessFollowers.js";
 import { UserFollowers } from "./userFollowers.js";
-import { CommentLikes } from "./commentLikes.js";
 import { CommentImages } from "./commentImages.js";
 import { ReviewImages } from "./reviewImages.js";
+import { CommentLikes } from "./commentLikes.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { Category } from "./categories.js";
+import { ErrorLog } from "./errorsLogs.js";
 import { Business } from "./business.js";
+import { Log } from "./requestsLogs.js";
 import { Article } from "./articles.js";
 import { Message } from "./messages.js";
 import { Comment } from "./comments.js";
@@ -45,6 +47,14 @@ User.belongsToMany(Business, { through: BusinessFollowers });
 // Un usuario puede crear varias reseñas
 // 1:N
 User.hasMany(Review, { foreignKey: "_id_user" });
+
+// Un usuario puede tener varias logs de peticiones
+// 1:N
+User.hasMany(Log, { foreignKey: "_id_user" });
+
+// Un usuario puede tener varias logs de errores
+// 1:N
+User.hasMany(ErrorLog, { foreignKey: "_id_user" });
 
 // Varios usarios pueden likear varias reseñas
 // M:N
@@ -216,12 +226,18 @@ User.belongsToMany(Business, {
 BusinessFollowers.belongsTo(User, { foreignKey: "_id_user" });
 BusinessFollowers.belongsTo(Business, { foreignKey: "_id_business" });
 
-const associations = Business.associations;
-const Userassociations = User.associations;
-const BusinessFollowersAssociations = BusinessFollowers.associations;
-console.log("\n -- ASSOCIATIONS: ", associations);
-console.log("\n -- USER ASSOCIATIONS: ", Userassociations);
-console.log(
-    "\n -- BUSINESSFOLLOWERS ASSOCIATIONS: ",
-    BusinessFollowersAssociations
-);
+// ------------------ LOGS ------------------
+// Un Request Log puede tener opcional un usuario
+// 1:1
+Log.belongsTo(User, {
+    foreignKey: "_id_user",
+});
+
+// Un Error Log puede tener opcional un usuario
+// 1:1
+ErrorLog.belongsTo(User, {
+    foreignKey: "_id_user",
+});
+
+// ----------------- DEBUG -------------------
+console.log("\n -- USER ASSOCIATIONS: ", User.associations);

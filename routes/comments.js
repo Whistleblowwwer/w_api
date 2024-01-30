@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
-import { 
+import { validateUser } from "../middlewares/ClientValidations.js"; // Import the validateUser middleware
+import {
     getCommentChildren,
     createComment,
     updateComment,
-    deactivateComment
+    deactivateComment,
 } from "../controllers/comments.js";
 
 const router = Router();
@@ -12,15 +12,15 @@ const router = Router();
 //----------Comments Routes-------------
 
 //Get Comment Children
-router.get('/children', validateToken, getCommentChildren)
+router.get("/children", validateUser, getCommentChildren);
 
 //Create Comment
-router.post('/', validateToken, createComment);
+router.post("/", validateUser, createComment);
 
 //Update Comment
-router.put('/', validateToken, updateComment);
+router.put("/", validateUser, updateComment);
 
 //Delete Comment
-router.patch('/', validateToken, deactivateComment);
+router.patch("/", validateUser, deactivateComment);
 
 export default router;

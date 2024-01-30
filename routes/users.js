@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js";
+import { validateUser } from "../middlewares/ClientValidations.js";
 import {
     createUser,
     logIn,
@@ -36,46 +36,46 @@ router.post("/", createUser);
 router.post("/login", logIn);
 
 // Update User
-router.put("/", validateToken, updateUser);
+router.put("/", validateUser, updateUser);
 
 // Get User Details
-router.get("/", validateToken, getUserDetails);
+router.get("/", validateUser, getUserDetails);
 
 // Like Review
-router.post("/reviews/like", validateToken, likeReview);
+router.post("/reviews/like", validateUser, likeReview);
 
 // Reviews made by User
-router.get("/reviews", validateToken, getUserReviews);
+router.get("/reviews", validateUser, getUserReviews);
 
 // Like Comment
-router.post("/comments/like", validateToken, likeComment);
+router.post("/comments/like", validateUser, likeComment);
 
 // Follow User
-router.post("/follow", validateToken, followUser);
+router.post("/follow", validateUser, followUser);
 
 // Follow Business
-router.post("/business/follow", validateToken, followBusiness);
+router.post("/business/follow", validateUser, followBusiness);
 
 // Deactivate User
-router.patch("/deactivate", validateToken, deactivateUser);
+router.patch("/deactivate", validateUser, deactivateUser);
 
 // Nuke User
-router.delete("/delete/all", validateToken, nukeUser);
+router.delete("/delete/all", validateUser, nukeUser);
 
 // Search User
-router.get("/search", validateToken, searchUser);
+router.get("/search", validateUser, searchUser);
 
 // Validate token
-router.get("/token", validateToken, verifyToken);
+router.get("/token", validateUser, verifyToken);
 
 // Get Liked Reviews by User
-router.get("/likes", validateToken, getUserLikes);
+router.get("/likes", validateUser, getUserLikes);
 
 // Get User Comments
-router.get("/comments", validateToken, getUserComments);
+router.get("/comments", validateUser, getUserComments);
 
 // Get Random User Recommendation
-router.get("/recommendation", validateToken, getRandomUsers);
+router.get("/recommendation", validateUser, getRandomUsers);
 
 // Validate de OTP
 router.post("/validate-otp", validateOtp);
@@ -87,12 +87,12 @@ router.get("/send-otp", requestOtp);
 router.patch("/change-password", changeUserPassword);
 
 // Block User
-router.get("/block", validateToken, blockUser);
+router.get("/block", validateUser, blockUser);
 
 // Unblock User
-router.get("/unblock", validateToken, unBlockUser);
+router.get("/unblock", validateUser, unBlockUser);
 
 // Followed Businesses
-router.get("/business/followed", validateToken, getFollowedBusinesses);
+router.get("/business/followed", validateUser, getFollowedBusinesses);
 
 export default router;

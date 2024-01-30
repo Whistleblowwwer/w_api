@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js";
+import { validateUser } from "../middlewares/ClientValidations.js";
 import {
     createArticle,
     getAllArticles,
@@ -11,12 +11,12 @@ const router = Router();
 //----------Articles Routes-------------
 
 // Create Article
-router.post("/", validateToken, createArticle);
+router.post("/", validateUser, createArticle);
 
 // Get All Articles
-router.get("/", validateToken, getAllArticles);
+router.get("/", validateUser, getAllArticles);
 
 // Get Article by ID
-router.get("/:articleId", validateToken, getArticleById);
+router.get("/:articleId", validateUser, getArticleById);
 
 export default router;

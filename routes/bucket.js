@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js";
+import { validateUser } from "../middlewares/ClientValidations.js";
 import {
     uploadFile,
     getUrl,
@@ -12,12 +12,12 @@ const router = Router();
 //----------Bucket Routes-------------
 
 //Add/Change Image to User/Buisiness/Review
-router.post("/", validateToken, uploadFile);
+router.post("/", validateUser, uploadFile);
 
-router.post("/comment", validateToken, UploadCommentImage);
+router.post("/comment", validateUser, UploadCommentImage);
 
-router.post("/review", validateToken, UploadReviewImage);
+router.post("/review", validateUser, UploadReviewImage);
 
-router.get("/", validateToken, getUrl);
+router.get("/", validateUser, getUrl);
 
 export default router;

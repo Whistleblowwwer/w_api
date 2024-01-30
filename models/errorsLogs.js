@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize_write } from "../config/db_write.js";
 
-const ErrorLog = sequelize_write.define(
+export const ErrorLog = sequelize_write.define(
     "ErrorLog",
     {
         continent: DataTypes.STRING,
@@ -28,5 +28,3 @@ const ErrorLog = sequelize_write.define(
         timestamps: true,
     }
 );
-
-export default ErrorLog;

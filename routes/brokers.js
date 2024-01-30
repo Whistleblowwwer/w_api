@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js";
+import { validateUser } from "../middlewares/ClientValidations.js";
 import {
     createBroker,
     getAssistants,
@@ -16,27 +16,27 @@ const router = Router();
 //----------Brokers Routes-------------
 
 // Create Broker
-router.post("/", validateToken, createBroker);
+router.post("/", validateUser, createBroker);
 
 // Update Broker
-router.put("/", validateToken, updateBroker);
+router.put("/", validateUser, updateBroker);
 
 // Delete Broker
-router.delete("/", validateToken, deleteBroker);
+router.delete("/", validateUser, deleteBroker);
 
 // Get All Attorneys
-router.get("/attorneys", validateToken, getAttorneys);
+router.get("/attorneys", validateUser, getAttorneys);
 
 // Get All Assistants
-router.get("/assistants", validateToken, getAssistants);
+router.get("/assistants", validateUser, getAssistants);
 
 // Get Broker Details
-router.get("/:id", validateToken, getBrokerDetails);
+router.get("/:id", validateUser, getBrokerDetails);
 
 // Send Message to Attorney
-router.post("/attorney/message", validateToken, sendMessageToAttorney);
+router.post("/attorney/message", validateUser, sendMessageToAttorney);
 
 // Send Message to Assistant
-router.post("/assistant/message", validateToken, sendMessageToAssistant);
+router.post("/assistant/message", validateUser, sendMessageToAssistant);
 
 export default router;

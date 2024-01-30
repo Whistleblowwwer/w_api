@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { validateToken } from "../middlewares/jwt.js"; // Import the validateToken middleware
+import { validateUser } from "../middlewares/ClientValidations.js"; // Import the validateUser middleware
+import { paintBall } from "../middlewares/ClientValidations.js";
 import {
     createBusiness,
     getBusinessDetails,
@@ -18,36 +19,36 @@ const router = Router();
 //----------Business Routes-------------
 
 //Create Business
-router.post("/", validateToken, createBusiness);
+router.post("/", validateUser, createBusiness);
 
 //Get Business Details
-router.get("/details", validateToken, getBusinessDetails);
+router.get("/details", validateUser, getBusinessDetails);
 
 //Get Business List
-router.get("/", validateToken, listAllBusinesses);
+router.get("/", validateUser, paintBall, listAllBusinesses);
 
 //Get User Business
-router.get("/my-businesses", validateToken, getMyBusinesses);
+router.get("/my-businesses", validateUser, getMyBusinesses);
 
 //Update Business
-router.put("/", validateToken, updateBusiness);
+router.put("/", validateUser, updateBusiness);
 
 //Delete Business
-router.patch("/", validateToken, deleteBusiness);
+router.patch("/", validateUser, deleteBusiness);
 
 //Search Business
-router.get("/search", validateToken, searchBusinessByNameAndEntity);
+router.get("/search", validateUser, searchBusinessByNameAndEntity);
 
 //Search Business Only by Name/Entity
-router.get("/search-name-entity", validateToken, searchBusinessByNameAndEntity);
+router.get("/search-name-entity", validateUser, searchBusinessByNameAndEntity);
 
 //Business Feed
-router.get("/feed", validateToken, getBusinessFeed);
+router.get("/feed", validateUser, getBusinessFeed);
 
 //Followed Business Feed
-router.get("/followed/feed", validateToken, getFollowedBusinessFeed);
+router.get("/followed/feed", validateUser, getFollowedBusinessFeed);
 
 //Non Followed Business Feed
-router.get("/non-followed/feed", validateToken, getNonFollowedBusinessFeed);
+router.get("/non-followed/feed", validateUser, getNonFollowedBusinessFeed);
 
 export default router;

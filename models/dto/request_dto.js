@@ -1,5 +1,5 @@
-import ErrorLog from "../errorsLogs.js";
-import Log from "../requestsLogs.js";
+import { ErrorLog } from "../errorsLogs.js";
+import { Log } from "../requestsLogs.js";
 
 export default class RequestDTO {
     constructor(req, geoLocation) {
