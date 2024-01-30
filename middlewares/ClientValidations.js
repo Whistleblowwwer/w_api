@@ -14,6 +14,30 @@ export const getIpInfo = async (req, res, next) => {
 
     // Construct RequestDTO
     const requestDTO = new RequestDTO(req, response.data);
+
+    // Extract user-agent from headers
+    const userAgent = req.headers["user-agent"];
+
+    // Check if the request is from a mobile device
+    const isMobile = /Mobi|Android|iOS/.test(userAgent);
+
+    // Identify the device type
+    let deviceType = "Unknown";
+    if (isMobile) {
+        deviceType = /Android/.test(userAgent)
+            ? "Android"
+            : /iPhone|iPad|iPod/.test(userAgent)
+            ? "iOS"
+            : "Mobile";
+    } else {
+        deviceType = "Desktop";
+    }
+
+    console.log("\n-- DEVICE TYPE: ", deviceType);
+
+    // Add device information to the requestDTO
+    requestDTO.deviceType = deviceType;
+
     // Attach RequestDTO to req object
     req.requestDTO = requestDTO;
 

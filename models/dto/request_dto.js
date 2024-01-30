@@ -2,7 +2,7 @@ import { ErrorLog } from "../errorsLogs.js";
 import { Log } from "../requestsLogs.js";
 
 export default class RequestDTO {
-    constructor(req, geoLocation) {
+    constructor(req, geoLocation, deviceType) {
         this.continent = geoLocation.continent;
         this.continentCode = geoLocation.continentCode;
         this.country = geoLocation.countryName;
@@ -18,6 +18,7 @@ export default class RequestDTO {
         this._ip_address = req.ip || req.connection.remoteAddress;
         this._id_user = null;
         this.error = null;
+        this.deviceType = deviceType;
     }
 
     // Setter for user ID

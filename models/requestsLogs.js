@@ -21,6 +21,7 @@ export const Log = sequelize_write.define(
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
         },
+        deviceType: DataTypes.STRING,
     },
     {
         tableName: "requestsLogs",

@@ -22,6 +22,7 @@ export const ErrorLog = sequelize_write.define(
             defaultValue: DataTypes.UUIDV4,
         },
         error: DataTypes.STRING,
+        deviceType: DataTypes.STRING,
     },
     {
         tableName: "errorsLogs",
