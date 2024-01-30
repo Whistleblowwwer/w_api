@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { validateUser } from "../middlewares/ClientValidations.js"; // Import the validateUser middleware
-import { paintBall } from "../middlewares/ClientValidations.js";
 import {
     createBusiness,
     getBusinessDetails,
@@ -25,7 +24,7 @@ router.post("/", validateUser, createBusiness);
 router.get("/details", validateUser, getBusinessDetails);
 
 //Get Business List
-router.get("/", validateUser, paintBall, listAllBusinesses);
+router.get("/", validateUser, listAllBusinesses);
 
 //Get User Business
 router.get("/my-businesses", validateUser, getMyBusinesses);
