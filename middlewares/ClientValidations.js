@@ -40,9 +40,6 @@ export const getIpInfo = async (req, res, next) => {
 
     console.log("\n-- DEVICE TYPE: ", "\n", requestDTO);
 
-    // Add device information to the requestDTO
-    requestDTO.deviceType = deviceType;
-
     // Attach RequestDTO to req object
     req.requestDTO = requestDTO;
 
