@@ -15,6 +15,10 @@ export const getIpInfo = async (req, res, next) => {
     // Extract user-agent from headers
     const userAgent = req.headers["user-agent"];
     console.log("\n-- USER AGENT: ", userAgent);
+    // ELB-HealthChecker/2.0
+    // Dart/3.1 (dart:io)
+    // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15
+    // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
 
     // Check if the request is from a mobile device
     const isMobile = /Mobi|Android|iOS/.test(userAgent);
@@ -32,7 +36,7 @@ export const getIpInfo = async (req, res, next) => {
     }
 
     // Construct RequestDTO
-    const requestDTO = new RequestDTO(req, response.data, deviceType);
+    const requestDTO = new RequestDTO(req, response.data, userAgent);
 
     console.log("\n-- DEVICE TYPE: ", "\n", requestDTO);
 
@@ -42,11 +46,6 @@ export const getIpInfo = async (req, res, next) => {
     // Attach RequestDTO to req object
     req.requestDTO = requestDTO;
 
-    next();
-};
-
-export const paintBall = async (req, res, next) => {
-    console.log("IS THERE USER: ", req.user);
     next();
 };
 
