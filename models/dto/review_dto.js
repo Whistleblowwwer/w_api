@@ -56,7 +56,6 @@ export default class ReviewDTO {
         userFollowings,
         businessFollowings
     ) {
-        console.log("\n -- COMMENT METADATA: ", commentMetaData);
         this.commentsCount = commentMetaData.comments.length;
         this.likesCount = parseInt(likeMetaData?.dataValues?.likeCount) || 0;
         this.is_liked = likeMetaData?.dataValues?.userLiked === "1";

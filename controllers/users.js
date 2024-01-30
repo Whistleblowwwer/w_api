@@ -1098,7 +1098,7 @@ export const getRandomUsers = async (req, res) => {
 export const blockUser = async (req, res) => {
     const { _id_user_to_block } = req.query;
     const _id_user_unblocking = req.user._id_user;
-    console.log("\n --ID QUERY: ", _id_user_to_block);
+
     try {
         const userToBlock = await User.findByPk(_id_user_to_block);
 
@@ -1106,7 +1106,6 @@ export const blockUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        console.log("\n -- BLOCKED BY: ", userToBlock.blockedBy);
         // Check if the user is already blocked
         if (userToBlock.blockedBy.includes(_id_user_unblocking)) {
             return res.status(400).json({ message: "User is already blocked" });
@@ -1119,7 +1118,6 @@ export const blockUser = async (req, res) => {
             { where: { _id_user: _id_user_to_block } }
         );
 
-        console.log("\n -- BLOCKED BY: ", userToBlock.blockedBy);
         return res.status(200).json({ message: "User blocked successfully" });
     } catch (error) {
         console.error("Error blocking user:", error);
@@ -1160,7 +1158,6 @@ export const unBlockUser = async (req, res) => {
 
         return res.status(200).json({ message: "User unblocked successfully" });
     } catch (error) {
-        console.error("Error unblocking user:", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -1218,7 +1215,6 @@ export const getFollowedBusinesses = async (req, res) => {
             order: [["createdAt", "DESC"]],
         });
 
-        console.log("\n -- FOLLOWED BUSINESSES", followedBusinesses);
         if (followedBusinesses.length === 0) {
             return res
                 .status(404)
@@ -1228,7 +1224,6 @@ export const getFollowedBusinesses = async (req, res) => {
         // Extract business details from the joined data
         const businesses = await Promise.all(
             followedBusinesses.map(async ({ Business, createdAt }) => {
-                console.log("\n -- BUSINESS: ", Business);
                 const {
                     _id_user: _,
                     _id_category: __,
