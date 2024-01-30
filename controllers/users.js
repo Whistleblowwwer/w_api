@@ -24,7 +24,7 @@ import { filterBadWords } from "../middlewares/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
-import { isValidEmail, isValidPhoneNumber } from "../utils/validations.js";
+import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
 
 // Register User
 export const createUser = async (req, res) => {

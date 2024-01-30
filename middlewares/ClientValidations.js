@@ -10,11 +10,37 @@ export const getIpInfo = async (req, res, next) => {
     const ipAddress = req.ip || req.connection.remoteAddress;
 
     const url = `https://freeipapi.com/api/json/${ipAddress}`;
-    const response = await axios.get(url);
+    let response;
+
+    try {
+        response = await axios.get(url);
+
+        // Check the response status
+        if (response.status === 429) {
+            // If the status is 429 (Too Many Requests), use the user-agent instead
+            const requestDTO = new RequestDTO(
+                req,
+                null,
+                req.headers["user-agent"]
+            );
+            req.requestDTO = requestDTO;
+            next();
+            return;
+        }
+    } catch (error) {
+        // Handle any error that might occur during the API call
+        console.error("Error fetching IP info:", error);
+        // Fallback to user-agent in case of an error
+        const requestDTO = new RequestDTO(req, null, req.headers["user-agent"]);
+        req.requestDTO = requestDTO;
+        next();
+        return;
+    }
 
     // Extract user-agent from headers
     const userAgent = req.headers["user-agent"];
     console.log("\n-- USER AGENT: ", userAgent);
+
     // ELB-HealthChecker/2.0
     // Dart/3.1 (dart:io)
     // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15
@@ -37,8 +63,6 @@ export const getIpInfo = async (req, res, next) => {
 
     // Construct RequestDTO
     const requestDTO = new RequestDTO(req, response.data, userAgent);
-
-    console.log("\n-- DEVICE TYPE: ", "\n", requestDTO);
 
     // Attach RequestDTO to req object
     req.requestDTO = requestDTO;

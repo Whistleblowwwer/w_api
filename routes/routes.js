@@ -1,3 +1,5 @@
+import { validateUser } from "../middlewares/ClientValidations.js";
+import { getIpInfo } from "../middlewares/ClientValidations.js";
 import FeedItemsRoute from "./feedItems.js";
 import businessRoute from "./business.js";
 import messageRoute from "./messages.js";
@@ -7,9 +9,7 @@ import BrokersRoute from "./brokers.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
-import { getIpInfo } from "../middlewares/ClientValidations.js";
 import { Router } from "express";
-import { validateUser } from "../middlewares/ClientValidations.js";
 
 const router = Router();
 
