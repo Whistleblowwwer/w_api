@@ -12,9 +12,6 @@ export const getIpInfo = async (req, res, next) => {
     const url = `https://freeipapi.com/api/json/${ipAddress}`;
     const response = await axios.get(url);
 
-    // Construct RequestDTO
-    const requestDTO = new RequestDTO(req, response.data);
-
     // Extract user-agent from headers
     const userAgent = req.headers["user-agent"];
 
@@ -33,7 +30,10 @@ export const getIpInfo = async (req, res, next) => {
         deviceType = "Desktop";
     }
 
-    console.log("\n-- DEVICE TYPE: ", deviceType);
+    // Construct RequestDTO
+    const requestDTO = new RequestDTO(req, response.data, deviceType);
+
+    console.log("\n-- DEVICE TYPE: ", "\n", requestDTO);
 
     // Add device information to the requestDTO
     requestDTO.deviceType = deviceType;

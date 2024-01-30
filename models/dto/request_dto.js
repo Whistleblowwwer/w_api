@@ -49,6 +49,7 @@ export default class RequestDTO {
                 _ip_address: this._ip_address,
                 _id_user: this._id_user,
                 error: errorMessage,
+                deviceType: this.deviceType,
             };
 
             await ErrorLog.create(errorLogData);
@@ -74,6 +75,7 @@ export default class RequestDTO {
                 queryRoute: this.queryRoute,
                 _ip_address: this._ip_address,
                 _id_user: this._id_user,
+                deviceType: this.deviceType,
             };
 
             await Log.create(requestLogData);
