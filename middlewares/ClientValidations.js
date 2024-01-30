@@ -2,7 +2,7 @@ import axios from "axios";
 import RequestDTO from "../models/dto/request_dto.js";
 
 // This function gathers the ip address and geolocation info for a request.
-export const IpInfo = async (req, res, next) => {
+export const ipInfo = async (req, res, next) => {
     const ipAddress = req.ip || req.connection.remoteAddress;
 
     const url = `https://freeipapi.com/api/json/${ipAddress}`;

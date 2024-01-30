@@ -7,14 +7,14 @@ import BrokersRoute from "./brokers.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
-import { IpInfo } from "../middlewares/ipInfo.js";
+import { ipInfo } from "../middlewares/ClientValidations.js";
 import { Router } from "express";
 import { validateToken } from "../middlewares/jwt.js";
 
 const router = Router();
 
-// Middlewares for client validation
-router.use(IpInfo);
+// Middlewares for Ip address validation
+router.use(ipInfo);
 
 // Main Routes
 router.use("/feeditems", FeedItemsRoute);
@@ -42,7 +42,6 @@ router.post("/sns-subscription-confirmation", (req, res) => {
 
 // Catch-all middleware for handling non-existent routes
 router.use(validateToken, (req, res) => {
-    // Log the error for the non-existent route
     const _id_user = req.user._id_user;
     req.requestDTO._id_user = _id_user;
 
