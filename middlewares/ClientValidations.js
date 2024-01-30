@@ -14,6 +14,7 @@ export const getIpInfo = async (req, res, next) => {
 
     // Extract user-agent from headers
     const userAgent = req.headers["user-agent"];
+    console.log("\n-- USER AGENT: ", userAgent);
 
     // Check if the request is from a mobile device
     const isMobile = /Mobi|Android|iOS/.test(userAgent);
