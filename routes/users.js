@@ -24,7 +24,7 @@ import {
     unBlockUser,
     getFollowedBusinesses,
 } from "../controllers/users.js";
-
+import { subscribeFCM } from "../controllers/pushNotifications.js";
 const router = Router();
 
 //----------User Routes-------------
@@ -94,5 +94,8 @@ router.get("/unblock", validateUser, unBlockUser);
 
 // Followed Businesses
 router.get("/business/followed", validateUser, getFollowedBusinesses);
+
+// Subscribe to push notifications
+router.post("/notifications/subscribe", validateUser, subscribeFCM);
 
 export default router;

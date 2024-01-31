@@ -60,6 +60,10 @@ export const User = sequelize_write.define(
             allowNull: true,
             defaultValue: [],
         },
+        fcm_token: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
     },
     {
         tableName: "users",

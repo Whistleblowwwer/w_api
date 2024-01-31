@@ -12,11 +12,11 @@ import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
 import { Business } from "../models/business.js";
+import { Category } from "../models/categories.js";
 import ReviewDTO from "../models/dto/review_dto.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { ReviewImages } from "../models/reviewImages.js";
-import { Category } from "../models/categories.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
@@ -25,6 +25,29 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
+
+import serviceAccount from "../config/whistleblowwer-notificaciones-firebase-adminsdk-pwr18-e3015a8fed.json" assert { type: "json" };
+import admin from "firebase-admin";
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
+// This registration token comes from the client FCM SDKs.
+const registrationToken =
+    "fw53HZXZUELlh0bsEsDNb3:APA91bE-adzTRrp57prfhRP7LI8tJvvDW3Ge2qr1e6319rWzZvIpVKfRZmK_-rPjBdMgeV_waX2piLt7By_HRq3aHfTYCfldex9__pLzZkmwfaT_CndV3uuQ1YVretNn2_7E5OOza86E";
+
+const message = {
+    notification: {
+        title: "Log in succesful",
+        body: "Welcome ome gonorrea",
+    },
+    data: {
+        score: "850",
+        time: "2:45",
+    },
+    token: registrationToken,
+};
 
 // Register User
 export const createUser = async (req, res) => {
@@ -285,6 +308,18 @@ export const logIn = async (req, res) => {
 
         req.requestDTO.setUserId(user._id_user);
         req.requestDTO.requestLog();
+
+        // Send a message to the device corresponding to the provided registration token.
+        admin
+            .messaging()
+            .send(message)
+            .then((response) => {
+                // Response is a message ID string.
+                console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+                console.log("Error sending message:", error);
+            });
 
         res.status(200).send({
             message: "Login successful",
