@@ -14,7 +14,7 @@ export const getIpInfo = async (req, res, next) => {
 
     try {
         response = await axios.get(url);
-
+        console.log("\n-- RESPONSE STATUS: ", response.status);
         // Check the response status
         if (response.status === 429) {
             // If the status is 429 (Too Many Requests), use the user-agent instead

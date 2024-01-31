@@ -3,16 +3,16 @@ import { Log } from "../requestsLogs.js";
 
 export default class RequestDTO {
     constructor(req, geoLocation, deviceType) {
-        this.continent = geoLocation.continent;
-        this.continentCode = geoLocation.continentCode;
-        this.country = geoLocation.countryName;
-        this.countryCode = geoLocation.countryCode;
-        this.city = geoLocation.cityName;
-        this.zip = geoLocation.zipCode;
-        this.lat = geoLocation.latitude;
-        this.lon = geoLocation.longitude;
-        this.timezone = geoLocation.timeZone;
-        this.offset = geoLocation.offset;
+        this.continent = geoLocation?.continent || "-";
+        this.continentCode = geoLocation?.continentCode || "-";
+        this.country = geoLocation?.countryName || "-";
+        this.countryCode = geoLocation?.countryCode || "-";
+        this.city = geoLocation?.cityName || "-";
+        this.zip = geoLocation?.zipCode || "-";
+        this.lat = geoLocation?.latitude || null;
+        this.lon = geoLocation?.longitude || null;
+        this.timezone = geoLocation?.timeZone || "-";
+        this.offset = geoLocation?.offset || null;
         this.requestMethod = req.method;
         this.queryRoute = req.originalUrl;
         this._ip_address = req.ip || req.connection.remoteAddress;
