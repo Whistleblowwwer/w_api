@@ -26,17 +26,6 @@ import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
 
-import serviceAccount from "../config/whistleblowwer-notificaciones-firebase-adminsdk-pwr18-e3015a8fed.json" assert { type: "json" };
-import admin from "firebase-admin";
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-});
-
-// This registration token comes from the client FCM SDKs.
-const registrationToken =
-    "fw53HZXZUELlh0bsEsDNb3:APA91bE-adzTRrp57prfhRP7LI8tJvvDW3Ge2qr1e6319rWzZvIpVKfRZmK_-rPjBdMgeV_waX2piLt7By_HRq3aHfTYCfldex9__pLzZkmwfaT_CndV3uuQ1YVretNn2_7E5OOza86E";
-
 const message = {
     notification: {
         title: "Log in succesful",
@@ -303,7 +292,7 @@ export const logIn = async (req, res) => {
         const token = jwt.sign(
             { _id_user: user._id_user },
             process.env.TOKEN_SECRET,
-            { expiresIn: "3d" }
+            { expiresIn: "7d" }
         );
 
         req.requestDTO.setUserId(user._id_user);
