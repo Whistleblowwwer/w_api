@@ -26,6 +26,9 @@ import { commentMetaData } from "../middlewares/commentInteractions.js";
 import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
 
+const registrationToken =
+    "fw53HZXZUELlh0bsEsDNb3:APA91bE-adzTRrp57prfhRP7LI8tJvvDW3Ge2qr1e6319rWzZvIpVKfRZmK_-rPjBdMgeV_waX2piLt7By_HRq3aHfTYCfldex9__pLzZkmwfaT_CndV3uuQ1YVretNn2_7E5OOza86E";
+
 const message = {
     notification: {
         title: "Log in succesful",
