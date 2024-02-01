@@ -2,6 +2,7 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import admin from "firebase-admin";
 import { User } from "../models/users.js";
 import { Op, Sequelize } from "sequelize";
 import {
