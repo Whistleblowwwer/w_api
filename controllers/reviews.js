@@ -14,8 +14,8 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 import {
     commentsMetaData,
     likesMetaData,
-} from "../middlewares/reviewInteractions.js";
-import { commentMetaData } from "../middlewares/commentInteractions.js";
+} from "../utils/edges/reviewInteractions.js";
+import { commentMetaData } from "../utils/edges/commentInteractions.js";
 
 //Create Review
 export const createReview = async (req, res) => {

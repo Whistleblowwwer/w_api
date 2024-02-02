@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Message } from "../models/messages.js";
+import { Message } from "../../models/messages.js";
 import Sequelize from "sequelize";
 
 //Event handlers for WebSockets

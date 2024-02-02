@@ -83,8 +83,4 @@ export default class RequestDTO {
             console.error("Error logging request:", error.message);
         }
     }
-
-    hasToken(req) {}
-
-    isValidRoute(req) {}
 }

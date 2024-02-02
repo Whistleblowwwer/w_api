@@ -1,8 +1,8 @@
 import { Sequelize } from "sequelize";
-import { User } from "../models/users.js";
-import { Comment } from "../models/comments.js";
-import { ReviewLikes } from "../models/reviewLikes.js";
-import { InteractionsDTO } from "../models/dto/interactions_dto.js";
+import { User } from "../../models/users.js";
+import { Comment } from "../../models/comments.js";
+import { ReviewLikes } from "../../models/reviewLikes.js";
+import { InteractionsDTO } from "../../models/dto/interactions_dto.js";
 
 export const commentsMetaData = async (reviews) => {
     const commentsData = await Promise.all(

@@ -1,7 +1,7 @@
 import serviceAccount from "./config/whistleblowwer-notificaciones-firebase-adminsdk-pwr18-e3015a8fed.json" assert { type: "json" };
 import { initializeWebSocketServer } from "./socket.js";
 import { sequelize_write } from "./config/db_write.js";
-import { UpdateCache } from "./middlewares/cache.js";
+import { UpdateCache } from "./utils/cache.js";
 import router from "./routes/routes.js";
 import { createServer } from "http";
 import "./models/associations.js";

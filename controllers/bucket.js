@@ -1,8 +1,7 @@
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import { bucketName, s3 } from "../middlewares/s3.js";
-import { upload } from "../middlewares/multer.js";
+import { bucketName, s3 } from "../utils/s3.js";
+import { upload } from "../utils/multer.js";
 
 import { User } from "../models/users.js";
 import { Business } from "../models/business.js";
@@ -117,7 +116,7 @@ export const uploadFile = async (req, res) => {
 
 export const UploadReviewImage = async (req, res) => {
     try {
-        const _id_review  = req.query._id_review;
+        const _id_review = req.query._id_review;
         const imageUrls = [];
         const _id_user_requesting = req.user._id_user;
 
@@ -139,7 +138,9 @@ export const UploadReviewImage = async (req, res) => {
                     var _id_review_image;
                     const review = await Review.findByPk(_id_review);
                     if (!review) {
-                        return res.status(400).send({ message: "Review not found" });
+                        return res
+                            .status(400)
+                            .send({ message: "Review not found" });
                     }
 
                     const reviewimage = await ReviewImages.create({

@@ -1,9 +1,7 @@
-import { Sequelize } from "sequelize";
-import {  FeedItems_Write } from "../models/feedItems.js";
+import { FeedItems_Write } from "../models/feedItems.js";
 import { UserFollowers } from "../models/userFollowers.js";
-import { User } from "../models/users.js";
-import { UserCache } from "../middlewares/cache.js";
-import { addtoBatch } from "../middlewares/batchprocessing.js";
+import { UserCache } from "../utils/cache.js";
+import { addtoBatch } from "../utils/batchprocessing.js";
 
 export const CreateFeedItem = async (req, res) => {
     try {
@@ -36,7 +34,6 @@ export const CreateFeedItem = async (req, res) => {
                 is_valid,
             });
         });
-
 
         return res.status(201).json({
             message: "FeedItem created successfully",

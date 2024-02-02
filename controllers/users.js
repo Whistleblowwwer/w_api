@@ -2,13 +2,12 @@ dotenv.config();
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import admin from "firebase-admin";
 import { User } from "../models/users.js";
 import { Op, Sequelize } from "sequelize";
 import {
     commentsMetaData,
     likesMetaData,
-} from "../middlewares/reviewInteractions.js";
+} from "../utils/edges/reviewInteractions.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Message } from "../models/messages.js";
@@ -21,26 +20,12 @@ import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
-import { filterBadWords } from "../middlewares/badWordsFilter.js";
+import NotificationDTO from "../models/dto/notification_dto.js";
+import { filterBadWords } from "../utils/text/badWordsFilter.js";
+import { validateOTP, sendOTPByEmail } from "../utils/mailMan.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-import { commentMetaData } from "../middlewares/commentInteractions.js";
-import { validateOTP, sendOTPByEmail } from "../middlewares/mailMain.js";
+import { commentMetaData } from "../utils/edges/commentInteractions.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
-
-const registrationToken =
-    "fw53HZXZUELlh0bsEsDNb3:APA91bE-adzTRrp57prfhRP7LI8tJvvDW3Ge2qr1e6319rWzZvIpVKfRZmK_-rPjBdMgeV_waX2piLt7By_HRq3aHfTYCfldex9__pLzZkmwfaT_CndV3uuQ1YVretNn2_7E5OOza86E";
-
-const message = {
-    notification: {
-        title: "Log in succesful",
-        body: "Welcome ome gonorrea",
-    },
-    data: {
-        score: "850",
-        time: "2:45",
-    },
-    token: registrationToken,
-};
 
 // Register User
 export const createUser = async (req, res) => {
@@ -302,18 +287,6 @@ export const logIn = async (req, res) => {
         req.requestDTO.setUserId(user._id_user);
         req.requestDTO.requestLog();
 
-        // Send a message to the device corresponding to the provided registration token.
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-            });
-
         res.status(200).send({
             message: "Login successful",
             token,
@@ -502,8 +475,8 @@ export const likeComment = async (req, res) => {
 
 // Follow User
 export const followUser = async (req, res) => {
-    const _id_followed = req.query._id_followed;
-    const _id_follower = req.user._id_user;
+    const _id_followed = req.query._id_followed; // receiver
+    const _id_follower = req.user._id_user; // sender
 
     try {
         const alreadyFollows = await UserFollowers.findOne({
@@ -522,6 +495,12 @@ export const followUser = async (req, res) => {
         } else {
             // If follower doesn't follow user followed
             await UserFollowers.create({ _id_follower, _id_followed });
+            // Notification DTO
+            const followNotificationDTO = new NotificationDTO();
+            await followNotificationDTO.generateNewFollowerNotification(
+                _id_follower,
+                _id_followed
+            );
             return res.status(200).send({
                 message: "User followed successfully",
                 followed: true,

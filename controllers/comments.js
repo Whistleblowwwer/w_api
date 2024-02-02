@@ -4,8 +4,8 @@ import { Comment } from "../models/comments.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import CommentDTO from "../models/dto/comment_dto.js";
-import { commentMetaData } from "../middlewares/commentInteractions.js";
-import { softDeleteCommentAndChildren } from "../middlewares/softDeleteComments.js";
+import { commentMetaData } from "../utils/edges/commentInteractions.js";
+import { softDeleteCommentAndChildren } from "../utils/softDeleteComments.js";
 
 //Get Comment Children
 export const getCommentChildren = async (req, res) => {

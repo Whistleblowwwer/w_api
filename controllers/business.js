@@ -6,7 +6,7 @@ import { Comment } from "../models/comments.js";
 import { Business } from "../models/business.js";
 import { Category } from "../models/categories.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
-import { filterBadWords } from "../middlewares/badWordsFilter.js";
+import { filterBadWords } from "../utils/text/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 
 // Create Business

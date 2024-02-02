@@ -3,6 +3,7 @@ import { UserFollowers } from "./userFollowers.js";
 import { CommentImages } from "./commentImages.js";
 import { ReviewImages } from "./reviewImages.js";
 import { CommentLikes } from "./commentLikes.js";
+import { Notification } from "./notifications.js";
 import { ReviewLikes } from "./reviewLikes.js";
 import { Category } from "./categories.js";
 import { ErrorLog } from "./errorsLogs.js";
@@ -80,6 +81,24 @@ User.hasMany(Comment, { foreignKey: "_id_user", as: "Comments" });
 User.hasMany(Article, {
     foreignKey: "_id_user",
     as: "Articles",
+});
+
+// Un usuario puede ser el remitente de muchas notificaciones
+// 1:N
+User.belongsToMany(Notification, {
+    as: "SentNotifications",
+    through: Notification,
+    foreignKey: "_id_user_sender",
+    otherKey: "_id_notification",
+});
+
+// Un usuario puede ser el destinatario de muchas notificaciones
+// 1:N
+User.belongsToMany(Notification, {
+    as: "ReceivedNotifications",
+    through: Notification,
+    foreignKey: "_id_user_receiver",
+    otherKey: "_id_notification",
 });
 
 // ------------------ BUSINESS ------------------
