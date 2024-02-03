@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { onlineUsers } from "./api.js";
 import dotenv from "dotenv";
 import {
     disconnection,
@@ -13,6 +14,7 @@ dotenv.config();
 
 const handleConnection = (io) => (socket) => {
     console.log("User connected:", socket.user._id_user);
+    onlineUsers.add(socket.user._id_user);
 
     socket.roomsSet = new Set();
 

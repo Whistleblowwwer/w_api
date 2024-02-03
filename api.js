@@ -33,6 +33,9 @@ app.use(
 // Gateway
 app.use(router);
 
+//Online Users Set
+export const onlineUsers = new Set();
+
 //Initialize Socket.io configuration
 const io = initializeWebSocketServer(httpServer);
 

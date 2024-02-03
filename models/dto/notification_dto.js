@@ -25,9 +25,9 @@ export default class NotificationDTO {
         this.is_valid = is_valid;
     }
 
-    async generateChatNotification(_id_user_sender, _id_user_receiver) {
+    async generateChatNotification(_id_user_sender, _id_user_receiver, messageContent) {
         // Builds message
-        const message = await this.buildChatMessage(_id_user_sender);
+        const message = await this.buildChatMessage(_id_user_sender, messageContent);
 
         // Sends notification
 
@@ -40,17 +40,20 @@ export default class NotificationDTO {
         );
     }
 
-    async buildChatMessage(_id_user_sender) {
+    async buildChatMessage(_id_user_sender, messageContent) {
         const sender = await User.findByPk(_id_user_sender);
+
         const message = {
             notification: {
-                title: `¡Tienes una nuevo seguidor!`,
-                body: `Saluda a ${sender.nick_name}`,
+                title: `Nuevo mensaje de ${sender.nick_name}`,
+                body: messageContent, 
             },
             token: sender.fcm_token,
         };
+
         return message;
     }
+
 
     async generateReviewNotification(_id_user_sender, _id_user_receiver) {
         const message = await this.buildReviewMessage(_id_user_sender);
