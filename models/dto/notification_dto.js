@@ -53,7 +53,7 @@ export default class NotificationDTO {
             _id_user_sender,
             _id_user_receiver,
             _id_target: _id_user_sender,
-            type: "profile",
+            type: "chat",
             subject: message.notification.title,
             content: message.notification.body,
             is_valid: true,
@@ -96,7 +96,6 @@ export default class NotificationDTO {
         _id_user_receiver,
         _id_target
     ) {
-        console.log("lol 1");
         // Generate message
         const message = await this.buildReviewLikeMessage(
             _id_user_sender,
@@ -104,7 +103,6 @@ export default class NotificationDTO {
             _id_target
         );
 
-        console.log("lol 2");
         // Send to receiver
         admin
             .messaging()
