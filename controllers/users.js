@@ -430,6 +430,16 @@ export const likeReview = async (req, res) => {
         } else {
             // If the like doesn't exist, add it
             await ReviewLikes.create({ _id_review, _id_user });
+
+            console.log("\n-- WASAP: ", typeof review._id_user);
+            // Notification DTO
+            const reviewLikeNotificationDTO = new NotificationDTO();
+            await reviewLikeNotificationDTO.generateReviewLikeNotification(
+                _id_user,
+                review._id_user,
+                _id_review // target
+            );
+
             return res
                 .status(200)
                 .send({ message: "Review liked successfully", liked: true });
