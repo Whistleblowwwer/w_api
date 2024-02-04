@@ -87,6 +87,7 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
+
         return message;
     }
 

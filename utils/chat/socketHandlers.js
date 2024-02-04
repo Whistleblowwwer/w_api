@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import { Message } from "../../models/messages.js";
 import Sequelize from "sequelize";
+import { onlineUsers } from "../../api.js";
+import  NotificationDTO  from "../../models/dto/notification_dto.js";
 
 //Event handlers for WebSockets
 
@@ -27,6 +29,7 @@ export const authenticateSocket = (socket, next) => {
 //Handle disconnection
 export const disconnection = (socket) => {
     console.log("User disconnected:", socket.user._id_user);
+    onlineUsers.delete(socket.user._id_user);
     socket.roomsSet.forEach((room) => {
         socket.leave(room);
     });
@@ -79,6 +82,11 @@ export const sendMessage = async (io, socket, messageData) => {
 
         io.to(`user-${_id_sender}`).emit("updateConversations");
         io.to(`user-${_id_receiver}`).emit("updateConversations");
+
+        if (!onlineUsers.has(_id_receiver)) {
+            const notificationDTO = new NotificationDTO();
+            await notificationDTO.generateChatNotification(_id_sender, _id_receiver, messageToSend.content);
+        }
     } catch (error) {
         console.error("An error occurred", error);
         if (error instanceof Sequelize.ValidationError) {
