@@ -35,6 +35,12 @@ export default class NotificationDTO {
             content
         );
 
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
         // Send to receiver
         admin
             .messaging()
@@ -76,6 +82,12 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
+        // Check if the receiver has an FCM token
+        if (!receiver || !receiver.fcm_token) {
+            console.log("Receiver has no FCM token. Skipping notification.");
+            return null; // Return null to indicate skipping the notification
+        }
+
         const message = {
             notification: {
                 title: `Nuevo mensaje de ${sender.nick_name}`,
@@ -102,6 +114,12 @@ export default class NotificationDTO {
             _id_user_receiver,
             _id_target
         );
+
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
 
         // Send to receiver
         admin
@@ -148,6 +166,12 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
+        // Check if the receiver has an FCM token
+        if (!receiver || !receiver.fcm_token) {
+            console.log("Receiver has no FCM token. Skipping notification.");
+            return null; // Return null to indicate skipping the notification
+        }
+
         const message = {
             notification: {
                 title: `A ${sender.nick_name} le gustó tu reseña`,
@@ -169,6 +193,12 @@ export default class NotificationDTO {
             _id_user_sender,
             _id_user_receiver
         );
+
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
 
         // Send to receiver
         admin
@@ -211,6 +241,12 @@ export default class NotificationDTO {
         const receiver = users.find(
             (user) => user._id_user === _id_user_receiver
         );
+
+        // Check if the receiver has an FCM token
+        if (!receiver || !receiver.fcm_token) {
+            console.log("Receiver has no FCM token. Skipping notification.");
+            return null; // Return null to indicate skipping the notification
+        }
 
         const message = {
             notification: {
