@@ -1,4 +1,5 @@
 import { User } from "../models/users.js";
+import { Notification } from "../models/notifications.js";
 
 export const subscribeFCM = async (req, res) => {
     try {
@@ -25,5 +26,66 @@ export const subscribeFCM = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+// Delete Notification
+export const deleteNotification = async (req, res) => {
+    const _id_notification = req.params._id_notification;
+
+    try {
+        const notification = await Notification.findByPk(_id_notification);
+        if (!notification) {
+            return res.status(404).send({ message: "Notification not found" });
+        }
+
+        await notification.destroy();
+        res.status(200).send({ message: "Notification deleted" });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Get All Notifications for a User
+export const getAllNotificationsForUser = async (req, res) => {
+    const _id_user_receiver = req.user._id_user;
+
+    try {
+        const notifications = await Notification.findAll({
+            where: { _id_user_receiver },
+        });
+
+        if (notifications.length === 0) {
+            return res
+                .status(404)
+                .send({ message: "No notifications found for this user" });
+        }
+
+        res.status(200).send({ message: "Notifications found", notifications });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Delete All Notifications for a User
+export const deleteAllNotificationsForUser = async (req, res) => {
+    const _id_user_receiver = req.params._id_user_receiver;
+
+    try {
+        const deletedCount = await Notification.destroy({
+            where: { _id_user_receiver },
+        });
+
+        if (deletedCount === 0) {
+            return res
+                .status(404)
+                .send({ message: "No notifications found for this user" });
+        }
+
+        res.status(200).send({
+            message: `Deleted ${deletedCount} notifications for the user`,
+        });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
     }
 };

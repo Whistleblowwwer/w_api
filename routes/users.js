@@ -24,7 +24,12 @@ import {
     unBlockUser,
     getFollowedBusinesses,
 } from "../controllers/users.js";
-import { subscribeFCM } from "../controllers/pushNotifications.js";
+import {
+    subscribeFCM,
+    deleteNotification,
+    getAllNotificationsForUser,
+    deleteAllNotificationsForUser,
+} from "../controllers/pushNotifications.js";
 const router = Router();
 
 //----------User Routes-------------
@@ -97,5 +102,18 @@ router.get("/business/followed", validateUser, getFollowedBusinesses);
 
 // Subscribe to push notifications
 router.post("/notifications/subscribe", validateUser, subscribeFCM);
+
+// Delete notification
+router.delete(
+    "/notifications/:_id_notification",
+    validateUser,
+    deleteNotification
+);
+
+// Delete all notifications for user
+router.delete("/notifications/", validateUser, deleteAllNotificationsForUser);
+
+// Get all notifications for user
+router.get("/notifications/", validateUser, getAllNotificationsForUser);
 
 export default router;
