@@ -4,6 +4,7 @@ import { Comment } from "../models/comments.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import CommentDTO from "../models/dto/comment_dto.js";
+import NotificationDTO from "../models/dto/notification_dto.js";
 import { commentMetaData } from "../utils/edges/commentInteractions.js";
 import { softDeleteCommentAndChildren } from "../utils/softDeleteComments.js";
 
@@ -168,6 +169,15 @@ export const createComment = async (req, res) => {
             _id_user,
             _id_parent: _id_parent || null,
         });
+
+        if (_id_user !== parentReview._id_user) {
+            const reviewCommentNotificationDTO = new NotificationDTO();
+            await reviewCommentNotificationDTO.generateReviewCommentNotification(
+                _id_user,
+                parentReview._id_user,
+                createdComment._id_comment
+            );
+        }
 
         const userCreatingComment = await User.findByPk(_id_user);
 
