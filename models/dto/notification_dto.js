@@ -22,6 +22,18 @@ export default class NotificationDTO {
         this.is_followed = is_followed ?? null;
         this.is_valid = is_valid;
     }
+    // Function to send notification to receiver
+    async sendNotificationToReceiver(message) {
+        admin
+            .messaging()
+            .send(message)
+            .then((response) => {
+                console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+                console.log("Error sending message:", error);
+            });
+    }
     //CHAT
     async generateChatNotification(
         _id_user_sender,
@@ -42,17 +54,7 @@ export default class NotificationDTO {
         }
 
         // Send to receiver
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-                // TODO: agregar log de error
-            });
+        this.sendNotificationToReceiver(message);
 
         // Save to db
         const notification = await Notification.create({
@@ -121,18 +123,7 @@ export default class NotificationDTO {
             return null;
         }
 
-        // Send to receiver
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-                // TODO: agregar log de error
-            });
+        this.sendNotificationToReceiver(message);
 
         // Save to db
         const notification = await Notification.create({
@@ -204,17 +195,7 @@ export default class NotificationDTO {
         }
 
         // Send to receiver
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-                // TODO: agregar log de error
-            });
+        this.sendNotificationToReceiver(message);
 
         // Save to db
         const notification = await Notification.create({
@@ -286,17 +267,7 @@ export default class NotificationDTO {
         }
 
         // Send to receiver
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-                // TODO: agregar log de error
-            });
+        this.sendNotificationToReceiver(message);
 
         // Save to db
         const notification = await Notification.create({
@@ -365,17 +336,7 @@ export default class NotificationDTO {
         }
 
         // Send to receiver
-        admin
-            .messaging()
-            .send(message)
-            .then((response) => {
-                // Response is a message ID string.
-                console.log("Successfully sent message:", response);
-            })
-            .catch((error) => {
-                console.log("Error sending message:", error);
-                // TODO: agregar log de error
-            });
+        this.sendNotificationToReceiver(message);
 
         // Save to db
         const notification = await Notification.create({
