@@ -474,6 +474,14 @@ export const likeComment = async (req, res) => {
         } else {
             // If the like doesn't exist, add it
             await CommentLikes.create({ _id_comment, _id_user });
+
+            const commentLikeNotificationDTO = new NotificationDTO();
+            await commentLikeNotificationDTO.generateCommentLikeNotification(
+                _id_user,
+                comment._id_user,
+                _id_comment // target
+            );
+
             return res
                 .status(200)
                 .send({ message: "Comment liked successfully", liked: true });
