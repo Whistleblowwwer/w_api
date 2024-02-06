@@ -375,7 +375,7 @@ export default class NotificationDTO {
 
         const message = {
             notification: {
-                title: `¡Tienes una nuevo seguidor!`,
+                title: `¡Tienes un nuevo seguidor!`,
                 body: `Saluda a ${sender.nick_name}`,
             },
             data: {
