@@ -1,8 +1,8 @@
 import { User } from "../models/users.js";
 import { Notification } from "../models/notifications.js";
 import { Business } from "../models/business.js";
-import { UserFollowers } from "../models/userFollowers.js"; // Import the UserFollowers model
-import { BusinessFollowers } from "../models/businessFollowers.js"; // Import the BusinessFollowers model
+import { UserFollowers } from "../models/userFollowers.js";
+import { BusinessFollowers } from "../models/businessFollowers.js";
 
 export const subscribeFCM = async (req, res) => {
     try {
@@ -55,7 +55,7 @@ export const getAllNotificationsForUser = async (req, res) => {
 
     try {
         const notifications = await Notification.findAll({
-            where: { _id_user_receiver },
+            where: { _id_user_receiver, is_valid: true },
         });
 
         if (notifications.length === 0) {

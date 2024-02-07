@@ -437,7 +437,8 @@ export const likeReview = async (req, res) => {
             await reviewLikeNotificationDTO.generateReviewLikeNotification(
                 _id_user,
                 review._id_user,
-                _id_review // target
+                _id_review, // target
+                review.content
             );
 
             return res

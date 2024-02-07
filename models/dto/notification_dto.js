@@ -22,6 +22,7 @@ export default class NotificationDTO {
         this.is_followed = is_followed ?? null;
         this.is_valid = is_valid;
     }
+
     // Function to send notification to receiver
     async sendNotificationToReceiver(message) {
         admin
@@ -34,6 +35,7 @@ export default class NotificationDTO {
                 console.log("Error sending message:", error);
             });
     }
+
     //CHAT
     async generateChatNotification(
         _id_user_sender,
@@ -104,17 +106,20 @@ export default class NotificationDTO {
 
         return message;
     }
+
     //REVIEWS
     async generateReviewLikeNotification(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        reviewContent
     ) {
         // Generate message
         const message = await this.buildReviewLikeMessage(
             _id_user_sender,
             _id_user_receiver,
-            _id_target
+            _id_target,
+            reviewContent
         );
 
         // Check if the message is null (indicating that the notification should be skipped)
@@ -142,7 +147,8 @@ export default class NotificationDTO {
     async buildReviewLikeMessage(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        reviewContent
     ) {
         const userIds = [_id_user_sender, _id_user_receiver];
 
@@ -165,8 +171,8 @@ export default class NotificationDTO {
 
         const message = {
             notification: {
-                title: `A ${sender.nick_name} le gustó tu reseña`,
-                body: "Juntos podemos romper barreras ¡No desaproveches esta oportunidad!",
+                title: `A ${sender.nick_name} le gustó tu reseña:`,
+                body: reviewContent,
             },
             data: {
                 _id_target,
@@ -180,13 +186,16 @@ export default class NotificationDTO {
     async generateReviewCommentNotification(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        commentContent,
+        parentReviewContent
     ) {
         //Generate Message
         const message = await this.buildReviewCommentMessage(
             _id_user_sender,
             _id_user_receiver,
-            _id_target
+            _id_target,
+            commentContent
         );
 
         if (!message) {
@@ -203,8 +212,8 @@ export default class NotificationDTO {
             _id_user_receiver,
             _id_target,
             type: "comment",
-            subject: message.notification.title,
-            content: message.notification.body,
+            subject: parentReviewContent,
+            content: commentContent,
             is_valid: true,
         });
 
@@ -214,7 +223,8 @@ export default class NotificationDTO {
     async buildReviewCommentMessage(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        commentContent
     ) {
         const userIds = [_id_user_sender, _id_user_receiver];
 
@@ -235,10 +245,11 @@ export default class NotificationDTO {
             return null; // Return null to indicate skipping the notification
         }
 
+        // push
         const message = {
             notification: {
-                title: `${sender.nick_name} ha comentado tu reseña`,
-                body: "Juntos podemos romper barreras ¡No desaproveches esta oportunidad!",
+                title: `@${sender.nick_name} comentó:`,
+                body: commentContent,
             },
             data: {
                 _id_target,
@@ -248,6 +259,7 @@ export default class NotificationDTO {
         };
         return message;
     }
+
     //COMMENTS
     async generateCommentLikeNotification(
         _id_user_sender,

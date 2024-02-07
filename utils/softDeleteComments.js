@@ -6,7 +6,6 @@ export async function softDeleteCommentAndChildren(commentId) {
 
     try {
         // Start a Sequelize transaction
-        console.log("\n -- TRANSACTION: ");
         transaction = await sequelize.transaction();
 
         // Retrieve all children of the comment

@@ -173,9 +173,11 @@ export const createComment = async (req, res) => {
         if (_id_user !== parentReview._id_user) {
             const reviewCommentNotificationDTO = new NotificationDTO();
             await reviewCommentNotificationDTO.generateReviewCommentNotification(
-                _id_user,
-                parentReview._id_user,
-                createdComment._id_comment
+                _id_user, // sender
+                parentReview._id_user, // receiver
+                createdComment._id_comment, // target
+                content, // comment
+                parentReview.content // review
             );
         }
 
@@ -284,6 +286,14 @@ export const deactivateComment = async (req, res) => {
 
         // Soft delete the comment and its children
         await softDeleteCommentAndChildren(_id_comment);
+
+        // Soft delete associated notifications
+        await Notification.update(
+            { is_valid: false },
+            {
+                where: { _id_target: _id_comment, type: "comment" },
+            }
+        );
 
         return res.status(200).json({
             message: "Comment and its children deactivated successfully",
