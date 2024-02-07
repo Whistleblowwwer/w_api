@@ -181,7 +181,7 @@ export default class NotificationDTO {
         _id_user_sender,
         _id_user_receiver,
         _id_target
-    ){
+    ) {
         //Generate Message
         const message = await this.buildReviewCommentMessage(
             _id_user_sender,
@@ -202,7 +202,7 @@ export default class NotificationDTO {
             _id_user_sender,
             _id_user_receiver,
             _id_target: _id_user_sender,
-            type: "review",
+            type: "comment",
             subject: message.notification.title,
             content: message.notification.body,
             is_valid: true,
@@ -242,7 +242,7 @@ export default class NotificationDTO {
             },
             data: {
                 _id_target,
-                target_type: "review",
+                target_type: "comment",
             },
             token: receiver.fcm_token,
         };
@@ -253,7 +253,7 @@ export default class NotificationDTO {
         _id_user_sender,
         _id_user_receiver,
         _id_target
-    ){
+    ) {
         //Generate Message
         const message = await this.buildCommentLikeMessage(
             _id_user_sender,
