@@ -1,5 +1,8 @@
 import { User } from "../models/users.js";
 import { Notification } from "../models/notifications.js";
+import { Business } from "../models/business.js";
+import { UserFollowers } from "../models/userFollowers.js"; // Import the UserFollowers model
+import { BusinessFollowers } from "../models/businessFollowers.js"; // Import the BusinessFollowers model
 
 export const subscribeFCM = async (req, res) => {
     try {
@@ -61,7 +64,67 @@ export const getAllNotificationsForUser = async (req, res) => {
                 .send({ message: "No notifications found for this user" });
         }
 
-        res.status(200).send({ message: "Notifications found", notifications });
+        // Prepare notifications with target information
+        const formattedNotifications = [];
+        for (const notification of notifications) {
+            const { _id_target, type, ...notificationData } =
+                notification.toJSON();
+            let targetInfo = { id: _id_target };
+
+            if (
+                type === "chat" ||
+                type === "review" ||
+                type === "comment" ||
+                type === "profile"
+            ) {
+                // Fetch user information for chat, review, and comment types
+                const sender = await User.findByPk(
+                    notification._id_user_sender
+                );
+                if (sender) {
+                    targetInfo.name = sender.name;
+                    targetInfo.last_name = sender.last_name;
+                    targetInfo.nick_name = sender.nick_name;
+                }
+
+                // Check if the receiver follows the sender
+                const isFollowed = await UserFollowers.findOne({
+                    where: {
+                        _id_follower: _id_user_receiver,
+                        _id_followed: notification._id_user_sender,
+                    },
+                });
+
+                targetInfo.is_followed = !!isFollowed; // Convert to boolean
+            } else if (type === "business") {
+                // Fetch business information for business type
+                const business = await Business.findByPk(_id_target);
+                if (business) {
+                    targetInfo.name = business.name;
+
+                    // Check if the receiver follows the business
+                    const isFollowed = await BusinessFollowers.findOne({
+                        where: {
+                            _id_user: _id_user_receiver,
+                            _id_business: _id_target,
+                        },
+                    });
+
+                    targetInfo.is_followed = !!isFollowed; // Convert to boolean
+                }
+            }
+
+            formattedNotifications.push({
+                ...notificationData,
+                type,
+                Target: targetInfo,
+            });
+        }
+
+        res.status(200).send({
+            message: "Notifications found",
+            notifications: formattedNotifications,
+        });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
