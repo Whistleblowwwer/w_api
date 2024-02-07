@@ -171,7 +171,7 @@ export default class NotificationDTO {
 
         const message = {
             notification: {
-                title: `A ${sender.nick_name} le gustó tu reseña:`,
+                title: `@${sender.nick_name} le dio like tu reseña:`,
                 body: reviewContent,
             },
             data: {
