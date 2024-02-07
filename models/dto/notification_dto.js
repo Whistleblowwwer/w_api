@@ -129,7 +129,7 @@ export default class NotificationDTO {
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
-            _id_target: _id_user_sender,
+            _id_target,
             type: "review",
             subject: message.notification.title,
             content: message.notification.body,
@@ -201,7 +201,7 @@ export default class NotificationDTO {
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
-            _id_target: _id_user_sender,
+            _id_target,
             type: "comment",
             subject: message.notification.title,
             content: message.notification.body,
@@ -273,7 +273,7 @@ export default class NotificationDTO {
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
-            _id_target: _id_user_sender,
+            _id_target,
             type: "comment",
             subject: message.notification.title,
             content: message.notification.body,
