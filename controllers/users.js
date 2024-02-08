@@ -431,15 +431,15 @@ export const likeReview = async (req, res) => {
             // If the like doesn't exist, add it
             await ReviewLikes.create({ _id_review, _id_user });
 
-            console.log("\n-- WASAP: ", typeof review._id_user);
-            // Notification DTO
-            const reviewLikeNotificationDTO = new NotificationDTO();
-            await reviewLikeNotificationDTO.generateReviewLikeNotification(
-                _id_user,
-                review._id_user,
-                _id_review, // target
-                review.content
-            );
+            if (review._id_user.toString() !== _id_user.toString()) {
+                const reviewLikeNotificationDTO = new NotificationDTO();
+                await reviewLikeNotificationDTO.generateReviewLikeNotification(
+                    _id_user,
+                    review._id_user,
+                    _id_review, // target
+                    review.content
+                );
+            }
 
             return res
                 .status(200)
@@ -449,6 +449,7 @@ export const likeReview = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
 
 // Like Comment
 export const likeComment = async (req, res) => {
@@ -476,12 +477,14 @@ export const likeComment = async (req, res) => {
             // If the like doesn't exist, add it
             await CommentLikes.create({ _id_comment, _id_user });
 
-            const commentLikeNotificationDTO = new NotificationDTO();
-            await commentLikeNotificationDTO.generateCommentLikeNotification(
-                _id_user,
-                comment._id_user,
-                _id_comment // target
-            );
+            if (comment._id_user !== _id_user) {
+                const commentLikeNotificationDTO = new NotificationDTO();
+                await commentLikeNotificationDTO.generateCommentLikeNotification(
+                    _id_user,
+                    comment._id_user,
+                    _id_comment // target
+                );
+            }
 
             return res
                 .status(200)
@@ -492,12 +495,19 @@ export const likeComment = async (req, res) => {
     }
 };
 
+
 // Follow User
 export const followUser = async (req, res) => {
     const _id_followed = req.query._id_followed; // receiver
     const _id_follower = req.user._id_user; // sender
 
     try {
+        if (_id_followed === _id_follower) {
+            return res.status(400).send({
+                message: "Users cannot follow themselves",
+            });
+        }
+
         const alreadyFollows = await UserFollowers.findOne({
             where: {
                 [Op.and]: [{ _id_follower }, { _id_followed }],
@@ -512,7 +522,7 @@ export const followUser = async (req, res) => {
                 followed: false,
             });
         } else {
-            // If follower doesn't follow user followed
+            // If the follower doesn't already follow the user followed
             await UserFollowers.create({ _id_follower, _id_followed });
             // Notification DTO
             const followNotificationDTO = new NotificationDTO();
@@ -532,6 +542,7 @@ export const followUser = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
 
 // Follow Business
 export const followBusiness = async (req, res) => {
