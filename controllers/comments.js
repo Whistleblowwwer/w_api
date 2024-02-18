@@ -6,6 +6,7 @@ import { UserFollowers } from "../models/userFollowers.js";
 import CommentDTO from "../models/dto/comment_dto.js";
 import NotificationDTO from "../models/dto/notification_dto.js";
 import { commentMetaData } from "../utils/edges/commentInteractions.js";
+import { Notification } from "../models/notifications.js";
 import { softDeleteCommentAndChildren } from "../utils/softDeleteComments.js";
 
 //Get Comment Children

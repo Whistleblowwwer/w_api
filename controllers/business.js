@@ -456,15 +456,93 @@ export const listAllBusinesses = async (req, res) => {
         const businesses = await Business.findAll({
             limit: 20,
             order: [["createdAt", "DESC"]],
+            attributes: [
+                "_id_business",
+                "name",
+                "entity",
+                "address",
+                "state",
+                "city",
+                "profile_picture_url",
+                "country",
+                "iso2_country_code",
+                "iso2_state_code",
+                [
+                    Sequelize.literal(
+                        '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
+                    ),
+                    "reviewsCount",
+                ],
+                "is_valid",
+                "createdAt",
+                "updatedAt",
+            ],
+            include: [
+                {
+                    model: User,
+                    attributes: ["_id_user", "name", "last_name"],
+                },
+                {
+                    model: Category,
+                    attributes: ["_id_category", "name"],
+                },
+                {
+                    model: Review,
+                    attributes: ["rating"],
+                    where: { is_valid: true },
+                    required: false,
+                },
+            ],
         });
 
         if (businesses.length === 0) {
             return res.status(404).send({ message: "No businesses found" });
         }
 
+        // Extract relevant details and compute additional information
+        const formattedBusinesses = await Promise.all(
+            businesses.map(async (business) => {
+                const {
+                    _id_user: _,
+                    _id_category: __,
+                    reviewsCount,
+                    Reviews, // Access the Reviews directly
+                    ...restBusinessDetails
+                } = business.get({ plain: true });
+
+                // Fetch the count of followers for each business
+                const followersCount = await BusinessFollowers.count({
+                    where: { _id_business: business._id_business },
+                });
+
+                // Assuming reviewsCount is the count of valid reviews
+                const averageRating =
+                    reviewsCount > 0
+                        ? Reviews.reduce(
+                              (acc, review) => acc + review.rating,
+                              0
+                          ) / reviewsCount
+                        : 0;
+
+                // Add the computed values to the business details
+                return {
+                    ...restBusinessDetails,
+                    average_rating: averageRating,
+                    reviewsCount,
+                    followers: followersCount,
+                    User: business.User
+                        ? business.User.get({ plain: true })
+                        : null,
+                    Category: business.Category
+                        ? business.Category.get({ plain: true })
+                        : null,
+                };
+            })
+        );
+
         return res.status(200).send({
             message: "Businesses found successfully",
-            businesses,
+            businesses: formattedBusinesses,
         });
     } catch (error) {
         return res.status(500).send({

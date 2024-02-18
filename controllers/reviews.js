@@ -867,6 +867,7 @@ export const deleteReview = async (req, res) => {
     const _id_user = req.user._id_user;
 
     try {
+        // Find the review to delete
         const deletedReview = await Review.findOne({
             where: { _id_review, _id_user, is_valid: true },
         });
@@ -879,6 +880,18 @@ export const deleteReview = async (req, res) => {
 
         // Mark the review as invalid (soft delete)
         await deletedReview.update({ is_valid: false });
+
+        // Soft delete related entities (comments, likes, images, etc.)
+        await Promise.all([
+            Comment.update({ is_valid: false }, { where: { _id_review } }),
+            CommentLikes.update({ is_valid: false }, { where: { _id_review } }),
+            CommentImages.update(
+                { is_valid: false },
+                { where: { _id_review } }
+            ),
+            ReviewLikes.update({ is_valid: false }, { where: { _id_review } }),
+            ReviewImages.update({ is_valid: false }, { where: { _id_review } }),
+        ]);
 
         return res.status(200).send({ message: "Review deleted successfully" });
     } catch (error) {
