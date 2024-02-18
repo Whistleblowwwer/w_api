@@ -450,7 +450,6 @@ export const likeReview = async (req, res) => {
     }
 };
 
-
 // Like Comment
 export const likeComment = async (req, res) => {
     const _id_comment = req.query._id_comment;
@@ -494,7 +493,6 @@ export const likeComment = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
-
 
 // Follow User
 export const followUser = async (req, res) => {
@@ -542,7 +540,6 @@ export const followUser = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
-
 
 // Follow Business
 export const followBusiness = async (req, res) => {
@@ -789,6 +786,7 @@ export const getUserLikes = async (req, res) => {
         const allLikedReviews = await User.findOne({
             where: {
                 _id_user: _id_user_requesting,
+                is_valid: true,
             },
             include: [
                 {
@@ -798,6 +796,9 @@ export const getUserLikes = async (req, res) => {
                         {
                             model: Business,
                             attributes: ["_id_business", "name", "entity"],
+                            where: {
+                                is_valid: true,
+                            },
                         },
                         {
                             model: User,
@@ -807,6 +808,9 @@ export const getUserLikes = async (req, res) => {
                                 "last_name",
                                 "nick_name",
                             ],
+                            where: {
+                                is_valid: true,
+                            },
                         },
                         {
                             model: ReviewImages,
@@ -817,11 +821,14 @@ export const getUserLikes = async (req, res) => {
             ],
         });
 
-        const commentsDTO = await commentsMetaData(
-            allLikedReviews.LikedReviews
+        // Filter only the liked reviews that are valid
+        const validLikedReviews = allLikedReviews.LikedReviews.filter(
+            (review) => review.is_valid
         );
+
+        const commentsDTO = await commentsMetaData(validLikedReviews);
         const likesDTO = await likesMetaData(
-            allLikedReviews.LikedReviews,
+            validLikedReviews,
             _id_user_requesting
         );
         const userFollowings = await UserFollowers.findAll({
@@ -835,7 +842,7 @@ export const getUserLikes = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = allLikedReviews.LikedReviews.map(
+        const reviewsWithLikesAndFollowInfo = validLikedReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
                 const reviewDTO = new ReviewDTO(
