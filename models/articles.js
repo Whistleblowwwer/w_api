@@ -38,6 +38,12 @@ export const Article = sequelize_write.define(
             onUpdate: "CASCADE",
             onDelete: "SET NULL",
         },
+        img_url: {
+            type: DataTypes.STRING, // Define the new field img_url
+            allowNull: false, // Set allowNull to false
+            defaultValue:
+                "https://www.integrityline.com/wp-content/uploads/2021/12/integrityline-blog_was-ist-ein-wb-1024x576.jpg", // Add default value
+        },
     },
     {
         tableName: "articles",

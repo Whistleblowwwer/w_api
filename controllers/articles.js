@@ -23,6 +23,7 @@ export const createArticle = async (req, res) => {
             published_at,
             is_published,
             _id_category,
+            img_url,
         } = req.body;
 
         // Create the article without processing markdown
@@ -34,6 +35,7 @@ export const createArticle = async (req, res) => {
             is_published,
             _id_user,
             _id_category,
+            img_url,
         });
 
         return res.status(201).json({
@@ -51,7 +53,7 @@ export const getAllArticles = async (req, res) => {
         const articles = await Article.findAll({
             include: [
                 { model: User, attributes: ["name", "email"], as: "Author" },
-                // Add other includes as needed
+                { model: Category, attributes: ["name"] },
             ],
         });
 
