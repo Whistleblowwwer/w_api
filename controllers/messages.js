@@ -56,12 +56,14 @@ export const getAllConversations = async (req, res) => {
         {
           model: User,
           as: 'Sender',
-          attributes: ['_id_user', 'name', 'last_name', 'profile_picture_url']
+          attributes: ['_id_user', 'name', 'last_name', 'profile_picture_url'],
+          where: { is_valid: true }
         },
         {
           model: User,
           as: 'Receiver',
-          attributes: ['_id_user', 'name', 'last_name', 'profile_picture_url']
+          attributes: ['_id_user', 'name', 'last_name', 'profile_picture_url'],
+          where: { is_valid: true }
         }
       ],
       order: [['createdAt', 'DESC']]
