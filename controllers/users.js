@@ -367,7 +367,15 @@ export const getUserDetails = async (req, res) => {
     try {
         let user = await User.findOne({
             where: { _id_user },
-            attributes: { exclude: ["password_token"] },
+            attributes: {
+                exclude: [
+                    "password_token",
+                    "fcm_token",
+                    "email",
+                    "phone_number",
+                    "updatedAt",
+                ],
+            },
         });
 
         if (!user) {
@@ -1318,5 +1326,138 @@ export const getFollowedBusinesses = async (req, res) => {
             message: "Internal server error",
             error: error.message,
         });
+    }
+};
+
+// Get followers of a user
+export const getFollowers = async (req, res) => {
+    const userId = req.params.userId; // Get the user id from request parameters
+    const requestingUserId = req.user._id_user;
+
+    try {
+        // Find the user by id
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(400).send({ message: "User not found" });
+        }
+
+        // Retrieve the followers of the user
+        const followers = await user.getFollowers({
+            attributes: {
+                exclude: [
+                    "password_token",
+                    "email",
+                    "phone_number",
+                    "fcm_token",
+                    "createdAt",
+                    "updatedAt",
+                ],
+            },
+        });
+
+        // Define an array to store modified follower objects
+        const modifiedFollowers = [];
+
+        // Iterate over each follower
+        for (const follower of followers) {
+            // Get the count of followings and followers for the follower
+            const followingsCount = await UserFollowers.count({
+                where: { _id_follower: follower._id_user },
+            });
+
+            const followersCount = await UserFollowers.count({
+                where: { _id_followed: follower._id_user },
+            });
+
+            // Check if the requesting user is following the follower
+            const isFollowed = await UserFollowers.findOne({
+                where: {
+                    _id_follower: requestingUserId,
+                    _id_followed: follower._id_user,
+                },
+            });
+
+            // Modify the follower object to include additional fields
+            const modifiedFollower = {
+                ...follower.toJSON(),
+                followings: followingsCount,
+                followers: followersCount,
+                is_followed: isFollowed ? true : false,
+            };
+
+            // Add the modified follower object to the array
+            modifiedFollowers.push(modifiedFollower);
+        }
+
+        res.status(200).send({ followers: modifiedFollowers });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Get followings of a user
+export const getFollowings = async (req, res) => {
+    const userId = req.params.userId; // Get the user id from request parameters
+    const requestingUserId = req.user._id_user;
+
+    try {
+        // Find the user by id
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(400).send({ message: "User not found" });
+        }
+
+        // Retrieve the followings of the user
+        const followings = await user.getFollowed({
+            attributes: {
+                exclude: [
+                    "password_token",
+                    "email",
+                    "fcm_token",
+                    "createdAt",
+                    "updatedAt",
+                ],
+            },
+        });
+
+        // Define an array to store modified following objects
+        const modifiedFollowings = [];
+
+        // Iterate over each following
+        for (const following of followings) {
+            // Get the count of followings and followers for the following
+            const followingsCount = await UserFollowers.count({
+                where: { _id_follower: following._id_user },
+            });
+
+            const followersCount = await UserFollowers.count({
+                where: { _id_followed: following._id_user },
+            });
+
+            // Check if the requesting user is following the following
+            const isFollowed = await UserFollowers.findOne({
+                where: {
+                    _id_follower: requestingUserId,
+                    _id_followed: following._id_user,
+                },
+            });
+
+            // Modify the following object to include additional fields
+            const modifiedFollowing = {
+                ...following.toJSON(),
+                followings: followingsCount,
+                followers: followersCount,
+                is_followed: isFollowed ? true : false,
+            };
+
+            // Add the modified following object to the array
+            modifiedFollowings.push(modifiedFollowing);
+        }
+
+        res.status(200).send({ followings: modifiedFollowings });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
     }
 };

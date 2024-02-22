@@ -23,6 +23,8 @@ import {
     blockUser,
     unBlockUser,
     getFollowedBusinesses,
+    getFollowers,
+    getFollowings,
 } from "../controllers/users.js";
 import {
     subscribeFCM,
@@ -115,5 +117,11 @@ router.delete("/notifications/", validateUser, deleteAllNotificationsForUser);
 
 // Get all notifications for user
 router.get("/notifications/", validateUser, getAllNotificationsForUser);
+
+// Get followers of a user
+router.get("/:userId/followers", validateUser, getFollowers);
+
+// Get users followed by a user
+router.get("/:userId/followed", validateUser, getFollowings);
 
 export default router;
