@@ -9,6 +9,8 @@ import {
     updateReview,
     deleteReview,
     getUserLikedReviews,
+    getReviewLikes,
+    getReviewComments,
 } from "../controllers/reviews.js";
 
 const router = Router();
@@ -38,5 +40,11 @@ router.put("/", validateUser, updateReview);
 
 // Delete Review
 router.patch("/", validateUser, deleteReview);
+
+// Route to get users who liked a review
+router.get("/:reviewId/likes", validateUser, getReviewLikes);
+
+// Route to get users who commented on a review
+router.get("/:reviewId/comments", validateUser, getReviewComments);
 
 export default router;

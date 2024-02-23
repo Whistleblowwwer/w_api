@@ -906,3 +906,161 @@ export const deleteReview = async (req, res) => {
         }
     }
 };
+
+// Get users who liked a review
+export const getReviewLikes = async (req, res) => {
+    const reviewId = req.params.reviewId; // Get the review id from request parameters
+
+    try {
+        // Find the review by id
+        const review = await Review.findByPk(reviewId);
+
+        if (!review) {
+            return res.status(400).send({ message: "Review not found" });
+        }
+
+        // Retrieve the users who liked the review
+        const likedUsers = await review.getUserLikes({
+            attributes: {
+                exclude: [
+                    "password_token",
+                    "email",
+                    "fcm_token",
+                    "createdAt",
+                    "updatedAt",
+                ],
+            },
+        });
+
+        // Define an array to store modified user objects
+        const modifiedLikedUsers = [];
+
+        // Iterate over each liked user
+        for (const user of likedUsers) {
+            // Get the count of followings and followers for the user
+            const followingsCount = await UserFollowers.count({
+                where: { _id_follower: user._id_user },
+            });
+
+            const followersCount = await UserFollowers.count({
+                where: { _id_followed: user._id_user },
+            });
+
+            // Check if the requesting user is following the user
+            const isFollowed = await UserFollowers.findOne({
+                where: {
+                    _id_follower: req.user._id_user,
+                    _id_followed: user._id_user,
+                },
+            });
+
+            // Modify the user object to include additional fields
+            const modifiedUser = {
+                ...user.toJSON(),
+                followings: followingsCount,
+                followers: followersCount,
+                is_followed: isFollowed ? true : false,
+            };
+
+            // Add the modified user object to the array
+            modifiedLikedUsers.push(modifiedUser);
+        }
+
+        res.status(200).send({ users: modifiedLikedUsers });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
+
+// Get users who commented on a review
+export const getReviewComments = async (req, res) => {
+    const reviewId = req.params.reviewId; // Get the review id from request parameters
+
+    try {
+        // Find the review by id
+        const review = await Review.findByPk(reviewId);
+
+        if (!review) {
+            return res.status(400).send({ message: "Review not found" });
+        }
+
+        // Retrieve the comments on the review
+        const comments = await review.getComments({
+            include: [
+                {
+                    model: User,
+                    as: "User",
+                    attributes: {
+                        exclude: [
+                            "password_token",
+                            "email",
+                            "fcm_token",
+                            "createdAt",
+                            "updatedAt",
+                        ],
+                    },
+                },
+            ],
+            attributes: {
+                exclude: ["password_token", "email", "fcm_token", "updatedAt"],
+            },
+        });
+
+        // Define an array to store modified comment objects
+        const modifiedComments = [];
+
+        // Iterate over each comment
+        for (const comment of comments) {
+            // Get the count of followings and followers for the user who made the comment
+            const followingsCount = await UserFollowers.count({
+                where: { _id_follower: comment.User._id_user },
+            });
+
+            const followersCount = await UserFollowers.count({
+                where: { _id_followed: comment.User._id_user },
+            });
+
+            // Check if the requesting user is following the user who made the comment
+            const isFollowed = await UserFollowers.findOne({
+                where: {
+                    _id_follower: req.user._id_user,
+                    _id_followed: comment.User._id_user,
+                },
+            });
+
+            // Construct the modified comment object with user data at the top level and comment data inside a Comment object
+            const modifiedComment = {
+                Comment: {
+                    _id_comment: comment._id_comment,
+                    content: comment.content,
+                    is_valid: comment.is_valid,
+                    createdAt: comment.createdAt,
+                    _id_user: comment._id_user,
+                    _id_review: comment._id_review,
+                    _id_parent: comment._id_parent,
+                },
+                _id_user: comment.User._id_user,
+                name: comment.User.name,
+                last_name: comment.User.last_name,
+                phone_number: comment.User.phone_number,
+                birth_date: comment.User.birth_date,
+                gender: comment.User.gender,
+                profile_picture_url: comment.User.profile_picture_url,
+                role: comment.User.role,
+                is_valid: comment.User.is_valid,
+                nick_name: comment.User.nick_name,
+                blockedBy: comment.User.blockedBy,
+                followings: followingsCount,
+                followers: followersCount,
+                is_followed: isFollowed ? true : false,
+            };
+
+            // Add the modified comment object to the array
+            modifiedComments.push(modifiedComment);
+        }
+
+        res.status(200).send({ comments: modifiedComments });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
