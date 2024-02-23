@@ -450,12 +450,18 @@ export const getBusinessDetails = async (req, res) => {
     }
 };
 
-// Get Business List
+// Get Business List 
 export const listAllBusinesses = async (req, res) => {
     try {
         const businesses = await Business.findAll({
-            limit: 20,
-            order: [["createdAt", "DESC"]],
+            order: [
+                [
+                    Sequelize.literal(
+                        '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
+                    ),
+                    "DESC"
+                ]
+            ],
             attributes: [
                 "_id_business",
                 "name",
