@@ -25,6 +25,7 @@ import {
     getFollowedBusinesses,
     getFollowers,
     getFollowings,
+    logOut
 } from "../controllers/users.js";
 import {
     subscribeFCM,
@@ -41,6 +42,9 @@ router.post("/", createUser);
 
 // Log In
 router.post("/login", logIn);
+
+// Log Out
+router.patch("/logout", validateUser, logOut);
 
 // Update User
 router.put("/", validateUser, updateUser);
@@ -123,5 +127,7 @@ router.get("/:userId/followers", validateUser, getFollowers);
 
 // Get users followed by a user
 router.get("/:userId/followed", validateUser, getFollowings);
+
+
 
 export default router;

@@ -1461,3 +1461,24 @@ export const getFollowings = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
+// Log Out User
+export const logOut = async (req, res) => {
+    const userId = req.user._id_user; // Get the user id from the validateUser middleware
+
+    try {
+        // Find the user by id
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            return res.status(400).send({ message: "User not found" });
+        }
+
+        // Update the user's fcm_token to null to log out the user
+        await user.update({ fcm_token: null });
+
+        res.status(200).send({ message: "User logged out successfully" });
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+};
