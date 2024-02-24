@@ -5,6 +5,8 @@ import {
     createComment,
     updateComment,
     deactivateComment,
+    getCommentUserLikes,
+    getCommentUserComments,
 } from "../controllers/comments.js";
 
 const router = Router();
@@ -22,5 +24,11 @@ router.put("/", validateUser, updateComment);
 
 //Delete Comment
 router.patch("/", validateUser, deactivateComment);
+
+// Route to get users who liked a review
+router.get("/:commentId/likes", validateUser, getCommentUserLikes);
+
+// Route to get users who commented on a review
+router.get("/:commentId/comments", validateUser, getCommentUserComments);
 
 export default router;

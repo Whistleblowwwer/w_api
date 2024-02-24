@@ -908,7 +908,7 @@ export const deleteReview = async (req, res) => {
 };
 
 // Get users who liked a review
-export const getReviewLikes = async (req, res) => {
+export const getReviewUserLikes = async (req, res) => {
     const reviewId = req.params.reviewId; // Get the review id from request parameters
 
     try {
@@ -973,7 +973,7 @@ export const getReviewLikes = async (req, res) => {
 };
 
 // Get users who commented on a review
-export const getReviewComments = async (req, res) => {
+export const getReviewUserComments = async (req, res) => {
     const reviewId = req.params.reviewId; // Get the review id from request parameters
 
     try {
