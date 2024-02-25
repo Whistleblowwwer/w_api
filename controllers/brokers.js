@@ -2,11 +2,28 @@ import { Broker } from "../models/broker.js";
 import { User } from "../models/users.js";
 import { sendNotificationEmails } from "../utils/mailMan.js";
 
+// Creates an assistant or attorney.
 // Creates an assistant or attorney. Phone number is not required.
 export const createBroker = async (req, res) => {
     try {
         // Extract data from the request body
-        const { name, last_name, INE, phone_number, email, type } = req.body;
+        const { name, last_name, INE, phone_number, email, type, img_url } =
+            req.body;
+
+        // Check for required fields
+        if (!name || !last_name || !type || !email) {
+            return res
+                .status(400)
+                .json({ message: "Required fields are missing" });
+        }
+
+        // Check if the user is an admin
+        const user = await User.findByPk(req.user._id_user);
+        if (!user || user.role !== "admin") {
+            return res
+                .status(403)
+                .json({ message: "Permission Denied. User must be an admin." });
+        }
 
         // Create the broker in the database
         const newBroker = await Broker.create({
@@ -16,6 +33,7 @@ export const createBroker = async (req, res) => {
             phone_number,
             email,
             type,
+            img_url,
         });
 
         return res.status(201).json({
@@ -33,22 +51,21 @@ export const updateBroker = async (req, res) => {
     const _id_broker = req.query;
 
     try {
-        // Check if the user requesting is an admin
-        const isAdmin = await User.findOne({
-            where: { _id_user, role: "admin" },
-        });
-        if (!isAdmin) {
+        // Check if the user is an admin
+        const user = await User.findByPk(_id_user);
+        if (!user || user.role !== "admin") {
             return res
                 .status(403)
                 .json({ message: "Permission Denied. User must be an admin." });
         }
 
         // Extract data from the request body
-        const { name, last_name, INE, phone_number, email, type } = req.body;
+        const { name, last_name, INE, phone_number, email, type, img_url } =
+            req.body;
 
         // Update the broker in the database
         const updatedBroker = await Broker.update(
-            { name, last_name, INE, phone_number, email, type },
+            { name, last_name, INE, phone_number, email, type, img_url },
             { where: { _id_broker } }
         );
 

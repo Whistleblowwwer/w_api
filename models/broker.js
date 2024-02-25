@@ -40,6 +40,10 @@ export const Broker = sequelize_write.define(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        img_url: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
     },
     {
         tableName: "brokers",
