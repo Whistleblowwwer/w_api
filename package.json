@@ -9,7 +9,7 @@
   },
   "author": "",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.437.0",
     "@aws-sdk/s3-request-presigner": "^3.428.0",
