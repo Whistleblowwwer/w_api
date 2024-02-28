@@ -1,5 +1,6 @@
 import axios from "axios";
 import RequestDTO from "../models/dto/request_dto.js";
+import { UserIps } from "../models/userIps.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
@@ -76,27 +77,44 @@ export const validateUser = (req, res, next) => {
 
     if (!token) {
         req.requestDTO.errorLog("No token provided");
-
         return res
             .status(401)
             .json({ success: false, message: "No token provided" });
     }
 
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, decodedToken) => {
+    jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
         if (err) {
-            // Handle JWT validation errors
             console.error("JWT validation error:", err.message);
-
             req.requestDTO.errorLog(err.message);
-
             return res
                 .status(401)
                 .json({ success: false, message: "Invalid token" });
         }
 
         req.user = decodedToken;
-
         req.requestDTO.setUserId(req.user._id_user);
+        req.requestDTO.requestLog();
+        
+        const { _ip_address, city, country } = req.requestDTO;
+        
+        try {
+            const lastKnownIp = await UserIps.findOne({
+                where: { _id_user: req.user._id_user },
+                order: [['createdAt', 'DESC']]
+            });
+            
+            if (!lastKnownIp || lastKnownIp.city !== city || lastKnownIp.country !== country) {
+                await UserIps.create({
+                    _id_user: req.user._id_user,
+                    _ip_address,
+                    city,
+                    country
+                });
+            }
+        } catch (error) {
+            console.error("Error updating user IP:", error.message);
+        }
+
         req.requestDTO.requestLog();
 
         next();

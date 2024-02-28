@@ -9,6 +9,7 @@ import { Category } from "./categories.js";
 import { ErrorLog } from "./errorsLogs.js";
 import { Business } from "./business.js";
 import { Log } from "./requestsLogs.js";
+import { UserIps } from "./userIps.js";
 import { Article } from "./articles.js";
 import { Message } from "./messages.js";
 import { Comment } from "./comments.js";
@@ -257,6 +258,12 @@ Log.belongsTo(User, {
 ErrorLog.belongsTo(User, {
     foreignKey: "_id_user",
 });
+
+// ---------------- USER IPS ------------------
+
+User.hasMany(UserIps, { foreignKey: '_id_user' });
+UserIps.belongsTo(User, { foreignKey: '_id_user' });
+
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);
