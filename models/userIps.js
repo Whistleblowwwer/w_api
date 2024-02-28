@@ -5,9 +5,13 @@ import { User } from "./users.js";
 export const UserIps = sequelize_write.define(
     "UserIps",
     {
+        _id_ip: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
         _id_user: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
             references: {
                 model: User,
                 key: "_id_user",
@@ -17,11 +21,16 @@ export const UserIps = sequelize_write.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        city: DataTypes.STRING,
-        country: DataTypes.STRING,
+        city: {
+            type: DataTypes.STRING,
+        },
+        country: {
+            type: DataTypes.STRING,
+        },
     },
     {
         tableName: "userIps",
         timestamps: true,
     }
 );
+
