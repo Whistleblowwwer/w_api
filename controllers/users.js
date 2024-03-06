@@ -489,7 +489,8 @@ export const likeComment = async (req, res) => {
                 await commentLikeNotificationDTO.generateCommentLikeNotification(
                     _id_user,
                     comment._id_user,
-                    _id_comment // target
+                    _id_comment,
+                    comment.content
                 );
             }
 

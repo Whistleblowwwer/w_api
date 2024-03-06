@@ -2,7 +2,6 @@ import { Broker } from "../models/broker.js";
 import { User } from "../models/users.js";
 import { sendNotificationEmails } from "../utils/mailMan.js";
 
-// Creates an assistant or attorney.
 // Creates an assistant or attorney. Phone number is not required.
 export const createBroker = async (req, res) => {
     try {

@@ -47,7 +47,7 @@ export const Notification = sequelize_write.define(
             allowNull: false,
         },
         content: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         is_valid: {

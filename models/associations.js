@@ -9,12 +9,13 @@ import { Category } from "./categories.js";
 import { ErrorLog } from "./errorsLogs.js";
 import { Business } from "./business.js";
 import { Log } from "./requestsLogs.js";
-import { UserIps } from "./userIps.js";
 import { Article } from "./articles.js";
 import { Message } from "./messages.js";
 import { Comment } from "./comments.js";
+import { UserIps } from "./userIps.js";
 import { Review } from "./reviews.js";
 import { User } from "./users.js";
+import { Ad } from "./ads.js";
 // Associations
 
 // A.belongsTo(B) association means One-To-One
@@ -102,6 +103,12 @@ User.belongsToMany(Notification, {
     otherKey: "_id_notification",
 });
 
+// Un usuario puede ser dueño de varias pautas
+// 1:N
+User.hasMany(Ad, {
+    foreignKey: "_id_user",
+});
+
 // ------------------ BUSINESS ------------------
 // Una empresa tiene un creador
 // 1:1
@@ -149,6 +156,12 @@ Review.belongsToMany(User, {
 // Una reseña puede tener varias imagenes
 // 1:N
 Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
+
+// Un usuario puede ser dueño de varias pautas
+// 1:N
+Review.hasMany(Ad, {
+    foreignKey: "_id_ad",
+});
 // ------------------ COMMENT ------------------
 
 // Un comentario pertenece a un usuario
@@ -202,7 +215,7 @@ Category.belongsTo(Category, { foreignKey: "_id_parent", as: "parent" });
 // 1:N
 Category.hasMany(Business, { foreignKey: "_id_category" });
 
-// ------------------ IMAGENES ------------------
+// ------------------ IMAGES ------------------
 // Una imagen pertenece a una reseña
 // 1:1
 ReviewImages.belongsTo(Review, { foreignKey: "_id_review" });
@@ -261,9 +274,20 @@ ErrorLog.belongsTo(User, {
 
 // ---------------- USER IPS ------------------
 
-User.hasMany(UserIps, { foreignKey: '_id_user' });
-UserIps.belongsTo(User, { foreignKey: '_id_user' });
+User.hasMany(UserIps, { foreignKey: "_id_user" });
+UserIps.belongsTo(User, { foreignKey: "_id_user" });
 
+// ------------------ ADS ------------------
+// Una pauta pertenece a un usuario
+// 1:1
+Ad.belongsTo(User, {
+    foreignKey: "_id_user",
+});
+
+// Associate Ad with Review
+Ad.hasMany(Review, { foreignKey: "_id_ad" });
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);
+console.log("\n -- REVIEW ASSOCIATIONS: ", Review.associations);
+console.log("\n -- ADS ASSOCIATIONS: ", Ad.associations);

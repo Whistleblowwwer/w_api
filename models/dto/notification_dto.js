@@ -264,13 +264,15 @@ export default class NotificationDTO {
     async generateCommentLikeNotification(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        commentContent
     ) {
         //Generate Message
         const message = await this.buildCommentLikeMessage(
             _id_user_sender,
             _id_user_receiver,
-            _id_target
+            _id_target,
+            commentContent
         );
 
         if (!message) {
@@ -298,7 +300,8 @@ export default class NotificationDTO {
     async buildCommentLikeMessage(
         _id_user_sender,
         _id_user_receiver,
-        _id_target
+        _id_target,
+        commentContent
     ) {
         const userIds = [_id_user_sender, _id_user_receiver];
 
@@ -322,7 +325,7 @@ export default class NotificationDTO {
         const message = {
             notification: {
                 title: `A ${sender.nick_name} le ha gustado tu comentario`,
-                body: "Juntos podemos romper barreras ¡No desaproveches esta oportunidad!",
+                body: `${commentContent}`,
             },
             data: {
                 _id_target,

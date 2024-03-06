@@ -10,6 +10,7 @@ import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
 import { Router } from "express";
+import adRoute from "./ads.js";
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.use("/brokers", BrokersRoute);
 router.use("/reviews", reviewRoute);
 router.use("/bucket", bucketRoute);
 router.use("/users", userRoute);
+router.use("/ads", adRoute);
 
 // Subscription Confirmation Route
 router.post("/sns-subscription-confirmation", (req, res) => {
@@ -50,38 +52,5 @@ router.use(validateUser, (req, res) => {
     req.requestDTO.errorLog("Invalid route");
     res.status(404).json({ message: "Route not found" });
 });
-
-// router.post("/sns-subscription-confirmation", (req, res) => {
-//     const snsMessageBody = req.body;
-//     const snsMessageParams = req.params;
-//     const snsMessage = req.params;
-//     console.log("\n-- SNS BODY:", snsMessageBody);
-//     console.log("\n-- SNS PARAMS:", snsMessageParams);
-//     console.log("\n-- SNS REQUEST:", snsMessage);
-//     if (snsMessageBody && snsMessageBody.Type === "SubscriptionConfirmation") {
-//         // Confirm the subscription by making a GET request to the SubscribeURL
-//         // AWS will send a confirmation URL in the SubscribeURL field of the SNS message
-//         const subscribeURL = snsMessageBody.SubscribeURL;
-//         // You might want to use a library like axios or node-fetch to make the request
-//         // Example using axios:
-//         axios
-//             .get(subscribeURL)
-//             .then(() => {
-//                 res.status(200).json({
-//                     message: "Subscription confirmed successfully.",
-//                 });
-//             })
-//             .catch((error) => {
-//                 console.error("Error confirming subscription:", error);
-//                 res.status(500).json({
-//                     message: "Error confirming subscription.",
-//                 });
-//             });
-//     } else {
-//         res.status(400).json({
-//             message: "Invalid SNS message.",
-//         });
-//     }
-// });
 
 export default router;
