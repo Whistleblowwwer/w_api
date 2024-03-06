@@ -6,7 +6,7 @@ import {
     getAllActiveAds,
     updateAd,
     deleteAd,
-    getAllBannerAds,
+    getAdsByType,
 } from "../controllers/ads.js";
 
 const router = Router();
@@ -27,6 +27,6 @@ router.put("/:id", validateUser, updateAd);
 router.delete("/:id", validateUser, deleteAd);
 
 // Get all banner type ads
-router.get("/banner", getAllBannerAds);
+router.get("/type/:type", getAdsByType);
 
 export default router;

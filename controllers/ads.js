@@ -1,5 +1,7 @@
-import { Ad } from "../models/ads.js"; // Assuming the model file is named "ad.js"
-import { User } from "../models/users.js"; // Assuming the model file is named "user.js"
+import { Ad } from "../models/ads.js";
+import { User } from "../models/users.js";
+import { Banner } from "../models/banners.js";
+import { sequelize_write } from "../config/db_write.js";
 
 // Controller to create the Ad
 export const createAd = async (req, res) => {
@@ -23,8 +25,17 @@ export const createAd = async (req, res) => {
             end_campaign_date: rawEndDate,
             clickUrl,
             _id_user,
-            type, // Added type extraction
+            type,
+            index_position, // New fields for banners
+            location, // New fields for banners
         } = req.body;
+
+        // Check for missing fields
+        if (type === "Banner" && (!location || !index_position)) {
+            return res.status(400).json({
+                message: "Location and index_position are required for banners",
+            });
+        }
 
         // Parse start_campaign_date and end_campaign_date into Date objects if they're not already
         const start_campaign_date =
@@ -49,17 +60,36 @@ export const createAd = async (req, res) => {
             });
         }
 
-        // Create the ad
-        const createdAd = await Ad.create({
-            title,
-            description,
-            imageUrl,
-            start_campaign_date,
-            end_campaign_date,
-            clickUrl,
-            status,
-            _id_user,
-            type,
+        // Create the ad and the banner in a transaction
+        const createdAd = await sequelize_write.transaction(async (t) => {
+            const ad = await Ad.create(
+                {
+                    title,
+                    description,
+                    imageUrl,
+                    start_campaign_date,
+                    end_campaign_date,
+                    clickUrl,
+                    status,
+                    _id_user,
+                    type,
+                },
+                { transaction: t }
+            );
+
+            // If type is banner, create the corresponding banner entry
+            if (type === "Banner") {
+                await Banner.create(
+                    {
+                        location,
+                        index_position,
+                        _id_ad: ad._id_ad, // Associate the banner with the created ad
+                    },
+                    { transaction: t }
+                );
+            }
+
+            return ad;
         });
 
         return res.status(201).json({
@@ -120,19 +150,57 @@ export const getAdById = async (req, res) => {
     }
 };
 
-export const getAllBannerAds = async (req, res) => {
-    try {
-        // Find all ads with type 'Banner'
-        const bannerAds = await Ad.findAll({
-            where: {
-                type: "Banner",
-            },
-        });
+export const getAdsByType = async (req, res) => {
+    const adType = req.params.type; // Assuming the route parameter is named 'type'
 
-        return res.status(200).json({
-            message: "Banner ads retrieved successfully",
-            ads: bannerAds,
-        });
+    try {
+        let ads;
+        if (adType === "Banner") {
+            // If the requested type is banner, fetch all banners and organize them by location
+            const banners = await Banner.findAll({
+                where: {
+                    is_valid: true, // Filter only valid banners
+                },
+                include: {
+                    model: Ad,
+                    where: { type: adType },
+                    attributes: [],
+                },
+                order: [
+                    ["location", "ASC"],
+                    ["index_position", "ASC"],
+                ],
+            });
+
+            // Initialize an object to hold banners organized by location
+            const organizedBanners = {};
+
+            // Organize banners by location
+            banners.forEach((banner) => {
+                if (!organizedBanners[banner.location]) {
+                    organizedBanners[banner.location] = [];
+                }
+                organizedBanners[banner.location].push(banner);
+            });
+
+            // Format the response
+            ads = organizedBanners;
+        } else {
+            // For other types, fetch ads normally
+            ads = await Ad.findAll({
+                where: {
+                    type: adType,
+                    is_valid: true, // Filter only valid ads
+                    status: "active", // Filter only active ads
+                },
+                include: {
+                    model: User,
+                    attributes: ["name", "email"],
+                },
+            });
+        }
+
+        return res.status(200).json(ads);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal Server Error" });

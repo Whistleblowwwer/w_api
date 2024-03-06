@@ -14,6 +14,7 @@ import { Message } from "./messages.js";
 import { Comment } from "./comments.js";
 import { UserIps } from "./userIps.js";
 import { Review } from "./reviews.js";
+import { Banner } from "./banners.js";
 import { User } from "./users.js";
 import { Ad } from "./ads.js";
 // Associations
@@ -286,6 +287,13 @@ Ad.belongsTo(User, {
 
 // Associate Ad with Review
 Ad.hasMany(Review, { foreignKey: "_id_ad" });
+
+Ad.hasMany(Banner, { foreignKey: "_id_ad" });
+
+// ------------------ BANNERS ------------------
+// Una banner pertenece a una pauta
+// 1:1
+Banner.belongsTo(Ad, { foreignKey: "_id_ad" });
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);
