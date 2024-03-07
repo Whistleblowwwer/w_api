@@ -28,6 +28,7 @@ export const createAd = async (req, res) => {
             type,
             index_position, // New fields for banners
             location, // New fields for banners
+            _id_business, // Added field for linking ad to business
         } = req.body;
 
         // Check for missing fields
@@ -73,6 +74,7 @@ export const createAd = async (req, res) => {
                     status,
                     _id_user,
                     type,
+                    _id_business, // Include _id_business in the creation of the ad
                 },
                 { transaction: t }
             );
@@ -134,7 +136,7 @@ export const getAdById = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["name", "email"], // Include user information if needed
+                    attributes: ["name", "email"],
                 },
             ],
         });
@@ -161,11 +163,12 @@ export const getAdsByType = async (req, res) => {
                 where: {
                     is_valid: true, // Filter only valid banners
                 },
-                include: {
-                    model: Ad,
-                    where: { type: adType },
-                    attributes: [],
-                },
+                include: [
+                    {
+                        model: Ad,
+                        where: { type: adType },
+                    },
+                ],
                 order: [
                     ["location", "ASC"],
                     ["index_position", "ASC"],
