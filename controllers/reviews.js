@@ -810,9 +810,51 @@ export const getAllReviews = async (req, res) => {
             }
         );
 
+        // Fetch active, valid ads of type "Review"
+        const ads = await Ad.findAll({
+            where: {
+                type: "Review",
+                is_valid: true,
+                status: "active",
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
+                },
+                {
+                    model: Business,
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
+                },
+            ],
+        });
+
+        const formattedAds = ads.map((ad) => ({
+            _id_review: ad._id_ad, 
+            ...ad.toJSON(),
+        }));
+
         res.status(200).send({
-            message: "Reviews retrieved successfully",
+            message: "Reviews and ads retrieved successfully",
             reviews: reviewsWithLikesAndFollowInfo,
+            adsList: formattedAds,
         });
     } catch (error) {
         console.error("Error retrieving reviews:", error);
