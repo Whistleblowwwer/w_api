@@ -716,9 +716,7 @@ export const getUserLikedReviews = async (req, res) => {
 // Get All Reviews
 export const getAllReviews = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
-
     try {
-        // Fetch blocked users
         const blockedUsers = await User.findAll({
             where: {
                 blockedBy: {
@@ -726,14 +724,14 @@ export const getAllReviews = async (req, res) => {
                 },
             },
         });
+
         const blockedUserIds = blockedUsers.map((user) => user._id_user).flat();
 
-        // Fetch all reviews
         const allReviews = await Review.findAll({
             where: {
                 is_valid: true,
                 _id_user: {
-                    [Op.notIn]: blockedUserIds,
+                    [Op.notIn]: blockedUserIds, // Exclude reviews made by blocked users
                 },
             },
             limit: 30,
@@ -771,57 +769,53 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
-        // Fetch active, valid ads of type "Review"
-        const ads = await Ad.findAll({
-            where: {
-                type: "Review",
-                is_valid: true,
-                status: "active",
-            },
-            include: [
-                {
-                    model: User,
-                    attributes: [
-                        "_id_user",
-                        "name",
-                        "last_name",
-                        "nick_name",
-                        "profile_picture_url",
-                    ],
-                    where: {
-                        is_valid: true,
-                    },
-                },
-                {
-                    model: Business,
-                    attributes: [
-                        "_id_business",
-                        "name",
-                        "entity",
-                        "profile_picture_url",
-                    ],
-                    where: {
-                        is_valid: true,
-                    },
-                },
-            ],
+        const commentsDTO = await commentsMetaData(allReviews);
+        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
+        const userFollowings = await UserFollowers.findAll({
+            where: { _id_follower: _id_user_requesting },
+        });
+        const businessFollowings = await BusinessFollowers.findAll({
+            where: { _id_user: _id_user_requesting },
         });
 
-        // Format reviews and ads for response
-        const formattedReviews = allReviews.map((review) => review.toJSON());
-        const formattedAds = ads.map((ad) => ({
-            _id_review: ad._id_ad, // Use the ad's ID as the review ID for ads
-            ...ad.toJSON(),
-        }));
+        const likesMap = new Map(
+            likesDTO.map((like) => [like.dataValues._id_review, like])
+        );
 
-        // Send response with reviews and ads separated
+        const reviewsWithLikesAndFollowInfo = allReviews.map(
+            (review, index) => {
+                const reviewLike = likesMap.get(review._id_review);
+
+                const reviewDTO = new ReviewDTO(
+                    review.dataValues,
+                    reviewLike?.dataValues?.userLiked === "1",
+                    userFollowings,
+                    businessFollowings,
+                    _id_user_requesting
+                );
+
+                reviewDTO.setMetaData(
+                    commentsDTO[index],
+                    reviewLike,
+                    userFollowings,
+                    businessFollowings
+                );
+
+                const imageUrls = review.ReviewImages.map(
+                    (image) => image.image_url
+                );
+                reviewDTO.setImages(imageUrls);
+
+                return reviewDTO.getReviewData();
+            }
+        );
+
         res.status(200).send({
-            message: "Reviews and ads retrieved successfully",
-            reviews: formattedReviews,
-            adsList: formattedAds,
+            message: "Reviews retrieved successfully",
+            reviews: reviewsWithLikesAndFollowInfo,
         });
     } catch (error) {
-        console.error("Error retrieving reviews and ads:", error);
+        console.error("Error retrieving reviews:", error);
         res.status(500).send({ message: "Internal server error" });
     }
 };
