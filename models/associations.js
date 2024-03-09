@@ -158,9 +158,9 @@ Review.belongsToMany(User, {
 // 1:N
 Review.hasMany(ReviewImages, { foreignKey: "_id_review" });
 
-// Un usuario puede ser dueño de varias pautas
+// Una reseña pertenece a una pauta
 // 1:N
-Review.hasMany(Ad, {
+Review.belongsTo(Ad, {
     foreignKey: "_id_ad",
 });
 // ------------------ COMMENT ------------------
@@ -285,9 +285,12 @@ Ad.belongsTo(User, {
     foreignKey: "_id_user",
 });
 
-// Associate Ad with Review
+// Una pauta puede tener varias reseñas
+// 1:N
 Ad.hasMany(Review, { foreignKey: "_id_ad" });
 
+// Una pauta puede tener varios banner
+// 1:N
 Ad.hasMany(Banner, { foreignKey: "_id_ad" });
 
 // ------------------ BANNERS ------------------

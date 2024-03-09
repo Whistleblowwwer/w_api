@@ -22,7 +22,7 @@ router.post("/", validateUser, createBroker);
 router.put("/", validateUser, updateBroker);
 
 // Delete Broker
-router.delete("/", validateUser, deleteBroker);
+router.delete("/:id", validateUser, deleteBroker);
 
 // Get All Attorneys
 router.get("/attorneys", validateUser, getAttorneys);

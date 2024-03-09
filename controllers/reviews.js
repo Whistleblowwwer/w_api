@@ -1,6 +1,6 @@
 import { Sequelize, Op } from "sequelize";
-import { User } from "../models/users.js";
 import { Ad } from "../models/ads.js";
+import { User } from "../models/users.js";
 import { Review } from "../models/reviews.js";
 import { Comment } from "../models/comments.js";
 import { Business } from "../models/business.js";
@@ -727,12 +727,14 @@ export const getAllReviews = async (req, res) => {
 
         const blockedUserIds = blockedUsers.map((user) => user._id_user).flat();
 
-        const allReviews = await Review.findAll({
+        // Fetch all reviews that do not have an associated ad
+        const originalReviews = await Review.findAll({
             where: {
                 is_valid: true,
                 _id_user: {
                     [Op.notIn]: blockedUserIds, // Exclude reviews made by blocked users
                 },
+                _id_ad: { [Op.is]: null }, // Fetch reviews without associated ads
             },
             limit: 30,
             order: [["createdAt", "DESC"]],
@@ -769,8 +771,65 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
-        const commentsDTO = await commentsMetaData(allReviews);
-        const likesDTO = await likesMetaData(allReviews, _id_user_requesting);
+        // Fetch all reviews with associated ads that are valid, active, and of type "Review"
+        const reviewsWithAds = await Review.findAll({
+            where: {
+                is_valid: true,
+                _id_user: {
+                    [Op.notIn]: blockedUserIds, // Exclude reviews made by blocked users
+                },
+                _id_ad: { [Op.not]: null }, // Fetch reviews with associated ads
+            },
+            include: [
+                {
+                    model: Business,
+                    attributes: [
+                        "_id_business",
+                        "name",
+                        "entity",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
+                },
+                {
+                    model: User,
+                    attributes: [
+                        "_id_user",
+                        "name",
+                        "last_name",
+                        "nick_name",
+                        "profile_picture_url",
+                    ],
+                    where: {
+                        is_valid: true,
+                    },
+                },
+                {
+                    model: ReviewImages,
+                    attributes: ["image_url"],
+                },
+                {
+                    model: Ad,
+                    where: {
+                        status: "active",
+                        type: "Review",
+                        is_valid: true,
+                    },
+                },
+            ],
+        });
+
+        console.log("\n AD REVIEWS: ", reviewsWithAds);
+
+        const commentsDTO = await commentsMetaData(
+            originalReviews.concat(reviewsWithAds)
+        );
+        const likesDTO = await likesMetaData(
+            originalReviews.concat(reviewsWithAds),
+            _id_user_requesting
+        );
         const userFollowings = await UserFollowers.findAll({
             where: { _id_follower: _id_user_requesting },
         });
@@ -782,7 +841,7 @@ export const getAllReviews = async (req, res) => {
             likesDTO.map((like) => [like.dataValues._id_review, like])
         );
 
-        const reviewsWithLikesAndFollowInfo = allReviews.map(
+        const reviewsWithLikesAndFollowInfo = originalReviews.map(
             (review, index) => {
                 const reviewLike = likesMap.get(review._id_review);
 
@@ -810,45 +869,9 @@ export const getAllReviews = async (req, res) => {
             }
         );
 
-        // Fetch active, valid ads of type "Review"
-        const ads = await Ad.findAll({
-            where: {
-                type: "Review",
-                is_valid: true,
-                status: "active",
-            },
-            include: [
-                {
-                    model: User,
-                    attributes: [
-                        "_id_user",
-                        "name",
-                        "last_name",
-                        "nick_name",
-                        "profile_picture_url",
-                    ],
-                    where: {
-                        is_valid: true,
-                    },
-                },
-                {
-                    model: Business,
-                    attributes: [
-                        "_id_business",
-                        "name",
-                        "entity",
-                        "profile_picture_url",
-                    ],
-                    where: {
-                        is_valid: true,
-                    },
-                },
-            ],
-        });
-
-        const formattedAds = ads.map((ad) => ({
-            _id_review: ad._id_ad, 
-            ...ad.toJSON(),
+        const formattedAds = reviewsWithAds.map((review) => ({
+            _id_review: review._id_review,
+            ...review.toJSON(),
         }));
 
         res.status(200).send({

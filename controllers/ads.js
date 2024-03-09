@@ -1,6 +1,7 @@
 import { Ad } from "../models/ads.js";
 import { User } from "../models/users.js";
 import { Banner } from "../models/banners.js";
+import { Review } from "../models/reviews.js";
 import { sequelize_write } from "../config/db_write.js";
 
 // Controller to create the Ad
@@ -61,34 +62,75 @@ export const createAd = async (req, res) => {
             });
         }
 
-        // Create the ad and the banner in a transaction
+        // Create the ad and the review in a transaction
         const createdAd = await sequelize_write.transaction(async (t) => {
-            const ad = await Ad.create(
-                {
-                    title,
-                    description,
-                    imageUrl,
-                    start_campaign_date,
-                    end_campaign_date,
-                    clickUrl,
-                    status,
-                    _id_user,
-                    type,
-                    _id_business, // Include _id_business in the creation of the ad
-                },
-                { transaction: t }
-            );
+            let ad;
+            if (type === "Review") {
+                // If the type is Review, create a review and associate the ad with it
+                const { content, rating } = req.body;
 
-            // If type is banner, create the corresponding banner entry
-            if (type === "Banner") {
-                await Banner.create(
+                // Check for missing fields for Review type
+                if (!content) {
+                    return res.status(400).json({
+                        message: "Content and rating are required for reviews",
+                    });
+                }
+
+                // Create the ad associated with the review
+                ad = await Ad.create(
                     {
-                        location,
-                        index_position,
-                        _id_ad: ad._id_ad, // Associate the banner with the created ad
+                        title,
+                        description,
+                        start_campaign_date,
+                        end_campaign_date,
+                        clickUrl,
+                        status,
+                        _id_user,
+                        type,
+                        _id_business,
                     },
                     { transaction: t }
                 );
+
+                // Create the review
+                const review = await Review.create(
+                    {
+                        content,
+                        _id_business,
+                        _id_user,
+                        _id_ad: ad._id_ad,
+                    },
+                    { transaction: t }
+                );
+            } else {
+                // If the type is Banner, create the ad normally
+                ad = await Ad.create(
+                    {
+                        title,
+                        description,
+                        imageUrl,
+                        start_campaign_date,
+                        end_campaign_date,
+                        clickUrl,
+                        status,
+                        _id_user,
+                        type,
+                        _id_business,
+                    },
+                    { transaction: t }
+                );
+
+                // If type is banner, create the corresponding banner entry
+                if (type === "Banner") {
+                    await Banner.create(
+                        {
+                            location,
+                            index_position,
+                            _id_ad: ad._id_ad, // Associate the banner with the created ad
+                        },
+                        { transaction: t }
+                    );
+                }
             }
 
             return ad;

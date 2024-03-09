@@ -20,7 +20,7 @@ export const Ad = sequelize_write.define(
         },
         imageUrl: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         start_campaign_date: {
             type: DataTypes.DATE,
