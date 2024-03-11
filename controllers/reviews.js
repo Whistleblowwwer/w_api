@@ -869,10 +869,16 @@ export const getAllReviews = async (req, res) => {
             }
         );
 
-        const formattedAds = reviewsWithAds.map((review) => ({
-            _id_review: review._id_review,
-            ...review.toJSON(),
-        }));
+        const formattedAds = reviewsWithAds.map((review) => {
+            const adData = review.toJSON();
+            if (adData.ReviewImages) {
+                adData.Images = adData.ReviewImages.map(
+                    (image) => image.image_url
+                );
+                delete adData.ReviewImages;
+            }
+            return adData;
+        });
 
         res.status(200).send({
             message: "Reviews and ads retrieved successfully",
