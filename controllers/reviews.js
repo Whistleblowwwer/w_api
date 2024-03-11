@@ -788,6 +788,7 @@ export const getAllReviews = async (req, res) => {
                         "name",
                         "entity",
                         "profile_picture_url",
+                        "is_valid",
                     ],
                     where: {
                         is_valid: true,
@@ -801,9 +802,10 @@ export const getAllReviews = async (req, res) => {
                         "last_name",
                         "nick_name",
                         "profile_picture_url",
+                        "is_valid",
                     ],
                     where: {
-                        is_valid: true,
+                        role: "business",
                     },
                 },
                 {

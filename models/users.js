@@ -43,7 +43,7 @@ export const User = sequelize_write.define(
             allowNull: true,
         },
         role: {
-            type: DataTypes.ENUM("consumer", "admin"),
+            type: DataTypes.ENUM("consumer", "admin", "business"),
             allowNull: false,
             defaultValue: "consumer",
         },
