@@ -15,6 +15,8 @@ import { Comment } from "./comments.js";
 import { UserIps } from "./userIps.js";
 import { Review } from "./reviews.js";
 import { Banner } from "./banners.js";
+import { Topic } from "./topics.js";
+import { UserTopicSubscription } from "./userTopicSubscriptions.js";
 import { User } from "./users.js";
 import { Ad } from "./ads.js";
 // Associations
@@ -107,6 +109,13 @@ User.belongsToMany(Notification, {
 // Un usuario puede ser dueño de varias pautas
 // 1:N
 User.hasMany(Ad, {
+    foreignKey: "_id_user",
+});
+
+// Varios topicos pueden pertenecer a varios usuarios
+// N:N
+User.belongsToMany(Topic, {
+    through: UserTopicSubscription,
     foreignKey: "_id_user",
 });
 
@@ -297,6 +306,14 @@ Ad.hasMany(Banner, { foreignKey: "_id_ad" });
 // Una banner pertenece a una pauta
 // 1:1
 Banner.belongsTo(Ad, { foreignKey: "_id_ad" });
+
+// ------------------ NOTIFICATIONS ------------------
+// Varios usuarios pueden suscribirse a varios topicos
+// N:N
+Topic.belongsToMany(User, {
+    through: UserTopicSubscription,
+    foreignKey: "_id_topic",
+});
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);

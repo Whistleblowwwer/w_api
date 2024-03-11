@@ -9,6 +9,7 @@ import BrokersRoute from "./brokers.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
+import adminRoute from "./admins.js";
 import { Router } from "express";
 import adRoute from "./ads.js";
 
@@ -26,6 +27,7 @@ router.use("/articles", articleRoute);
 router.use("/brokers", BrokersRoute);
 router.use("/reviews", reviewRoute);
 router.use("/bucket", bucketRoute);
+router.use("/admins", adminRoute);
 router.use("/users", userRoute);
 router.use("/ads", adRoute);
 

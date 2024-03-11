@@ -67,12 +67,12 @@ export const createAd = async (req, res) => {
             let ad;
             if (type === "Review") {
                 // If the type is Review, create a review and associate the ad with it
-                const { content, rating } = req.body;
+                const { content } = req.body;
 
                 // Check for missing fields for Review type
                 if (!content) {
                     return res.status(400).json({
-                        message: "Content and rating are required for reviews",
+                        message: "Content is required for reviews",
                     });
                 }
 
@@ -217,19 +217,8 @@ export const getAdsByType = async (req, res) => {
                 ],
             });
 
-            // Initialize an object to hold banners organized by location
-            const organizedBanners = {};
-
-            // Organize banners by location
-            banners.forEach((banner) => {
-                if (!organizedBanners[banner.location]) {
-                    organizedBanners[banner.location] = [];
-                }
-                organizedBanners[banner.location].push(banner);
-            });
-
             // Format the response
-            ads = organizedBanners;
+            ads = banners;
         } else {
             // For other types, fetch ads normally
             ads = await Ad.findAll({

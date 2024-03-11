@@ -1,33 +1,67 @@
-import serviceAccount from "../config/whistleblowwer-notificaciones-firebase-adminsdk-pwr18-e3015a8fed.json" assert { type: "json" };
+import { User } from "../models/users.js";
 import admin from "firebase-admin";
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-});
+// Initialize Firebase Admin
+// Make sure you have initialized Firebase Admin SDK elsewhere in your application,
+// for example, by providing the service account key.
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   // other options if needed
+// });
 
-// This registration token comes from the client FCM SDKs.
-const registrationToken =
-    "fw53HZXZUELlh0bsEsDNb3:APA91bE-adzTRrp57prfhRP7LI8tJvvDW3Ge2qr1e6319rWzZvIpVKfRZmK_-rPjBdMgeV_waX2piLt7By_HRq3aHfTYCfldex9__pLzZkmwfaT_CndV3uuQ1YVretNn2_7E5OOza86E";
+function subscribeUsersToTopic(registrationTokens, topic) {
+    admin
+        .messaging()
+        .subscribeToTopic(registrationTokens, topic)
+        .then((response) => {
+            console.log("Successfully subscribed to topic:", response);
+        })
+        .catch((error) => {
+            console.error("Error subscribing to topic:", error);
+        });
+}
 
-const message = {
-    notification: {
-        title: "Log in succesful",
-        body: "Welcome ome gonorrea",
-    },
-    data: {
-        content: "lol",
-    },
-    token: registrationToken,
-};
+function sendGlobalAnnouncement(title, body) {
+    const message = {
+        notification: {
+            title: title,
+            body: body,
+        },
+        topic: "globalNotice",
+    };
 
-// Send a message to the device corresponding to the provided registration token.
-admin
-    .messaging()
-    .send(message)
-    .then((response) => {
-        // Response is a message ID string.
-        console.log("Successfully sent message:", response);
-    })
-    .catch((error) => {
-        console.log("Error sending message:", error);
-    });
+    admin
+        .messaging()
+        .send(message)
+        .then((response) => {
+            console.log("Successfully sent message:", response);
+        })
+        .catch((error) => {
+            console.log("Error sending message:", error);
+        });
+}
+
+// Function to get all FCM tokens and subscribe them to a topic
+async function subscribeAllUsersToTopic() {
+    try {
+        const users = await User.findAll({
+            attributes: ["fcm_token"], // Fetch all fcm_tokens
+        });
+
+        // Filter out null or undefined tokens manually
+        const tokens = users
+            .map((user) => user.fcm_token)
+            .filter((token) => token);
+
+        if (tokens.length > 0) {
+            subscribeUsersToTopic(tokens, "globalNotice");
+        } else {
+            console.log("No tokens found for subscription.");
+        }
+    } catch (error) {
+        console.error("Error fetching users for subscription:", error);
+    }
+}
+
+// Run the function to subscribe all users to the 'globalNotice' topic
+subscribeAllUsersToTopic();
