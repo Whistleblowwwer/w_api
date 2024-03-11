@@ -217,8 +217,19 @@ export const getAdsByType = async (req, res) => {
                 ],
             });
 
+            // Initialize an object to hold banners organized by location
+            const organizedBanners = {};
+
+            // Organize banners by location
+            banners.forEach((banner) => {
+                if (!organizedBanners[banner.location]) {
+                    organizedBanners[banner.location] = [];
+                }
+                organizedBanners[banner.location].push(banner);
+            });
+
             // Format the response
-            ads = banners;
+            ads = organizedBanners;
         } else {
             // For other types, fetch ads normally
             ads = await Ad.findAll({
