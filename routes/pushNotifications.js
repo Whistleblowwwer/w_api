@@ -6,7 +6,7 @@ import {
     listTopics,
     deleteTopic,
     sendNotificationToTopic,
-} from "../controllers/admins.js"; // Adjust imports as necessary
+} from "../controllers/pushNotifications.js"; // Adjust imports as necessary
 
 const router = Router();
 

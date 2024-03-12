@@ -28,7 +28,7 @@ export const UserTopicSubscription = sequelize_write.define(
         // Additional attributes if necessary
     },
     {
-        tableName: "user_topic_subscriptions",
+        tableName: "userTopicSubscriptions",
         timestamps: true, // Assuming you want createdAt and updatedAt for tracking
     }
 );

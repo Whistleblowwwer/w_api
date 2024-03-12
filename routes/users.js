@@ -33,7 +33,6 @@ import {
     getAllNotificationsForUser,
     deleteAllNotificationsForUser,
 } from "../controllers/pushNotifications.js";
-import { subscribeAllUsersToTopic } from "../controllers/admins.js";
 const router = Router();
 
 //----------User Routes-------------
@@ -128,11 +127,5 @@ router.get("/:userId/followers", validateUser, getFollowers);
 
 // Get users followed by a user
 router.get("/:userId/followed", validateUser, getFollowings);
-
-router.post(
-    "/admin/subscribe-all-to-topic",
-    validateUser,
-    subscribeAllUsersToTopic
-);
 
 export default router;

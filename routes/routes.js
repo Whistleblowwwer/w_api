@@ -1,5 +1,6 @@
 import { validateUser } from "../middlewares/ClientValidations.js";
 import { getIpInfo } from "../middlewares/ClientValidations.js";
+import pushNotificationsRoute from "./pushNotifications.js";
 import FeedItemsRoute from "./feedItems.js";
 import businessRoute from "./business.js";
 import messageRoute from "./messages.js";
@@ -9,7 +10,6 @@ import BrokersRoute from "./brokers.js";
 import reviewRoute from "./reviews.js";
 import bucketRoute from "./bucket.js";
 import userRoute from "./users.js";
-import adminRoute from "./admins.js";
 import { Router } from "express";
 import adRoute from "./ads.js";
 
@@ -19,6 +19,7 @@ const router = Router();
 router.use(getIpInfo);
 
 // Main Routes
+router.use("/push-notifications", pushNotificationsRoute);
 router.use("/feeditems", FeedItemsRoute);
 router.use("/business", businessRoute);
 router.use("/messages", messageRoute);
@@ -27,7 +28,6 @@ router.use("/articles", articleRoute);
 router.use("/brokers", BrokersRoute);
 router.use("/reviews", reviewRoute);
 router.use("/bucket", bucketRoute);
-router.use("/admins", adminRoute);
 router.use("/users", userRoute);
 router.use("/ads", adRoute);
 

@@ -141,6 +141,10 @@ Business.belongsToMany(User, {
 // 1:1
 Business.belongsTo(Category, { foreignKey: "_id_category" });
 
+// Una empresa puede tener muchas pautas
+// 1:N
+Business.hasMany(Ad, { foreignKey: "_id_business" });
+
 // ------------------ REVIEW ------------------
 // Una reseña pertenece a una empresa
 // 1:1
@@ -301,6 +305,10 @@ Ad.hasMany(Review, { foreignKey: "_id_ad" });
 // Una pauta puede tener varios banner
 // 1:N
 Ad.hasMany(Banner, { foreignKey: "_id_ad" });
+
+// Una pauta pertenece a un negocio
+// 1:1
+Ad.belongsTo(Business, { foreignKey: "_id_business" });
 
 // ------------------ BANNERS ------------------
 // Una banner pertenece a una pauta

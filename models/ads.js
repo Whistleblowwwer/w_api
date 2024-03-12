@@ -1,6 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize_write } from "../config/db_write.js";
-import { Business } from "./business.js"; // Import the Business model
 
 export const Ad = sequelize_write.define(
     "Ad",
@@ -36,6 +35,11 @@ export const Ad = sequelize_write.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        websiteUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+
         status: {
             type: DataTypes.ENUM("active", "paused", "expired"),
             allowNull: false,
@@ -72,7 +76,3 @@ export const Ad = sequelize_write.define(
         timestamps: true,
     }
 );
-
-// Define associations
-Ad.belongsTo(Business, { foreignKey: "_id_business" });
-Business.hasMany(Ad, { foreignKey: "_id_business" });
