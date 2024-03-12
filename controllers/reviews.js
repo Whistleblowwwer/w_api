@@ -823,7 +823,19 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
-        console.log("\n AD REVIEWS: ", reviewsWithAds);
+        // Iterate over each review to apply validation
+        reviewsWithAds.forEach((review) => {
+            let content_field = review.dataValues.content;
+
+            // Check if content_field has the special empty character
+            if (content_field.trim() === "‎") {
+                // If so, replace it with an empty string
+                content_field = "";
+            }
+
+            // Assign the updated content_field back to the review object
+            review.dataValues.content = content_field;
+        });
 
         const commentsDTO = await commentsMetaData(
             originalReviews.concat(reviewsWithAds)
