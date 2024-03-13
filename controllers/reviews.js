@@ -823,18 +823,18 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
+        console.log(reviewsWithAds[0].dataValues.Ad.description);
         // Iterate over each review to apply validation
         reviewsWithAds.forEach((review) => {
-            let content_field = review.dataValues.content;
+            let adDescription = review.dataValues.Ad.description;
 
-            // Check if content_field has the special empty character
-            if (content_field.trim() === "‎") {
+            // Check if adDescription has the special empty character
+            if (adDescription.trim() === "‎") {
                 // If so, replace it with an empty string
-                content_field = "";
+                adDescription = "";
             }
-
-            // Assign the updated content_field back to the review object
-            review.dataValues.content = content_field;
+            // Update the review's ad description
+            review.Ad.description = adDescription;
         });
 
         const commentsDTO = await commentsMetaData(
