@@ -17,6 +17,7 @@ import {
     likesMetaData,
 } from "../utils/edges/reviewInteractions.js";
 import { commentMetaData } from "../utils/edges/commentInteractions.js";
+import { sendNotificationToTopic } from "../utils/notifications/pushNotifications.js";
 
 //Create Review
 export const createReview = async (req, res) => {
@@ -67,6 +68,18 @@ export const createReview = async (req, res) => {
             _id_user,
             rating,
         });
+
+        // Get the nick name of the author
+        const { nick_name } = userCreatingReview;
+
+        // Send notification to users subscribed to the business topic
+        await sendNotificationToTopic(
+            _id_user,
+            _id_business,
+            createdReview._id_review,
+            content,
+            nick_name
+        );
 
         // Fetch the newly created review with associated User
         const reviewWithUser = await Review.findByPk(createdReview._id_review, {

@@ -26,6 +26,10 @@ import { validateOTP, sendOTPByEmail } from "../utils/mailMan.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import { commentMetaData } from "../utils/edges/commentInteractions.js";
 import { isValidEmail, isValidPhoneNumber } from "../utils/inputValidations.js";
+import {
+    subscribeUserToBusinessTopic,
+    unsubscribeUserFromBusinessTopic,
+} from "../utils/notifications/pushNotifications.js";
 
 // Register User
 export const createUser = async (req, res) => {
@@ -552,7 +556,7 @@ export const followUser = async (req, res) => {
 
 // Follow Business
 export const followBusiness = async (req, res) => {
-    const _id_business = req.query._id_business;
+    const { _id_business } = req.query;
     const _id_user = req.user._id_user;
 
     try {
@@ -563,15 +567,18 @@ export const followBusiness = async (req, res) => {
         });
 
         if (alreadyFollows) {
-            //Delete the following status
+            // Delete the following status
             await alreadyFollows.destroy();
+            await unsubscribeUserFromBusinessTopic(_id_user, _id_business); // Unsubscribe user from business topic
+
             return res.status(200).send({
                 message: "Business unfollowed successfully",
                 followed: false,
             });
         } else {
-            // If follower doesn't follow user followed
+            // If follower doesn't follow, follow the business and subscribe to the topic
             await BusinessFollowers.create({ _id_user, _id_business });
+            await subscribeUserToBusinessTopic(_id_user, _id_business); // Subscribe user to business topic
             return res.status(200).send({
                 message: "Business followed successfully",
                 followed: true,

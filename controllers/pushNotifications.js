@@ -158,7 +158,7 @@ export const deleteAllNotificationsForUser = async (req, res) => {
 };
 
 // Subscribe list of users or all users to a topic
-export const subscribeAllUsersToTopic = async (req, res) => {
+export const subscribeUsersToTopic = async (req, res) => {
     const _id_user = req.user._id_user;
     const user = await User.findByPk(_id_user);
     const { topicName, userIds } = req.body;
@@ -375,6 +375,8 @@ export const sendNotificationToTopic = async (req, res) => {
         const topicExists = await Topic.findOne({
             where: { name: topicName },
         });
+
+        console.log("\n-- TOPIC EXISTS: ", topicExists.name);
 
         if (!topicExists) {
             return res.status(404).json({ message: "Topic not found." });

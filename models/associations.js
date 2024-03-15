@@ -1,3 +1,4 @@
+import { UserTopicSubscription } from "./userTopicSubscriptions.js";
 import { BusinessFollowers } from "./businessFollowers.js";
 import { UserFollowers } from "./userFollowers.js";
 import { CommentImages } from "./commentImages.js";
@@ -16,7 +17,6 @@ import { UserIps } from "./userIps.js";
 import { Review } from "./reviews.js";
 import { Banner } from "./banners.js";
 import { Topic } from "./topics.js";
-import { UserTopicSubscription } from "./userTopicSubscriptions.js";
 import { User } from "./users.js";
 import { Ad } from "./ads.js";
 // Associations
@@ -325,5 +325,4 @@ Topic.belongsToMany(User, {
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);
-console.log("\n -- REVIEW ASSOCIATIONS: ", Review.associations);
-console.log("\n -- ADS ASSOCIATIONS: ", Ad.associations);
+console.log("\n -- BUSINESS ASSOCIATIONS: ", Business.associations);

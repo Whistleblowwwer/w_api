@@ -8,7 +8,7 @@ import { Category } from "../models/categories.js";
 import { ReviewLikes } from "../models/reviewLikes.js";
 import { filterBadWords } from "../utils/text/badWordsFilter.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
-
+import { subscribeUserToBusinessTopic } from "../utils/notifications/pushNotifications.js";
 // Create Business
 export const createBusiness = async (req, res) => {
     try {
@@ -108,6 +108,12 @@ export const createBusiness = async (req, res) => {
                 ? categoryInstance._id_category
                 : null,
         });
+
+        // Subscribe the user to the business topic
+        await subscribeUserToBusinessTopic(
+            _id_user,
+            createdBusiness._id_business
+        );
 
         return res.status(201).send({
             message: "Business created successfully",
@@ -450,7 +456,7 @@ export const getBusinessDetails = async (req, res) => {
     }
 };
 
-// Get Business List 
+// Get Business List
 export const listAllBusinesses = async (req, res) => {
     try {
         const businesses = await Business.findAll({
@@ -459,8 +465,8 @@ export const listAllBusinesses = async (req, res) => {
                     Sequelize.literal(
                         '(SELECT COUNT(*) FROM "reviews" WHERE "reviews"."_id_business" = "Business"."_id_business" AND "reviews"."is_valid" = true)'
                     ),
-                    "DESC"
-                ]
+                    "DESC",
+                ],
             ],
             attributes: [
                 "_id_business",
