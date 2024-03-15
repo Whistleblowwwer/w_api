@@ -169,7 +169,7 @@ export const sendNotificationToTopic = async (
             _id_user_sender: authorId,
             _id_user_receiver: follower._id_user,
             _id_target: reviewId,
-            type: "review",
+            type: "business",
             subject: `@${nickName} comentó en ${business.name}`,
             content: reviewContent,
             is_valid: true,
