@@ -749,7 +749,7 @@ export const getAllReviews = async (req, res) => {
                 },
                 _id_ad: { [Op.is]: null }, // Fetch reviews without associated ads
             },
-            limit: 30,
+            limit: 100,
             order: [["createdAt", "DESC"]],
             include: [
                 {
