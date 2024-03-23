@@ -11,13 +11,13 @@ import { ReviewImages } from "../models/reviewImages.js";
 import { CommentLikes } from "../models/commentLikes.js";
 import { CommentImages } from "../models/commentImages.js";
 import { UserFollowers } from "../models/userFollowers.js";
+import NotificationDTO from "../models/dto/notification_dto.js";
 import { BusinessFollowers } from "../models/businessFollowers.js";
 import {
     commentsMetaData,
     likesMetaData,
 } from "../utils/edges/reviewInteractions.js";
 import { commentMetaData } from "../utils/edges/commentInteractions.js";
-import { sendNotificationToTopic } from "../utils/notifications/pushNotifications.js";
 
 //Create Review
 export const createReview = async (req, res) => {
@@ -72,13 +72,13 @@ export const createReview = async (req, res) => {
         // Get the nick name of the author
         const { nick_name } = userCreatingReview;
 
-        // Send notification to users subscribed to the business topic
-        await sendNotificationToTopic(
-            _id_user,
+        const notificationDTO = new NotificationDTO();
+        await notificationDTO.generateNewBusinessReviewNotification(
+            _id_user, // sender
             _id_business,
-            createdReview._id_review,
-            content,
-            nick_name
+            createdReview._id_review, // target ID, which is the review ID
+            content, // review content
+            userCreatingReview.nick_name
         );
 
         // Fetch the newly created review with associated User

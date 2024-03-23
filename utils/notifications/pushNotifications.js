@@ -1,6 +1,4 @@
 import { UserTopicSubscription } from "../../models/userTopicSubscriptions.js";
-import { BusinessFollowers } from "../../models/businessFollowers.js";
-import { Notification } from "../../models/notifications.js";
 import { Business } from "../../models/business.js";
 import { Topic } from "../../models/topics.js";
 import { User } from "../../models/users.js";
@@ -125,66 +123,68 @@ export const unsubscribeUserFromBusinessTopic = async (userId, businessId) => {
     }
 };
 
-// Function to send push notifications for new reviews
-export const sendNotificationToTopic = async (
-    authorId,
-    businessId,
-    reviewId,
-    reviewContent,
-    nickName
-) => {
-    try {
-        // Limit review content to 6 words
-        const words = reviewContent.trim().split(/\s+/);
-        const truncatedContent = words.slice(0, 6).join(" ");
-        const body =
-            words.length > 6 ? truncatedContent + " ..." : truncatedContent;
+// // Function to send push notifications for new reviews
+// export const sendNotificationToTopic = async (
+//     authorId,
+//     businessId,
+//     reviewId,
+//     reviewContent,
+//     nickName
+// ) => {
+//     try {
+//         // Limit review content to 6 words
+//         const words = reviewContent.trim().split(/\s+/);
+//         const truncatedContent = words.slice(0, 6).join(" ");
+//         const body =
+//             words.length > 6 ? truncatedContent + " ..." : truncatedContent;
 
-        const business = await Business.findByPk(businessId);
+//         const business = await Business.findByPk(businessId);
 
-        // Remove spaces from the business name
-        const sanitizedBusinessName = business.name.replace(/\s+/g, "");
+//         // Remove spaces from the business name
+//         const sanitizedBusinessName = business.name.replace(/\s+/g, "");
 
-        const topicName = `${sanitizedBusinessName}_newReview_topic`;
-        const message = {
-            notification: {
-                title: `@${nickName} comentó en ${business.name}`, // Include nickName in the title
-                body: body,
-            },
-            topic: topicName,
-        };
+//         const topicName = `${sanitizedBusinessName}_newReview_topic`;
+//         const message = {
+//             notification: {
+//                 title: `@${nickName} comentó en ${business.name}`, // Include nickName in the title
+//                 body: body,
+//             },
+//             topic: topicName,
+//         };
 
-        // Send notification to the topic in Firebase
-        const response = await admin.messaging().send(message);
-        console.log("Notification sent to topic:", response);
+//         // Send notification to the topic in Firebase
+//         const response = await admin.messaging().send(message);
+//         console.log("Notification sent to topic:", response);
 
-        // Log the notification in the Notification model
-        const followers = await BusinessFollowers.findAll({
-            where: { _id_business: businessId },
-            attributes: ["_id_user"],
-        });
+//         // Log the notification in the Notification model
+//         const followers = await BusinessFollowers.findAll({
+//             where: { _id_business: businessId },
+//             attributes: ["_id_user"],
+//         });
 
-        // Create a notification for each follower
-        const notifications = followers.map((follower) => ({
-            _id_user_sender: authorId,
-            _id_user_receiver: follower._id_user,
-            _id_target: reviewId,
-            type: "comment",
-            subject: `@${nickName} comentó en ${business.name}`,
-            content: reviewContent,
-            is_valid: true,
-        }));
+//         // Create a notification for each follower
+//         const notifications = followers.map((follower) => ({
+//             _id_user_sender: authorId,
+//             _id_user_receiver: follower._id_user,
+//             _id_target: reviewId,
+//             type: "business",
+//             subject: `@${nickName} comentó en ${business.name}`,
+//             content: reviewContent,
+//             is_valid: true,
+//         }));
 
-        // Bulk insert notifications into the database
-        await Notification.bulkCreate(notifications);
+//         console.log("\n-- NOTIFICATION: ", notifications);
 
-        console.log("Notifications logged in the database successfully");
-    } catch (error) {
-        // Handle errors
-        console.error("Error sending notification to topic:", error);
-        throw error;
-    }
-};
+//         // Bulk insert notifications into the database
+//         await Notification.bulkCreate(notifications);
+
+//         console.log("Notifications logged in the database successfully");
+//     } catch (error) {
+//         // Handle errors
+//         console.error("Error sending notification to topic:", error);
+//         throw error;
+//     }
+// };
 
 export const mapFCM = async (FCM, _id_user) => {
     try {

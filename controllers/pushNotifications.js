@@ -3,6 +3,7 @@ import { BusinessFollowers } from "../models/businessFollowers.js";
 import { UserFollowers } from "../models/userFollowers.js";
 import { Notification } from "../models/notifications.js";
 import { Business } from "../models/business.js";
+import { Review } from "../models/reviews.js";
 import { Topic } from "../models/topics.js";
 import { User } from "../models/users.js";
 import { Sequelize } from "sequelize";
@@ -60,6 +61,7 @@ export const getAllNotificationsForUser = async (req, res) => {
     try {
         const notifications = await Notification.findAll({
             where: { _id_user_receiver, is_valid: true },
+            // Consider including related models if needed for other notification types
         });
 
         if (notifications.length === 0) {
@@ -68,53 +70,57 @@ export const getAllNotificationsForUser = async (req, res) => {
                 .send({ message: "No notifications found for this user" });
         }
 
-        // Prepare notifications with target information
         const formattedNotifications = [];
         for (const notification of notifications) {
             const { _id_target, type, ...notificationData } =
                 notification.toJSON();
             let targetInfo = { id: _id_target };
 
-            if (
-                type === "chat" ||
-                type === "review" ||
-                type === "comment" ||
-                type === "profile"
-            ) {
-                // Fetch user information for chat, review, and comment types
-                const sender = await User.findByPk(
-                    notification._id_user_sender
-                );
-                if (sender) {
-                    targetInfo.name = sender.name;
-                    targetInfo.last_name = sender.last_name;
-                    targetInfo.nick_name = sender.nick_name;
-                }
+            // Fetch sender information common to all notification types
+            const sender = await User.findByPk(notification._id_user_sender);
+            if (sender) {
+                targetInfo.name = sender.name;
+                targetInfo.last_name = sender.last_name;
+                targetInfo.nick_name = sender.nick_name;
+            }
 
-                // Check if the receiver follows the sender
-                const isFollowed = await UserFollowers.findOne({
+            // Special handling for different types of notifications
+            if (["chat", "review", "comment", "profile"].includes(type)) {
+                // Additional specific logic for these types, if any
+                targetInfo.is_followed = (await UserFollowers.findOne({
                     where: {
                         _id_follower: _id_user_receiver,
                         _id_followed: notification._id_user_sender,
                     },
+                }))
+                    ? true
+                    : false;
+            } else if (type === "business") {
+                // Fetch review to get business information along with the sender's details
+                const review = await Review.findByPk(_id_target, {
+                    include: [
+                        {
+                            model: Business,
+                            attributes: ["_id_business", "name", "entity"],
+                        },
+                    ],
                 });
 
-                targetInfo.is_followed = !!isFollowed; // Convert to boolean
-            } else if (type === "business") {
-                // Fetch business information for business type
-                const business = await Business.findByPk(_id_target);
-                if (business) {
-                    targetInfo.name = business.name;
+                if (review && review.Business) {
+                    targetInfo.Business = {
+                        name: review.Business.name,
+                        entity: review.Business.entity,
+                    };
 
                     // Check if the receiver follows the business
-                    const isFollowed = await BusinessFollowers.findOne({
+                    targetInfo.is_followed = (await BusinessFollowers.findOne({
                         where: {
                             _id_user: _id_user_receiver,
-                            _id_business: _id_target,
+                            _id_business: review._id_business,
                         },
-                    });
-
-                    targetInfo.is_followed = !!isFollowed; // Convert to boolean
+                    }))
+                        ? true
+                        : false;
                 }
             }
 
@@ -130,6 +136,7 @@ export const getAllNotificationsForUser = async (req, res) => {
             notifications: formattedNotifications,
         });
     } catch (error) {
+        console.error("Error fetching notifications:", error);
         res.status(500).send({ error: error.message });
     }
 };

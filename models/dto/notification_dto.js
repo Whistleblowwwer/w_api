@@ -1,4 +1,6 @@
 import { User } from "../users.js";
+import { Business } from "../business.js";
+import { BusinessFollowers } from "../businessFollowers.js";
 import { Notification } from "../notifications.js";
 import admin from "firebase-admin";
 
@@ -23,6 +25,27 @@ export default class NotificationDTO {
         this.is_valid = is_valid;
     }
 
+    async sendNotificationToTopic(message, topicName) {
+        try {
+            // Assuming `admin` has been initialized elsewhere in your application
+            // with the Firebase Admin SDK
+            const response = await admin.messaging().send({
+                notification: {
+                    title: message.notification.title,
+                    body: message.notification.body,
+                },
+                // The topic name is expected to be preformatted and passed as a parameter
+                topic: topicName,
+            });
+
+            console.log("Notification sent to topic:", response);
+            return response; // Optionally return the response for further processing or logging
+        } catch (error) {
+            console.error("Error sending notification to topic:", error);
+            throw error; // Rethrow or handle the error appropriately
+        }
+    }
+
     // Function to send notification to receiver
     async sendNotificationToReceiver(message) {
         admin
@@ -34,6 +57,38 @@ export default class NotificationDTO {
             .catch((error) => {
                 console.log("Error sending message:", error);
             });
+    }
+
+    async logNotificationsForFollowers(
+        _id_user_sender,
+        _id_business,
+        _id_review,
+        senderNickname,
+        businessName,
+        reviewContent
+    ) {
+        // Find all followers of the business
+        const followers = await BusinessFollowers.findAll({
+            where: { _id_business },
+            attributes: ["_id_user"],
+        });
+
+        // Construct notifications for each follower
+        const notifications = followers.map((follower) => ({
+            _id_user_sender,
+            _id_user_receiver: follower._id_user,
+            _id_target: _id_review,
+            type: "business",
+            subject: `@${senderNickname} commented on ${businessName}`,
+            content: this.truncateContent(reviewContent, 6),
+            is_valid: true,
+        }));
+
+        console.log("\n-- NOTIFICATIONS: ", notifications);
+        // Bulk insert notifications into the database
+        await Notification.bulkCreate(notifications);
+
+        return notifications;
     }
 
     //CHAT
@@ -183,6 +238,7 @@ export default class NotificationDTO {
         return message;
     }
 
+    // COMMENT
     async generateReviewCommentNotification(
         _id_user_sender,
         _id_user_receiver,
@@ -260,7 +316,7 @@ export default class NotificationDTO {
         return message;
     }
 
-    //COMMENTS
+    //COMMENT LIKE
     async generateCommentLikeNotification(
         _id_user_sender,
         _id_user_receiver,
@@ -335,8 +391,8 @@ export default class NotificationDTO {
         };
         return message;
     }
-    //FOLLOWERS
-    // Handles notification construction and sends it
+
+    // NEW FOLLOWER
     async generateNewFollowerNotification(_id_user_sender, _id_user_receiver) {
         // Generate message
         const message = await this.buildNewFollowerMessage(
@@ -400,5 +456,64 @@ export default class NotificationDTO {
             token: receiver.fcm_token,
         };
         return message;
+    }
+
+    async generateNewBusinessReviewNotification(
+        _id_user_sender,
+        _id_business,
+        _id_review,
+        reviewContent,
+        senderNickname
+    ) {
+        // Get business information and construct the topic name
+        const business = await Business.findByPk(_id_business);
+        if (!business) {
+            console.log("Business not found.");
+            return null;
+        }
+        const sanitizedBusinessName = business.name.replace(/\s+/g, "");
+        const topicName = `${sanitizedBusinessName}_newReview_topic`;
+
+        // Construct the message with truncated content
+        const truncatedContent = this.truncateContent(reviewContent, 6);
+
+        const message = this.buildNewBusinessReviewMessage(
+            senderNickname,
+            business.name,
+            truncatedContent
+        );
+
+        // Send notification to the topic
+        await this.sendNotificationToTopic(message, topicName);
+
+        // Log a notification in the DB for each follower
+        const notifications = await this.logNotificationsForFollowers(
+            _id_user_sender,
+            _id_business,
+            _id_review,
+            senderNickname,
+            business.name,
+            reviewContent
+        );
+
+        return notifications;
+    }
+
+    truncateContent(content, wordLimit) {
+        const words = content.split(/\s+/);
+        if (words.length > wordLimit) {
+            return words.slice(0, wordLimit).join(" ") + " ...";
+        }
+        return content;
+    }
+
+    buildNewBusinessReviewMessage(senderNickname, businessName, content) {
+        return {
+            notification: {
+                title: `@${senderNickname} comentó en ${businessName}`,
+                body: content,
+            },
+            // Additional data payload can be included here if needed
+        };
     }
 }
