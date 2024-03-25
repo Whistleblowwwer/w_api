@@ -34,7 +34,10 @@ export default class NotificationDTO {
                     title: message.notification.title,
                     body: message.notification.body,
                 },
-                // The topic name is expected to be preformatted and passed as a parameter
+                data: {
+                    _id_target: message.data._id_target,
+                    target_type: message.data.target_type,
+                },
                 topic: topicName,
             });
 
