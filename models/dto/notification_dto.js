@@ -162,7 +162,7 @@ export default class NotificationDTO {
         return message;
     }
 
-    //REVIEWS
+    // LIKE REVIEW
     async generateReviewLikeNotification(
         _id_user_sender,
         _id_user_receiver,
@@ -451,13 +451,14 @@ export default class NotificationDTO {
             },
             data: {
                 _id_target: _id_user_sender,
-                target_type: "user",
+                target_type: "profile",
             },
             token: receiver.fcm_token,
         };
         return message;
     }
 
+    // NEW REVIEW FOR FOLLOWED BUSINESS
     async generateNewBusinessReviewNotification(
         _id_user_sender,
         _id_business,
@@ -480,7 +481,8 @@ export default class NotificationDTO {
         const message = this.buildNewBusinessReviewMessage(
             senderNickname,
             business.name,
-            truncatedContent
+            truncatedContent,
+            _id_review
         );
 
         // Send notification to the topic
@@ -499,21 +501,29 @@ export default class NotificationDTO {
         return notifications;
     }
 
+    buildNewBusinessReviewMessage(
+        senderNickname,
+        businessName,
+        content,
+        _id_target
+    ) {
+        return {
+            notification: {
+                title: `@${senderNickname} comentó en ${businessName}`,
+                body: content,
+            },
+            data: {
+                _id_target: _id_target,
+                target_type: "review",
+            },
+        };
+    }
+
     truncateContent(content, wordLimit) {
         const words = content.split(/\s+/);
         if (words.length > wordLimit) {
             return words.slice(0, wordLimit).join(" ") + " ...";
         }
         return content;
-    }
-
-    buildNewBusinessReviewMessage(senderNickname, businessName, content) {
-        return {
-            notification: {
-                title: `@${senderNickname} comentó en ${businessName}`,
-                body: content,
-            },
-            // Additional data payload can be included here if needed
-        };
     }
 }

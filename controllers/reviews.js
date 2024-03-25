@@ -796,13 +796,7 @@ export const getAllReviews = async (req, res) => {
             include: [
                 {
                     model: Business,
-                    attributes: [
-                        "_id_business",
-                        "name",
-                        "entity",
-                        "profile_picture_url",
-                        "is_valid",
-                    ],
+                    attributes: ["_id_business", "name", "entity", "is_valid"],
                     where: {
                         is_valid: true,
                     },
@@ -836,7 +830,7 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
-        console.log(reviewsWithAds[0].dataValues.Ad.description);
+        console.log(reviewsWithAds);
         // Iterate over each review to apply validation
         reviewsWithAds.forEach((review) => {
             let adDescription = review.dataValues.Ad.description;
