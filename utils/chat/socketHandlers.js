@@ -83,10 +83,9 @@ export const sendMessage = async (io, socket, messageData) => {
         io.to(`user-${_id_sender}`).emit("updateConversations");
         io.to(`user-${_id_receiver}`).emit("updateConversations");
 
-        if (!onlineUsers.has(_id_receiver)) {
-            const notificationDTO = new NotificationDTO();
-            await notificationDTO.generateChatNotification(_id_sender, _id_receiver, messageToSend.content);
-        }
+        const notificationDTO = new NotificationDTO();
+        await notificationDTO.generateChatNotification(_id_sender, _id_receiver, messageToSend.content);
+        
     } catch (error) {
         console.error("An error occurred", error);
         if (error instanceof Sequelize.ValidationError) {
