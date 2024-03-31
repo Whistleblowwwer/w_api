@@ -21,6 +21,9 @@ export const getCommentChildren = async (req, res) => {
     try {
         // Fetch paretn comment and first children
         const parentComment = await Comment.findByPk(_id_comment, {
+            where: {
+                is_valid: true,
+            },
             include: [
                 {
                     model: User,
