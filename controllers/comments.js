@@ -14,6 +14,7 @@ export const getCommentChildren = async (req, res) => {
     const _id_user_requesting = req.user._id_user;
     const _id_comment = req.query._id_comment;
 
+    console.log("\n -- REVIEW: ", _id_comment);
     if (!_id_comment) {
         return res.status(400).json({ message: "Comment ID is required" });
     }
@@ -42,6 +43,7 @@ export const getCommentChildren = async (req, res) => {
                 // Include all levels of children comments using the "children" association
                 {
                     model: Comment,
+                    // where: { is_valid: true },
                     as: "children",
                     nested: true,
                     include: [
@@ -89,6 +91,7 @@ export const getCommentChildren = async (req, res) => {
             ],
         });
 
+        console.log("\n -- CHILDREN COMMENTS: ", childComments);
         const allComments = [parentComment, ...childComments];
 
         // Counts likes a replies of children.

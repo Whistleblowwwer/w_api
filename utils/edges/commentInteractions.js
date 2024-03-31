@@ -32,7 +32,10 @@ export const commentMetaData = async (comments, userID) => {
                 "repliesCount",
             ],
         ],
-        where: { _id_parent: { [Sequelize.Op.in]: commentIds } },
+        where: {
+            _id_parent: { [Sequelize.Op.in]: commentIds },
+            is_valid: true,
+        },
         group: ["_id_parent"],
     });
 
