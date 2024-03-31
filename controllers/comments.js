@@ -70,7 +70,7 @@ export const getCommentChildren = async (req, res) => {
 
         // Used for each children, to count replies using commentInteractions
         const childComments = await Comment.findAll({
-            where: { _id_parent: _id_comment },
+            where: { _id_parent: _id_comment, is_valid: true },
             include: [
                 {
                     model: User,
