@@ -51,7 +51,7 @@ async function main() {
         console.log(`Server running on http://localhost:${PORT}`);
     });
 
-    await Message.update({ is_read: true }, { where: { is_read: null } });
+    await Message.update({ is_read: true }, { where: { is_read: false } });
 
 }
 main();
