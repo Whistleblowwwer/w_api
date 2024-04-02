@@ -233,3 +233,34 @@ export const deleteMessage = async (req, res) => {
     }
   }
 };
+
+//Delete a conversation with someone
+export const deleteConversation = async (req, res) => {
+  const _id_user = req.user._id_user; 
+  const _id_receiver = req.query._id_receiver; 
+
+  try {
+    const deletionResult = await Message.destroy({
+      where: {
+        [Op.or]: [
+          { _id_sender: _id_user, _id_receiver: _id_receiver },
+          { _id_sender: _id_receiver, _id_receiver: _id_user }
+        ]
+      }
+    });
+
+    if (deletionResult === 0) {
+      return res.status(404).send({ message: "No conversation found between these users." });
+    }
+
+    res.status(200).send({ message: "Conversation deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    if (error instanceof Sequelize.ValidationError) {
+      return res.status(400).send({ message: "Validation Error", errors: error.errors });
+    } else {
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+  }
+};
+
