@@ -61,7 +61,7 @@ export const getAllConversations = async (req, res) => {
           { _id_receiver: _id_user }
         ]
       },
-      attributes: ['_id_message', 'content', 'is_valid', 'createdAt', 'updatedAt', '_id_sender', '_id_receiver'],
+      attributes: ['_id_message', 'content', 'is_valid', 'createdAt', 'updatedAt', '_id_sender', '_id_receiver', 'is_read'],
       include: [
         {
           model: User,
@@ -82,18 +82,23 @@ export const getAllConversations = async (req, res) => {
     let conversations = {};
     allMessages.forEach(message => {
       const conversationId = message._id_sender === _id_user ? message._id_receiver : message._id_sender;
-      if (!conversations[conversationId] || conversations[conversationId].createdAt < message.createdAt) {
+      if (!conversations[conversationId]) {
         conversations[conversationId] = {
           Message: {
             _id_message: message._id_message,
             content: message.content,
             is_valid: message.is_valid,
             createdAt: message.createdAt,
-            updatedAt: message.updatedAt
+            updatedAt: message.updatedAt,
           },
           Sender: message.Sender,
-          Receiver: message.Receiver
+          Receiver: message.Receiver,
+          is_read: true 
         };
+      }
+
+      if (message._id_sender !== _id_user && !message.is_read) {
+        conversations[conversationId].is_read = false;
       }
     });
 

@@ -9,6 +9,7 @@ import admin from "firebase-admin";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import { Message } from "./models/messages.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -49,6 +50,9 @@ async function main() {
     httpServer.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });
+
+    await Message.update({ is_read: true }, { where: { is_read: null } });
+
 }
 main();
 
