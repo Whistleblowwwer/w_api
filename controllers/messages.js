@@ -17,12 +17,22 @@ export const getMessages = async (req, res) => {
           { _id_sender: _id_receiver, _id_receiver: _id_user }
         ]
       },
-      attributes: ['content', '_id_sender', '_id_receiver', 'createdAt'],
+      attributes: ['_id_message', 'content', '_id_sender', '_id_receiver', 'createdAt', 'is_read'],
       order: [['createdAt', 'DESC']]
     });
 
     if (messages.length === 0) {
       return res.status(404).send({ message: "No messages found in this conversation." });
+    }
+
+    const unreadMessagesIds = messages
+      .filter(message => message._id_sender === _id_receiver && !message.is_read)
+      .map(message => message._id_message);
+
+    if (unreadMessagesIds.length > 0) {
+      await Message.update({ is_read: true }, {
+        where: { _id_message: unreadMessagesIds }
+      });
     }
 
     res.status(200).json({

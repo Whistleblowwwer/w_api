@@ -17,6 +17,11 @@ export const Message = sequelize_write.define(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        is_read: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        }
     },
     {
         tableName: "messages",
