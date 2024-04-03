@@ -13,8 +13,8 @@ export const getMessages = async (req, res) => {
     const messages = await Message.findAll({
       where: {
         [Op.or]: [
-          { _id_sender: _id_user, _id_receiver: _id_receiver },
-          { _id_sender: _id_receiver, _id_receiver: _id_user }
+          { _id_sender: _id_user, _id_receiver: _id_receiver, is_valid_sender: true }, 
+          { _id_sender: _id_receiver, _id_receiver: _id_user, is_valid_receiver: true } 
         ]
       },
       attributes: ['_id_message', 'content', '_id_sender', '_id_receiver', 'createdAt', 'is_read'],
@@ -37,7 +37,9 @@ export const getMessages = async (req, res) => {
 
     res.status(200).json({
       message: "Messages retrieved successfully.",
-      messages: messages
+      messages: messages.filter(message => 
+        (message._id_sender === _id_user && message.is_valid_sender) || 
+        (message._id_sender === _id_receiver && message.is_valid_receiver))
     });
   } catch (error) {
     console.error("Error retrieving messages:", error);
@@ -49,6 +51,7 @@ export const getMessages = async (req, res) => {
   }
 };
 
+
 //Get All Conversations of a user
 export const getAllConversations = async (req, res) => {
   const _id_user = req.user._id_user;
@@ -57,11 +60,11 @@ export const getAllConversations = async (req, res) => {
     let allMessages = await Message.findAll({
       where: {
         [Op.or]: [
-          { _id_sender: _id_user },
-          { _id_receiver: _id_user }
+          { _id_sender: _id_user, is_valid_sender: true }, 
+          { _id_receiver: _id_user, is_valid_receiver: true } 
         ]
       },
-      attributes: ['_id_message', 'content', 'is_valid', 'createdAt', 'updatedAt', '_id_sender', '_id_receiver', 'is_read'],
+      attributes: ['_id_message', 'content', 'createdAt', 'updatedAt', '_id_sender', '_id_receiver', 'is_read'],
       include: [
         {
           model: User,
@@ -87,7 +90,6 @@ export const getAllConversations = async (req, res) => {
           Message: {
             _id_message: message._id_message,
             content: message.content,
-            is_valid: message.is_valid,
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
           },
@@ -102,7 +104,7 @@ export const getAllConversations = async (req, res) => {
       }
     });
 
-    let conversationsArray = Object.values(conversations);
+    let conversationsArray = Object.values(conversations).filter(convo => convo !== undefined);
 
     res.status(200).json({
       message: "Conversations retrieved successfully.",
@@ -117,6 +119,7 @@ export const getAllConversations = async (req, res) => {
     }
   }
 };
+
 
 //Get a users list for starting a new conversation
 export const getConversationStarterUserList = async (req, res) => {
@@ -249,28 +252,35 @@ export const deleteMessage = async (req, res) => {
   }
 };
 
-//Delete a conversation with someone
-export const deleteConversation = async (req, res) => {
+// Clear a conversation for a user 
+export const clearConversation = async (req, res) => {
   const _id_user = req.user._id_user; 
   const _id_receiver = req.query._id_receiver; 
 
   try {
-    const deletionResult = await Message.destroy({
-      where: {
-        [Op.or]: [
-          { _id_sender: _id_user, _id_receiver: _id_receiver },
-          { _id_sender: _id_receiver, _id_receiver: _id_user }
-        ]
+    await Message.update(
+      { is_valid_sender: false }, 
+      {
+        where: {
+          _id_sender: _id_user, 
+          _id_receiver: _id_receiver
+        }
       }
-    });
+    );
 
-    if (deletionResult === 0) {
-      return res.status(404).send({ message: "No conversation found between these users." });
-    }
+    await Message.update(
+      { is_valid_receiver: false }, 
+      {
+        where: {
+          _id_sender: _id_receiver, 
+          _id_receiver: _id_user
+        }
+      }
+    );
 
-    res.status(200).send({ message: "Conversation deleted successfully." });
+    res.status(200).send({ message: "Conversation cleared successfully." });
   } catch (error) {
-    console.error("Error deleting conversation:", error);
+    console.error("Error clearing conversation:", error);
     if (error instanceof Sequelize.ValidationError) {
       return res.status(400).send({ message: "Validation Error", errors: error.errors });
     } else {
@@ -278,4 +288,5 @@ export const deleteConversation = async (req, res) => {
     }
   }
 };
+
 

@@ -6,7 +6,7 @@ import {
     getConversationStarterUserList,
     updateMessage,
     deleteMessage,
-    deleteConversation
+    clearConversation
 } from "../controllers/messages.js";
 
 const router = Router();
@@ -29,6 +29,6 @@ router.put("/", validateUser, updateMessage);
 router.patch("/", validateUser, deleteMessage);
 
 //Delete conversation
-router.delete("/conversation", validateUser, deleteConversation);
+router.delete("/conversation", validateUser, clearConversation);
 
 export default router;

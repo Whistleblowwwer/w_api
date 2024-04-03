@@ -21,6 +21,16 @@ export const Message = sequelize_write.define(
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false
+        },
+        is_valid_sender: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+        },
+        is_valid_receiver: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
         }
     },
     {
@@ -28,3 +38,4 @@ export const Message = sequelize_write.define(
         timestamps: true,
     }
 );
+
