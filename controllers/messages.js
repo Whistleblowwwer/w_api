@@ -30,16 +30,12 @@ export const getMessages = async (req, res) => {
       .map(message => message._id_message);
 
     if (unreadMessagesIds.length > 0) {
-      await Message.update({ is_read: true }, {
-        where: { _id_message: unreadMessagesIds }
-      });
+      await Message.update({ is_read: true }, { where: { _id_message: unreadMessagesIds } });
     }
 
     res.status(200).json({
       message: "Messages retrieved successfully.",
-      messages: messages.filter(message => 
-        (message._id_sender === _id_user && message.is_valid_sender) || 
-        (message._id_sender === _id_receiver && message.is_valid_receiver))
+      messages
     });
   } catch (error) {
     console.error("Error retrieving messages:", error);
@@ -50,7 +46,6 @@ export const getMessages = async (req, res) => {
     }
   }
 };
-
 
 //Get All Conversations of a user
 export const getAllConversations = async (req, res) => {
@@ -119,7 +114,6 @@ export const getAllConversations = async (req, res) => {
     }
   }
 };
-
 
 //Get a users list for starting a new conversation
 export const getConversationStarterUserList = async (req, res) => {
