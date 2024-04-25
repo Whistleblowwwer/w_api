@@ -200,8 +200,10 @@ export default class NotificationDTO {
             notification
         );
 
-        // Send notification only if message is not null
-        this.sendNotificationToReceiver(message);
+        // Send notification only if message contains a token
+        if (message.token) {
+            this.sendNotificationToReceiver(message);
+        }
 
         return notification;
     }
@@ -230,9 +232,21 @@ export default class NotificationDTO {
             console.log(
                 "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
             );
+
+            const messageWithoutToken = {
+                notification: {
+                    title: `@${sender.nick_name} le dio like tu reseña:`,
+                    body: reviewContent,
+                },
+                data: {
+                    _id_target,
+                    target_type: "review",
+                },
+            };
+            return messageWithoutToken;
         }
 
-        const message = {
+        const messageWithToken = {
             notification: {
                 title: `@${sender.nick_name} le dio like tu reseña:`,
                 body: reviewContent,
@@ -241,9 +255,9 @@ export default class NotificationDTO {
                 _id_target,
                 target_type: "review",
             },
-            token: receiver ? receiver.fcm_token : null, // Pass null token if receiver doesn't have FCM token
+            token: receiver.fcm_token,
         };
-        return message;
+        return messageWithToken;
     }
 
     // COMMENT
