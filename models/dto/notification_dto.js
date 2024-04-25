@@ -107,7 +107,13 @@ export default class NotificationDTO {
             content
         );
 
-        // Save to db
+        // If message is null, log and return null
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Save to db regardless of FCM token availability
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
@@ -120,14 +126,10 @@ export default class NotificationDTO {
 
         console.log("\n-- CHAT NOTIFICATION TO BE CREATED: ", notification);
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
+        // Send notification only if message contains a token
+        if (message.token) {
+            this.sendNotificationToReceiver(message);
         }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -146,7 +148,26 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        const message = {
+        // Check if the receiver exists and has an FCM token
+        if (!receiver || !receiver.fcm_token) {
+            console.log(
+                "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
+            );
+
+            const messageWithoutToken = {
+                notification: {
+                    title: `[@${sender.nick_name}]: `,
+                    body: content,
+                },
+                data: {
+                    _id_target: _id_user_sender,
+                    target_type: "chat",
+                },
+            };
+            return messageWithoutToken;
+        }
+
+        const messageWithToken = {
             notification: {
                 title: `[@${sender.nick_name}]: `,
                 body: content,
@@ -157,8 +178,7 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
-
-        return message;
+        return messageWithToken;
     }
 
     // LIKE REVIEW
@@ -268,7 +288,7 @@ export default class NotificationDTO {
         commentContent,
         parentReviewContent
     ) {
-        //Generate Message
+        // Generate message
         const message = await this.buildReviewCommentMessage(
             _id_user_sender,
             _id_user_receiver,
@@ -276,7 +296,13 @@ export default class NotificationDTO {
             commentContent
         );
 
-        // Save to db
+        // If message is null, log and return null
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Save to db regardless of FCM token availability
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
@@ -289,13 +315,10 @@ export default class NotificationDTO {
 
         console.log("\n-- COMMENT NOTIFICATION TO BE CREATED: ", notification);
 
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
+        // Send notification only if message contains a token
+        if (message.token) {
+            this.sendNotificationToReceiver(message);
         }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -319,14 +342,26 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        // Check if the receiver has an FCM token
+        // Check if the receiver exists and has an FCM token
         if (!receiver || !receiver.fcm_token) {
-            console.log("Receiver has no FCM token. Skipping notification.");
-            return null; // Return null to indicate skipping the notification
+            console.log(
+                "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
+            );
+
+            const messageWithoutToken = {
+                notification: {
+                    title: `@${sender.nick_name} comentó:`,
+                    body: commentContent,
+                },
+                data: {
+                    _id_target,
+                    target_type: "comment",
+                },
+            };
+            return messageWithoutToken;
         }
 
-        // push
-        const message = {
+        const messageWithToken = {
             notification: {
                 title: `@${sender.nick_name} comentó:`,
                 body: commentContent,
@@ -337,7 +372,7 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
-        return message;
+        return messageWithToken;
     }
 
     //COMMENT LIKE
@@ -347,7 +382,7 @@ export default class NotificationDTO {
         _id_target,
         commentContent
     ) {
-        //Generate Message
+        // Generate message
         const message = await this.buildCommentLikeMessage(
             _id_user_sender,
             _id_user_receiver,
@@ -355,7 +390,13 @@ export default class NotificationDTO {
             commentContent
         );
 
-        // Save to db
+        // If message is null, log and return null
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Save to db regardless of FCM token availability
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
@@ -371,12 +412,10 @@ export default class NotificationDTO {
             notification
         );
 
-        // Send to receiver
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
+        // Send notification only if message contains a token
+        if (message.token) {
+            this.sendNotificationToReceiver(message);
         }
-        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -400,13 +439,26 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        // Check if the receiver has an FCM token
+        // Check if the receiver exists and has an FCM token
         if (!receiver || !receiver.fcm_token) {
-            console.log("Receiver has no FCM token. Skipping notification.");
-            return null; // Return null to indicate skipping the notification
+            console.log(
+                "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
+            );
+
+            const messageWithoutToken = {
+                notification: {
+                    title: `A ${sender.nick_name} le ha gustado tu comentario`,
+                    body: `${commentContent}`,
+                },
+                data: {
+                    _id_target,
+                    target_type: "comment",
+                },
+            };
+            return messageWithoutToken;
         }
 
-        const message = {
+        const messageWithToken = {
             notification: {
                 title: `A ${sender.nick_name} le ha gustado tu comentario`,
                 body: `${commentContent}`,
@@ -417,7 +469,7 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
-        return message;
+        return messageWithToken;
     }
 
     // NEW FOLLOWER
@@ -428,7 +480,13 @@ export default class NotificationDTO {
             _id_user_receiver
         );
 
-        // Save to db
+        // If message is null, log and return null
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Save to db regardless of FCM token availability
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
@@ -444,14 +502,10 @@ export default class NotificationDTO {
             notification
         );
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
+        // Send notification only if message contains a token
+        if (message.token) {
+            this.sendNotificationToReceiver(message);
         }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -470,13 +524,26 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        // Check if the receiver has an FCM token
+        // Check if the receiver exists and has an FCM token
         if (!receiver || !receiver.fcm_token) {
-            console.log("Receiver has no FCM token. Skipping notification.");
-            return null; // Return null to indicate skipping the notification
+            console.log(
+                "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
+            );
+
+            const messageWithoutToken = {
+                notification: {
+                    title: `¡Tienes un nuevo seguidor!`,
+                    body: `Saluda a ${sender.nick_name}`,
+                },
+                data: {
+                    _id_target: _id_user_sender,
+                    target_type: "profile",
+                },
+            };
+            return messageWithoutToken;
         }
 
-        const message = {
+        const messageWithToken = {
             notification: {
                 title: `¡Tienes un nuevo seguidor!`,
                 body: `Saluda a ${sender.nick_name}`,
@@ -487,7 +554,7 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
-        return message;
+        return messageWithToken;
     }
 
     // NEW REVIEW FOR FOLLOWED BUSINESS
