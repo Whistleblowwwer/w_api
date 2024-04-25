@@ -107,15 +107,6 @@ export default class NotificationDTO {
             content
         );
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
-
         // Save to db
         const notification = await Notification.create({
             _id_user_sender,
@@ -128,6 +119,15 @@ export default class NotificationDTO {
         });
 
         console.log("\n-- CHAT NOTIFICATION TO BE CREATED: ", notification);
+
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Send to receiver
+        this.sendNotificationToReceiver(message);
 
         return notification;
     }
