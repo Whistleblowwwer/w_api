@@ -146,12 +146,6 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        // Check if the receiver has an FCM token
-        if (!receiver || !receiver.fcm_token) {
-            console.log("Receiver has no FCM token. Skipping notification.");
-            return null; // Return null to indicate skipping the notification
-        }
-
         const message = {
             notification: {
                 title: `[@${sender.nick_name}]: `,
