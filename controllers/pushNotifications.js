@@ -86,7 +86,7 @@ export const getAllNotificationsForUser = async (req, res) => {
 
             // Special handling for different types of notifications
             if (["chat", "review", "comment", "profile"].includes(type)) {
-                // Additional specific logic for these types, if any
+                // Additional specific logic for these types
                 targetInfo.is_followed = (await UserFollowers.findOne({
                     where: {
                         _id_follower: _id_user_receiver,

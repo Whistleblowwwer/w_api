@@ -92,23 +92,28 @@ export const validateUser = (req, res, next) => {
         }
 
         req.user = decodedToken;
+        console.log("\n-- DECODED TOKEN: ", decodedToken);
         req.requestDTO.setUserId(req.user._id_user);
         req.requestDTO.requestLog();
-        
+
         const { _ip_address, city, country } = req.requestDTO;
-        
+
         try {
             const lastKnownIp = await UserIps.findOne({
                 where: { _id_user: req.user._id_user },
-                order: [['createdAt', 'DESC']]
+                order: [["createdAt", "DESC"]],
             });
-            
-            if (!lastKnownIp || lastKnownIp.city !== city || lastKnownIp.country !== country) {
+
+            if (
+                !lastKnownIp ||
+                lastKnownIp.city !== city ||
+                lastKnownIp.country !== country
+            ) {
                 await UserIps.create({
                     _id_user: req.user._id_user,
                     _ip_address,
                     city,
-                    country
+                    country,
                 });
             }
         } catch (error) {

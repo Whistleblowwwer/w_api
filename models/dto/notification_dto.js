@@ -127,6 +127,8 @@ export default class NotificationDTO {
             is_valid: true,
         });
 
+        console.log("\n-- CHAT NOTIFICATION TO BE CREATED: ", notification);
+
         return notification;
     }
 
@@ -198,6 +200,11 @@ export default class NotificationDTO {
             content: message.notification.body,
             is_valid: true,
         });
+
+        console.log(
+            "\n-- LIKE REVIEW NOTIFICATION TO BE CREATED: ",
+            notification
+        );
 
         return notification;
     }
@@ -276,6 +283,8 @@ export default class NotificationDTO {
             is_valid: true,
         });
 
+        console.log("\n-- COMMENT NOTIFICATION TO BE CREATED: ", notification);
+
         return notification;
     }
 
@@ -353,6 +362,11 @@ export default class NotificationDTO {
             is_valid: true,
         });
 
+        console.log(
+            "\n-- COMMENT LIKE NOTIFICATION TO BE CREATED: ",
+            notification
+        );
+
         return notification;
     }
 
@@ -422,6 +436,11 @@ export default class NotificationDTO {
             content: message.notification.body,
             is_valid: true,
         });
+
+        console.log(
+            "\n-- NEW FOLLOWER NOTIFICATION TO BE CREATED: ",
+            notification
+        );
 
         return notification;
     }
