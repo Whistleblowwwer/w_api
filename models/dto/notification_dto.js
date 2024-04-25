@@ -176,14 +176,22 @@ export default class NotificationDTO {
             reviewContent
         );
 
-        // Save to db
+        // If message is null, log and return null
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Save to db regardless of FCM token availability
         const notification = await Notification.create({
             _id_user_sender,
             _id_user_receiver,
             _id_target,
             type: "review",
-            subject: message.notification.title,
-            content: message.notification.body,
+            subject: message
+                ? message.notification.title
+                : "Notification Title", // Provide default title if message is null
+            content: message ? message.notification.body : "Notification Body", // Provide default body if message is null
             is_valid: true,
         });
 
@@ -192,12 +200,7 @@ export default class NotificationDTO {
             notification
         );
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
+        // Send notification only if message is not null
         this.sendNotificationToReceiver(message);
 
         return notification;
@@ -222,10 +225,11 @@ export default class NotificationDTO {
             (user) => user._id_user === _id_user_receiver
         );
 
-        // Check if the receiver has an FCM token
+        // Check if the receiver exists and has an FCM token
         if (!receiver || !receiver.fcm_token) {
-            console.log("Receiver has no FCM token. Skipping notification.");
-            return null; // Return null to indicate skipping the notification
+            console.log(
+                "\n Receiver has no FCM token. Notification will be stored in the database but not sent. \n"
+            );
         }
 
         const message = {
@@ -237,7 +241,7 @@ export default class NotificationDTO {
                 _id_target,
                 target_type: "review",
             },
-            token: receiver.fcm_token,
+            token: receiver ? receiver.fcm_token : null, // Pass null token if receiver doesn't have FCM token
         };
         return message;
     }
