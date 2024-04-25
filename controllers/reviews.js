@@ -830,7 +830,6 @@ export const getAllReviews = async (req, res) => {
             ],
         });
 
-        console.log(reviewsWithAds);
         // Iterate over each review to apply validation
         reviewsWithAds.forEach((review) => {
             let adDescription = review.dataValues.Ad.description;

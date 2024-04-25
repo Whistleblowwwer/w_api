@@ -92,7 +92,6 @@ export const validateUser = (req, res, next) => {
         }
 
         req.user = decodedToken;
-        console.log("\n-- DECODED TOKEN: ", decodedToken);
         req.requestDTO.setUserId(req.user._id_user);
         req.requestDTO.requestLog();
 

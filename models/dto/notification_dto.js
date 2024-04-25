@@ -182,14 +182,6 @@ export default class NotificationDTO {
             reviewContent
         );
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
-        this.sendNotificationToReceiver(message);
-
         // Save to db
         const notification = await Notification.create({
             _id_user_sender,
@@ -205,6 +197,14 @@ export default class NotificationDTO {
             "\n-- LIKE REVIEW NOTIFICATION TO BE CREATED: ",
             notification
         );
+
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -264,14 +264,6 @@ export default class NotificationDTO {
             commentContent
         );
 
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
-
         // Save to db
         const notification = await Notification.create({
             _id_user_sender,
@@ -284,6 +276,14 @@ export default class NotificationDTO {
         });
 
         console.log("\n-- COMMENT NOTIFICATION TO BE CREATED: ", notification);
+
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Send to receiver
+        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -343,14 +343,6 @@ export default class NotificationDTO {
             commentContent
         );
 
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
-
         // Save to db
         const notification = await Notification.create({
             _id_user_sender,
@@ -366,6 +358,13 @@ export default class NotificationDTO {
             "\n-- COMMENT LIKE NOTIFICATION TO BE CREATED: ",
             notification
         );
+
+        // Send to receiver
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+        this.sendNotificationToReceiver(message);
 
         return notification;
     }
@@ -417,15 +416,6 @@ export default class NotificationDTO {
             _id_user_receiver
         );
 
-        // Check if the message is null (indicating that the notification should be skipped)
-        if (!message) {
-            console.log("Notification skipped due to missing FCM token.");
-            return null;
-        }
-
-        // Send to receiver
-        this.sendNotificationToReceiver(message);
-
         // Save to db
         const notification = await Notification.create({
             _id_user_sender,
@@ -442,10 +432,18 @@ export default class NotificationDTO {
             notification
         );
 
+        // Check if the message is null (indicating that the notification should be skipped)
+        if (!message) {
+            console.log("Notification skipped due to missing FCM token.");
+            return null;
+        }
+
+        // Send to receiver
+        this.sendNotificationToReceiver(message);
+
         return notification;
     }
 
-    // Builds the FCM message for a new follower
     async buildNewFollowerMessage(_id_user_sender, _id_user_receiver) {
         const userIds = [_id_user_sender, _id_user_receiver];
 
@@ -500,6 +498,16 @@ export default class NotificationDTO {
         // Construct the message with truncated content
         const truncatedContent = this.truncateContent(reviewContent, 6);
 
+        // Log a notification in the DB for each follower
+        const notifications = await this.logNotificationsForFollowers(
+            _id_user_sender,
+            _id_business,
+            _id_review,
+            senderNickname,
+            business.name,
+            truncatedContent
+        );
+
         const message = this.buildNewBusinessReviewMessage(
             senderNickname,
             business.name,
@@ -509,16 +517,6 @@ export default class NotificationDTO {
 
         // Send notification to the topic
         await this.sendNotificationToTopic(message, topicName);
-
-        // Log a notification in the DB for each follower
-        const notifications = await this.logNotificationsForFollowers(
-            _id_user_sender,
-            _id_business,
-            _id_review,
-            senderNickname,
-            business.name,
-            reviewContent
-        );
 
         return notifications;
     }
