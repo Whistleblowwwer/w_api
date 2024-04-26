@@ -334,24 +334,24 @@ export const unsubscribeAllUsersFromTopic = async (req, res) => {
 // List topics and subscribed users
 export const listTopics = async (req, res) => {
     try {
-        const topics = await Topic.findAll({
-            include: [
-                {
-                    model: User,
-                    as: "Subscribers", // Adjust based on your association alias
-                    through: { attributes: [] }, // Do not include junction table fields
-                    attributes: ["_id_user", "name"], // Adjust to reflect actual user attributes
-                },
+        const topicSubscriptionCounts = await Topic.findAll({
+            attributes: [
+                "_id_topic",
+                "name",
+                [
+                    Sequelize.literal(
+                        "(SELECT COUNT(*) FROM userTopicSubscriptions WHERE userTopicSubscriptions._id_topic = Topic._id_topic)"
+                    ),
+                    "subscriptionCount",
+                ],
             ],
+            raw: true,
         });
-        const topicsWithCount = topics.map((topic) => ({
-            ...topic.toJSON(),
-            subscriberCount: topic.Subscribers.length,
-        }));
-        res.json(topicsWithCount);
+
+        return topicSubscriptionCounts;
     } catch (error) {
-        console.error("Error listing topics:", error);
-        res.status(500).send({ message: "Error listing topics." });
+        console.error("Error fetching topic subscription counts:", error);
+        throw error;
     }
 };
 

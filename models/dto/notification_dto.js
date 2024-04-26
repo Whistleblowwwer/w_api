@@ -308,7 +308,7 @@ export default class NotificationDTO {
             _id_user_receiver,
             _id_target,
             type: "comment",
-            subject: parentReviewContent,
+            subject: parentReviewContent.substring(0, 255),
             content: commentContent,
             is_valid: true,
         });

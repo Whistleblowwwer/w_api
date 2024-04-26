@@ -112,11 +112,12 @@ User.hasMany(Ad, {
     foreignKey: "_id_user",
 });
 
-// Varios topicos pueden pertenecer a varios usuarios
+// Un usuario se puede suscribir a varios topicos
 // N:N
 User.belongsToMany(Topic, {
     through: UserTopicSubscription,
     foreignKey: "_id_user",
+    otherKey: "_id_topic",
 });
 
 // ------------------ BUSINESS ------------------
@@ -316,13 +317,19 @@ Ad.belongsTo(Business, { foreignKey: "_id_business" });
 Banner.belongsTo(Ad, { foreignKey: "_id_ad" });
 
 // ------------------ NOTIFICATIONS ------------------
-// Varios usuarios pueden suscribirse a varios topicos
+// Un topico puede tener varios suscritos
 // N:N
 Topic.belongsToMany(User, {
     through: UserTopicSubscription,
     foreignKey: "_id_topic",
+    otherKey: "_id_user",
 });
 
 // ----------------- DEBUG -------------------
 console.log("\n -- USER ASSOCIATIONS: ", User.associations);
+console.log(
+    "\n -- TOPIC SUBS ASSOCIATIONS: ",
+    UserTopicSubscription.associations
+);
+console.log("\n -- TOPIC ASSOCIATIONS: ", Topic.associations);
 console.log("\n -- BUSINESS ASSOCIATIONS: ", Business.associations);

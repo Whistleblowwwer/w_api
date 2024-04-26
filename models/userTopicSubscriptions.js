@@ -13,7 +13,7 @@ export const UserTopicSubscription = sequelize_write.define(
             type: DataTypes.UUID,
             allowNull: false,
             references: {
-                model: "users", // Ensure this matches your User model's table name exactly
+                model: "users",
                 key: "_id_user",
             },
         },
@@ -25,7 +25,6 @@ export const UserTopicSubscription = sequelize_write.define(
                 key: "_id_topic",
             },
         },
-        // Additional attributes if necessary
     },
     {
         tableName: "userTopicSubscriptions",
