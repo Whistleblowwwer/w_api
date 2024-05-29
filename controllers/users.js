@@ -563,7 +563,7 @@ export const followBusiness = async (req, res) => {
         if (alreadyFollows) {
             // Delete the following status
             await alreadyFollows.destroy();
-            await unsubscribeUserFromBusinessTopic(_id_user, _id_business); // Unsubscribe user from business topic
+            await unsubscribeUserFromBusinessTopic(_id_user, _id_business);
 
             return res.status(200).send({
                 message: "Business unfollowed successfully",
@@ -572,7 +572,7 @@ export const followBusiness = async (req, res) => {
         } else {
             // If follower doesn't follow, follow the business and subscribe to the topic
             await BusinessFollowers.create({ _id_user, _id_business });
-            await subscribeUserToBusinessTopic(_id_user, _id_business); // Subscribe user to business topic
+            await subscribeUserToBusinessTopic(_id_user, _id_business);
             return res.status(200).send({
                 message: "Business followed successfully",
                 followed: true,

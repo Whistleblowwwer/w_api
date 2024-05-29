@@ -42,7 +42,7 @@ export default class NotificationDTO {
             });
 
             console.log("Notification sent to topic:", response);
-            return response; // Optionally return the response for further processing or logging
+            return response;
         } catch (error) {
             console.error("Error sending notification to topic:", error);
             throw error; // Rethrow or handle the error appropriately
@@ -89,9 +89,9 @@ export default class NotificationDTO {
 
         console.log("\n-- NOTIFICATIONS: ", notifications);
         // Bulk insert notifications into the database
-        await Notification.bulkCreate(notifications);
-
-        return notifications;
+        const bulkNotifications = await Notification.bulkCreate(notifications);
+        console.log("\n-- NOTIFICATIONS CREATED: ", bulkNotifications);
+        return bulkNotifications;
     }
 
     //CHAT
@@ -277,6 +277,8 @@ export default class NotificationDTO {
             },
             token: receiver.fcm_token,
         };
+
+        console.info("FCM TOKEN: ", fcm_token);
         return messageWithToken;
     }
 
@@ -568,11 +570,12 @@ export default class NotificationDTO {
         // Get business information and construct the topic name
         const business = await Business.findByPk(_id_business);
         if (!business) {
-            console.log("Business not found.");
+            console.error("Business not found.");
             return null;
         }
         const sanitizedBusinessName = business.name.replace(/\s+/g, "");
         const topicName = `${sanitizedBusinessName}_newReview_topic`;
+        console.info("TOPIC NAME: ", topicName);
 
         // Construct the message with truncated content
         const truncatedContent = this.truncateContent(reviewContent, 6);

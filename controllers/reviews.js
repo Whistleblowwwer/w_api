@@ -55,22 +55,12 @@ export const createReview = async (req, res) => {
             return res.status(400).send({ message: "Business is not valid" });
         }
 
-        // const containsBadWord = await filterBadWords(content);
-        // if (containsBadWord) {
-        //     return res
-        //         .status(400)
-        //         .send({ message: "Contenido contiene palabras prohibidas" });
-        // }
-
         const createdReview = await Review.create({
             content,
             _id_business,
             _id_user,
             rating,
         });
-
-        // Get the nick name of the author
-        const { nick_name } = userCreatingReview;
 
         const notificationDTO = new NotificationDTO();
         await notificationDTO.generateNewBusinessReviewNotification(

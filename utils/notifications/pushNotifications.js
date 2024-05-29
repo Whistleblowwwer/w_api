@@ -46,6 +46,7 @@ export const subscribeUserToBusinessTopic = async (userId, businessId) => {
         // Construct topic name with modified business name
         const topicName = `${businessName}_newReview_topic`;
         let topic = await Topic.findOne({ where: { name: topicName } });
+        console.info("TOPIC NAME: ", topicName);
 
         if (!topic) {
             // Create the topic if it doesn't exist
@@ -93,7 +94,9 @@ export const unsubscribeUserFromBusinessTopic = async (userId, businessId) => {
         const sanitizedBusinessName = business.name.replace(/\s+/g, "");
 
         const topicName = `${sanitizedBusinessName}_newReview_topic`;
+        console.info("TOPIC NAME: ", topicName);
         const topic = await Topic.findOne({ where: { name: topicName } });
+        console.info("TOPIC: ", topic);
 
         if (topic) {
             // Unsubscribe user from the topic in the database
@@ -105,6 +108,7 @@ export const unsubscribeUserFromBusinessTopic = async (userId, businessId) => {
             const user = await User.findByPk(userId);
             const token = user.fcm_token;
 
+            console.info("FCM TOKEN: ", token);
             if (token) {
                 // Unsubscribe the user from the topic in Firebase
                 const firebaseResponse = await admin
