@@ -372,13 +372,7 @@ export const getUserDetails = async (req, res) => {
         let user = await User.findOne({
             where: { _id_user },
             attributes: {
-                exclude: [
-                    "password_token",
-                    "fcm_token",
-                    "email",
-                    "phone_number",
-                    "updatedAt",
-                ],
+                exclude: ["password_token", "fcm_token", "updatedAt"],
             },
         });
 
