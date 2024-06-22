@@ -278,7 +278,7 @@ export default class NotificationDTO {
             token: receiver.fcm_token,
         };
 
-        console.info("FCM TOKEN: ", fcm_token);
+        console.info("FCM TOKEN: ", receiver.fcm_token);
         return messageWithToken;
     }
 
